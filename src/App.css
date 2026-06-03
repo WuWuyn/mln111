@@ -47,7 +47,7 @@
   background:
     linear-gradient(90deg, rgba(3, 5, 13, 0.76) 0%, rgba(3, 5, 13, 0.34) 47%, rgba(3, 5, 13, 0.18) 100%),
     linear-gradient(180deg, rgba(3, 5, 13, 0.76) 0%, rgba(3, 5, 13, 0.22) 48%, rgba(3, 5, 13, 0.84) 100%),
-    url('/cosmic-landscape-space-background.jpg') center / cover no-repeat;
+    var(--landing-wallpaper) center / cover no-repeat;
   filter: saturate(1.08) contrast(1.06);
   transform: scale(1.04);
   animation: cosmicDrift 24s ease-in-out infinite alternate;

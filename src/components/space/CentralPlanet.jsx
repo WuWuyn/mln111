@@ -2,6 +2,7 @@ import { Html, useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import * as THREE from 'three'
+import { publicAsset } from '../../utils/publicAsset'
 
 function configureTexture(texture) {
   texture.colorSpace = THREE.SRGBColorSpace
@@ -10,7 +11,7 @@ function configureTexture(texture) {
 
 export default function CentralPlanet({ onClick, showLabel = true, interactive = true }) {
   const core = useRef()
-  const sunTexture = useTexture('/textures/planets/sun.jpg', configureTexture)
+  const sunTexture = useTexture(publicAsset('textures/planets/sun.jpg'), configureTexture)
 
   useFrame((_, delta) => {
     core.current.rotation.y += delta * 0.13

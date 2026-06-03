@@ -2,27 +2,28 @@ import { Html, useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import * as THREE from 'three'
+import { publicAsset } from '../../utils/publicAsset'
 import OrbitPath from './OrbitPath'
 
 const PLANET_LOOK = {
   'vat-chat': {
-    texture: '/textures/planets/earth.jpg',
+    texture: publicAsset('textures/planets/earth.jpg'),
     light: '#cce9ff',
   },
   'y-thuc': {
-    texture: '/textures/planets/venus.jpg',
+    texture: publicAsset('textures/planets/venus.jpg'),
     light: '#ffe0b8',
   },
   'lien-he-phat-trien': {
-    texture: '/textures/planets/jupiter.jpg',
+    texture: publicAsset('textures/planets/jupiter.jpg'),
     light: '#ffe2b8',
   },
   'mau-thuan-luong-chat': {
-    texture: '/textures/planets/neptune.jpg',
+    texture: publicAsset('textures/planets/neptune.jpg'),
     light: '#a9c8ff',
   },
   'thuc-tien': {
-    texture: '/textures/planets/moon.jpg',
+    texture: publicAsset('textures/planets/moon.jpg'),
     light: '#ffffff',
   },
 }

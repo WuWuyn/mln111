@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { publicAsset } from '../utils/publicAsset'
 
 const introItems = [
   {
@@ -123,6 +124,7 @@ export default function LandingPage({ onExplore, handControlStore }) {
       className={`landing-page landing-page--minimal ${pressed ? 'is-pressed' : ''} ${
         handActive ? 'is-hand-active' : ''
       }`}
+      style={{ '--landing-wallpaper': `url("${publicAsset('cosmic-landscape-space-background.jpg')}")` }}
       aria-labelledby="landing-title"
       onPointerMove={handlePointerMove}
       onPointerDown={() => setPressedSafe(true)}

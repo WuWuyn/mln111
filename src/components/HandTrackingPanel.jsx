@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { publicAsset } from '../utils/publicAsset'
 
-const MODEL_PATH = '/mediapipe/hand_landmarker.task'
-const WASM_PATH = '/mediapipe/wasm'
+const MODEL_PATH = publicAsset('mediapipe/hand_landmarker.task')
+const WASM_PATH = publicAsset('mediapipe/wasm')
 
 // How long we keep the last control alive after the hand briefly leaves the
 // frame, so a one-frame detection drop doesn't kill the cursor. During this
