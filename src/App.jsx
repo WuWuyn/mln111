@@ -17,7 +17,9 @@ function getPageFromLocation() {
     return 'landing'
   }
 
-  return window.location.hash === EXPLORE_HASH ? 'explore' : 'landing'
+  // The explore page may carry a sub-view, e.g. #kham-pha/chi-tiet, so match the
+  // base rather than the exact hash.
+  return window.location.hash.startsWith(EXPLORE_HASH) ? 'explore' : 'landing'
 }
 
 function App() {

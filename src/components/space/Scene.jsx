@@ -4,9 +4,12 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useRef } from 'react'
 import * as THREE from 'three'
 import { planets } from '../../data/cosmos'
+import AsteroidField from './AsteroidField'
 import CentralPlanet from './CentralPlanet'
+import CosmicDust from './CosmicDust'
 import GalaxyParticles from './GalaxyParticles'
 import PlanetMesh from './PlanetMesh'
+import GameShooter from './game/GameShooter'
 
 const projectedPosition = new THREE.Vector3()
 const planetPosition = new THREE.Vector3()
@@ -110,8 +113,19 @@ function HandCameraRig({ store, controlsRef }) {
   return null
 }
 
-export default function Scene({ selectedPlanet, setSelectedPlanet, handControlStore }) {
+export default function Scene({
+  selectedPlanet,
+  setSelectedPlanet,
+  handControlStore,
+  overlayOpen,
+  gameMode = false,
+  destroyed = [],
+  onDestroyPlanet,
+}) {
   const controlsRef = useRef()
+  // While shooting, planet clicks/hovers should fire rocks — not change the
+  // knowledge-panel selection — so suppress the planets' own pointer handlers.
+  const interactive = !gameMode
 
   return (
     <>
@@ -119,17 +133,38 @@ export default function Scene({ selectedPlanet, setSelectedPlanet, handControlSt
       <fog attach="fog" args={['#030612', 12, 58]} />
       <ambientLight intensity={0.55} />
       <directionalLight position={[7, 9, 6]} intensity={1.6} color="#d9edff" />
-      <Stars radius={100} depth={60} count={6000} factor={4} saturation={0.25} fade speed={0.6} />
+      {/* Two nested star shells so the whole 3D space stays filled: a near, */}
+      {/* brighter layer plus a vast faint halo wrapping the far background. */}
+      <Stars radius={100} depth={60} count={9000} factor={4} saturation={0.25} fade speed={0.6} />
+      <Stars radius={260} depth={140} count={11000} factor={6} saturation={0} fade speed={0.25} />
       <GalaxyParticles />
-      <CentralPlanet onClick={() => setSelectedPlanet(planets[0])} />
-      {planets.map((planet) => (
-        <PlanetMesh
-          key={planet.id}
-          planet={planet}
-          selected={selectedPlanet.id === planet.id}
-          onSelect={setSelectedPlanet}
+      <CosmicDust />
+      <AsteroidField />
+      {!destroyed.includes('central') && (
+        <CentralPlanet
+          onClick={() => setSelectedPlanet(planets[0])}
+          showLabel={!overlayOpen && !gameMode}
+          interactive={interactive}
         />
-      ))}
+      )}
+      {planets.map((planet) =>
+        destroyed.includes(planet.id) ? null : (
+          <PlanetMesh
+            key={planet.id}
+            planet={planet}
+            selected={selectedPlanet.id === planet.id}
+            onSelect={setSelectedPlanet}
+            showLabel={!overlayOpen && !gameMode}
+            interactive={interactive}
+          />
+        ),
+      )}
+      <GameShooter
+        enabled={gameMode}
+        planets={planets}
+        destroyed={destroyed}
+        onDestroy={onDestroyPlanet}
+      />
       <OrbitControls
         ref={controlsRef}
         enableDamping

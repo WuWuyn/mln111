@@ -122,81 +122,66 @@
   box-shadow: 0 14px 40px rgba(241, 76, 27, 0.32);
 }
 
-/* ── Overlay shell (scrim + sliding panel) ────────────────────────────────── */
-.overlay-root {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: center;
-  padding: clamp(0.75rem, 3vw, 2rem);
-}
-
-.overlay-scrim {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  background: rgba(2, 4, 10, 0.66);
-  backdrop-filter: blur(6px);
-  cursor: pointer;
-  animation: overlayFade 220ms ease both;
-}
-
-.overlay-panel {
+/* ── Full content page (own scrolling screen, no longer a popup) ───────────── */
+.content-page {
   position: relative;
   z-index: 1;
-  width: min(60rem, 100%);
-  max-height: calc(100svh - clamp(1.5rem, 6vw, 4rem));
-  padding: clamp(1.25rem, 3vw, 2.1rem);
-  overflow: auto;
-  /* Keep the wheel from scrolling whatever is behind once the panel reaches its
-     end, and give the panel its own thin, themed, smooth scroll. */
+  width: 100%;
+  min-height: 100svh;
+  padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2.5rem);
+  overflow-y: auto;
+  /* The page owns the scroll; keep it from chaining to anything behind. */
   overscroll-behavior: contain;
   scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: rgba(126, 220, 255, 0.4) transparent;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
   color: #f7f9ff;
+  /* A full-bleed cosmos backdrop so the page reads as its own screen. */
   background:
-    radial-gradient(120% 80% at 100% 0%, rgba(126, 220, 255, 0.08), transparent 60%),
-    radial-gradient(120% 80% at 0% 100%, rgba(255, 168, 92, 0.08), transparent 60%),
-    rgba(5, 9, 20, 0.92);
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
-  will-change: transform, opacity;
-  animation: overlayRise 280ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+    radial-gradient(120% 70% at 100% 0%, rgba(126, 220, 255, 0.1), transparent 55%),
+    radial-gradient(120% 70% at 0% 100%, rgba(255, 168, 92, 0.1), transparent 55%),
+    linear-gradient(135deg, #02040b, #07101f 55%, #120716);
+  animation: overlayFade 240ms ease both;
 }
 
-.overlay-panel::-webkit-scrollbar {
+.content-page::-webkit-scrollbar {
   width: 0.6rem;
 }
 
-.overlay-panel::-webkit-scrollbar-thumb {
+.content-page::-webkit-scrollbar-thumb {
   border: 0.18rem solid transparent;
   border-radius: 999px;
   background: rgba(126, 220, 255, 0.35);
   background-clip: padding-box;
 }
 
-.overlay-panel::-webkit-scrollbar-thumb:hover {
+.content-page::-webkit-scrollbar-thumb:hover {
   background: rgba(126, 220, 255, 0.6);
   background-clip: padding-box;
 }
 
-.overlay-panel--detail {
+/* Inner column keeps long-form reading at a comfortable measure while the page
+   itself fills the viewport. */
+.content-page-inner {
   width: min(64rem, 100%);
+  margin: 0 auto;
+  animation: overlayRise 320ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
 }
 
-.overlay-panel--quiz {
-  width: min(46rem, 100%);
+.content-page.overlay-panel--detail .content-page-inner {
+  width: min(72rem, 100%);
 }
 
-.overlay-panel--life {
-  width: min(62rem, 100%);
-}
-
-.overlay-panel--badge {
+.content-page.overlay-panel--quiz .content-page-inner {
   width: min(48rem, 100%);
+}
+
+.content-page.overlay-panel--life .content-page-inner {
+  width: min(66rem, 100%);
+}
+
+.content-page.overlay-panel--badge .content-page-inner {
+  width: min(50rem, 100%);
 }
 
 .overlay-head {
@@ -394,10 +379,65 @@
 /* ── Mini quiz (inside planet detail) ─────────────────────────────────────── */
 .mini-quiz {
   margin-top: 1.6rem;
-  padding: 1.2rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+/* Collapsed bar — the whole row is the toggle; the "?" on the right is the cue. */
+.mini-quiz-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.mini-quiz-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mini-quiz-toggle-hint {
+  margin-left: auto;
+  color: #9fb0cc;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.mini-quiz-toggle-icon {
+  display: grid;
+  flex: none;
+  width: 1.9rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(126, 220, 255, 0.45);
+  background: rgba(39, 114, 170, 0.18);
+  color: #7edcff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+  transition:
+    transform 160ms ease,
+    background 140ms ease;
+}
+
+.mini-quiz-toggle:hover .mini-quiz-toggle-icon {
+  transform: scale(1.08);
+  background: rgba(39, 114, 170, 0.32);
+}
+
+.mini-quiz-body {
+  padding: 0 1.2rem 1.2rem;
+  animation: overlayFade 240ms ease both;
 }
 
 .mini-quiz-q {
@@ -409,8 +449,6 @@
 }
 
 .mini-quiz-kicker {
-  display: block;
-  margin-bottom: 0.4rem;
   color: #7edcff;
   font-size: 0.72rem;
   font-weight: 900;

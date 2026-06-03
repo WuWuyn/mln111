@@ -4,27 +4,18 @@ import * as THREE from 'three'
 import { seededRandom } from './random'
 
 /**
- * Spiral-galaxy point cloud, distribution adapted from dgreenheck/webgpu-galaxy
- * (galaxy.js). That project runs 750k particles on WebGPU compute shaders; here
- * we generate ~9k points once on the CPU for a plain-WebGL <points> cloud, but
- * reuse the same math so the morphology matches:
- *   - sqrt() radius  -> even areal density (no oversaturated core)
- *   - logarithmic spiral via SPIRAL_TIGHTNESS
- *   - per-arm radial (ARM_WIDTH) + angular (RANDOMNESS) scatter
- *   - bulge thickness (fat core, thin rim)
- *   - colour by sparsity: tight arm cores = blue, diffuse halo = warm orange
+ * Spherical dust cloud — a full 3D shell of points wrapped around the scene so
+ * the camera is *inside* it and dust is visible in every direction, instead of
+ * the old flat spiral disk that only read as a plane.
  *
- * Their defaults were tuned for galaxyRadius 13 (spiralTightness 1.75,
- * armCount 2, armWidth 2.25, randomness 1.8, thickness 3). Scaled here to fill
- * our scene (~30) and softened a touch for the lower point count.
+ *   - direction picked uniformly on the unit sphere (no clumping at the poles)
+ *   - radius from an INNER..OUTER shell, biased outward so the dense core near
+ *     the planets stays clear while the halo fills the far background
+ *   - colour by radius: inner shell = cool blue, outer halo = warm orange
  */
-const COUNT = 12000
-const GALAXY_RADIUS = 46
-const ARM_COUNT = 2
-const SPIRAL_TIGHTNESS = 1.75
-const ARM_WIDTH = 4.8
-const RANDOMNESS = 1.0
-const THICKNESS = 8
+const COUNT = 14000
+const INNER_RADIUS = 18
+const OUTER_RADIUS = 60
 const TWO_PI = Math.PI * 2
 const DENSE_COLOR = new THREE.Color('#1885ff')
 const SPARSE_COLOR = new THREE.Color('#ffb28a')
@@ -40,34 +31,23 @@ export default function GalaxyParticles() {
     for (let i = 0; i < COUNT; i += 1) {
       const i3 = i * 3
 
-      // sqrt distribution -> even density across the disk (no center clump)
-      const radius = Math.sqrt(seededRandom(i + 1)) * GALAXY_RADIUS
-      const normalizedRadius = radius / GALAXY_RADIUS
+      // Uniform direction on the unit sphere: phi from acos(2u-1) avoids the
+      // density pinch you get from a naive uniform polar angle.
+      const theta = seededRandom(i + 1) * TWO_PI
+      const phi = Math.acos(2 * seededRandom(i + 2) - 1)
+      const sinPhi = Math.sin(phi)
 
-      const armIndex = Math.floor(seededRandom(i + 2) * ARM_COUNT)
-      const armAngle = (armIndex / ARM_COUNT) * TWO_PI
-      const spiralAngle = normalizedRadius * SPIRAL_TIGHTNESS * TWO_PI
+      // cbrt -> even volume density; ** 0.6 pushes points toward the outer
+      // shell so the middle (where the planets live) stays uncluttered.
+      const t = Math.cbrt(seededRandom(i + 3)) ** 0.6
+      const radius = INNER_RADIUS + t * (OUTER_RADIUS - INNER_RADIUS)
 
-      const angleOffset = (seededRandom(i + 3) - 0.5) * RANDOMNESS
-      const radiusOffset = (seededRandom(i + 4) - 0.5) * ARM_WIDTH
+      positionsArray[i3] = radius * sinPhi * Math.cos(theta)
+      positionsArray[i3 + 1] = radius * Math.cos(phi)
+      positionsArray[i3 + 2] = radius * sinPhi * Math.sin(theta)
 
-      const angle = armAngle + spiralAngle + angleOffset
-      const offsetRadius = radius + radiusOffset
-
-      // bulge: thicker at the core (1.2), thinner toward the rim (0.2)
-      const thicknessFactor = 1 - normalizedRadius + 0.2
-      const y = (seededRandom(i + 5) - 0.5) * THICKNESS * thicknessFactor
-
-      positionsArray[i3] = Math.cos(angle) * offsetRadius
-      positionsArray[i3 + 1] = y
-      positionsArray[i3 + 2] = Math.sin(angle) * offsetRadius
-
-      // colour by how far the star scattered from its arm centre
-      const radialSparsity = Math.abs(radiusOffset) / (ARM_WIDTH * 0.5 + 0.01)
-      const angularSparsity = Math.abs(angleOffset) / (RANDOMNESS * 0.5 + 0.01)
-      const sparsity = Math.min((radialSparsity + angularSparsity) * 0.5, 1)
-
-      color.copy(DENSE_COLOR).lerp(SPARSE_COLOR, sparsity)
+      // colour by depth into the shell: inner = blue, outer halo = warm orange
+      color.copy(DENSE_COLOR).lerp(SPARSE_COLOR, t)
       const brightness = 0.75 + seededRandom(i + 6) * 0.5
       colorsArray[i3] = color.r * brightness
       colorsArray[i3 + 1] = color.g * brightness

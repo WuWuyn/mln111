@@ -1,0 +1,284 @@
+import { useFrame, useThree } from '@react-three/fiber'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import * as THREE from 'three'
+import { planetPalette } from '../../../data/cosmos'
+
+/**
+ * "Phá vỡ hành tinh" game mode.
+ *
+ * When enabled, a click/tap fires a rock from the camera. Rocks gently home
+ * toward the planet under the cursor (so free-aim clicks still land), and on
+ * impact the planet shatters into a debris burst + flash. Destroyed planets are
+ * reported up via onDestroy so the scene stops rendering them; the parent's
+ * reset clears that set and everything returns.
+ *
+ * Planet world positions are recomputed here every frame from the same orbital
+ * formula the scene uses, so collisions track the planets as they orbit — no
+ * dependency on the planet meshes themselves (which may be unmounted on hit).
+ */
+const SPEED = 30
+const PROJECTILE_LIFETIME = 4
+const HOMING = 0.07
+const CENTRAL_RADIUS = 2.1
+
+const raycaster = new THREE.Raycaster()
+const ndc = new THREE.Vector2()
+const steer = new THREE.Vector3()
+
+// Same formula as Scene.setPlanetPosition: a point at (distance,0,0) rotated by
+// the orbit angle around Y.
+function planetWorldPosition(target, planet, elapsedTime) {
+  const angle = elapsedTime * planet.orbitSpeed + planet.phase
+  target.set(Math.cos(angle) * planet.distance, 0, -Math.sin(angle) * planet.distance)
+  return target
+}
+
+function colorFor(id, planets) {
+  if (id === 'central') return '#ffd08a'
+  const planet = planets.find((p) => p.id === id)
+  return planet ? planetPalette[planet.color][1] : '#ffffff'
+}
+
+function Projectile({ data, livePositions, onHit, onExpire }) {
+  const mesh = useRef()
+  const pos = useRef(new THREE.Vector3().fromArray(data.origin))
+  const vel = useRef(new THREE.Vector3().fromArray(data.dir).multiplyScalar(SPEED))
+  const age = useRef(0)
+
+  useFrame((_, delta) => {
+    age.current += delta
+    const alive = livePositions.current
+
+    // Home toward the locked target if it's still alive.
+    if (data.targetId) {
+      const target = alive.find((p) => p.id === data.targetId)
+      if (target) {
+        steer.copy(target.pos).sub(pos.current).normalize().multiplyScalar(SPEED)
+        vel.current.lerp(steer, HOMING)
+      }
+    }
+
+    pos.current.addScaledVector(vel.current, delta)
+    mesh.current.position.copy(pos.current)
+    mesh.current.rotation.x += delta * 5
+    mesh.current.rotation.y += delta * 6
+
+    for (const planet of alive) {
+      if (pos.current.distanceTo(planet.pos) < planet.radius) {
+        onHit(planet.id, pos.current.clone())
+        onExpire(data.id)
+        return
+      }
+    }
+
+    if (age.current > PROJECTILE_LIFETIME || pos.current.length() > 150) {
+      onExpire(data.id)
+    }
+  })
+
+  return (
+    <mesh ref={mesh}>
+      <dodecahedronGeometry args={[0.24, 0]} />
+      <meshStandardMaterial color="#cbb89c" emissive="#ff8a3c" emissiveIntensity={0.9} roughness={0.8} flatShading />
+    </mesh>
+  )
+}
+
+const SHARDS = 22
+const BURST_DURATION = 1.4
+const shardDummy = new THREE.Object3D()
+
+function Explosion({ data, onDone }) {
+  const inst = useRef()
+  const flash = useRef()
+  const life = useRef(0)
+
+  const shards = useMemo(
+    () =>
+      Array.from({ length: SHARDS }, () => {
+        const dir = new THREE.Vector3(
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+          Math.random() - 0.5,
+        ).normalize()
+        return {
+          vel: dir.multiplyScalar(3 + Math.random() * 6),
+          scale: 0.12 + Math.random() * 0.28,
+          spin: 2 + Math.random() * 5,
+        }
+      }),
+    [],
+  )
+
+  useFrame((_, delta) => {
+    life.current += delta
+    const t = life.current / BURST_DURATION
+    if (t >= 1) {
+      onDone(data.id)
+      return
+    }
+
+    const ease = 1 - (1 - t) * (1 - t)
+    for (let i = 0; i < SHARDS; i += 1) {
+      const shard = shards[i]
+      shardDummy.position.set(
+        data.position[0] + shard.vel.x * ease,
+        data.position[1] + shard.vel.y * ease,
+        data.position[2] + shard.vel.z * ease,
+      )
+      const s = shard.scale * (1 - t)
+      shardDummy.scale.setScalar(Math.max(s, 0.001))
+      shardDummy.rotation.set(life.current * shard.spin, life.current * shard.spin * 0.7, 0)
+      shardDummy.updateMatrix()
+      inst.current.setMatrixAt(i, shardDummy.matrix)
+    }
+    inst.current.instanceMatrix.needsUpdate = true
+
+    // White-hot flash sphere expands and fades fast.
+    const flashScale = 1 + t * 5
+    flash.current.scale.setScalar(flashScale)
+    flash.current.material.opacity = Math.max(0, 0.9 - t * 1.6)
+  })
+
+  return (
+    <group>
+      <instancedMesh ref={inst} args={[undefined, undefined, SHARDS]}>
+        <dodecahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color={data.color} emissive={data.color} emissiveIntensity={0.6} roughness={0.85} flatShading />
+      </instancedMesh>
+      <mesh ref={flash} position={data.position}>
+        <sphereGeometry args={[0.6, 24, 24]} />
+        <meshBasicMaterial color="#fff2cc" transparent opacity={0.9} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+    </group>
+  )
+}
+
+export default function GameShooter({ enabled, planets, destroyed, onDestroy }) {
+  const { camera, gl } = useThree()
+  const livePositions = useRef([])
+  const nextId = useRef(0)
+  const [projectiles, setProjectiles] = useState([])
+  const [explosions, setExplosions] = useState([])
+
+  // Recompute alive-planet positions every frame so collisions follow orbits.
+  useFrame((state) => {
+    const elapsed = state.clock.elapsedTime
+    const arr = []
+    if (!destroyed.includes('central')) {
+      arr.push({ id: 'central', pos: new THREE.Vector3(0, 0, 0), radius: CENTRAL_RADIUS })
+    }
+    for (const planet of planets) {
+      if (destroyed.includes(planet.id)) continue
+      arr.push({
+        id: planet.id,
+        pos: planetWorldPosition(new THREE.Vector3(), planet, elapsed),
+        radius: planet.size + 0.4,
+      })
+    }
+    livePositions.current = arr
+  })
+
+  const removeProjectile = useCallback((id) => {
+    setProjectiles((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  const removeExplosion = useCallback((id) => {
+    setExplosions((prev) => prev.filter((e) => e.id !== id))
+  }, [])
+
+  const handleHit = useCallback(
+    (planetId, hitPos) => {
+      onDestroy(planetId)
+      const id = nextId.current++
+      setExplosions((prev) => [
+        ...prev,
+        { id, position: hitPos.toArray(), color: colorFor(planetId, planets) },
+      ])
+    },
+    [onDestroy, planets],
+  )
+
+  // Fire on a deliberate tap (not a camera-orbit drag): small movement, quick.
+  useEffect(() => {
+    if (!enabled) {
+      setProjectiles([])
+      setExplosions([])
+      return undefined
+    }
+
+    const dom = gl.domElement
+    let downX = 0
+    let downY = 0
+    let downTime = 0
+
+    const onDown = (e) => {
+      downX = e.clientX
+      downY = e.clientY
+      downTime = e.timeStamp
+    }
+
+    const onUp = (e) => {
+      const moved = Math.hypot(e.clientX - downX, e.clientY - downY)
+      if (moved > 7 || e.timeStamp - downTime > 450) return
+
+      const rect = dom.getBoundingClientRect()
+      ndc.set(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      )
+      raycaster.setFromCamera(ndc, camera)
+
+      const origin = raycaster.ray.origin.clone()
+      const dir = raycaster.ray.direction.clone().normalize()
+
+      // Lock onto the alive planet closest to the aim ray (in front of camera).
+      let targetId = null
+      let bestScore = Infinity
+      const toPlanet = new THREE.Vector3()
+      for (const planet of livePositions.current) {
+        toPlanet.copy(planet.pos).sub(origin)
+        const along = toPlanet.dot(dir)
+        if (along <= 0) continue
+        const perpendicular = Math.sqrt(Math.max(0, toPlanet.lengthSq() - along * along))
+        if (perpendicular < planet.radius + 1.8 && along < bestScore) {
+          bestScore = along
+          targetId = planet.id
+        }
+      }
+
+      const id = nextId.current++
+      origin.addScaledVector(dir, 1.6) // start just ahead of the camera
+      setProjectiles((prev) => [
+        ...prev,
+        { id, origin: origin.toArray(), dir: dir.toArray(), targetId },
+      ])
+    }
+
+    dom.addEventListener('pointerdown', onDown)
+    dom.addEventListener('pointerup', onUp)
+    return () => {
+      dom.removeEventListener('pointerdown', onDown)
+      dom.removeEventListener('pointerup', onUp)
+    }
+  }, [enabled, gl, camera])
+
+  if (!enabled) return null
+
+  return (
+    <>
+      {projectiles.map((data) => (
+        <Projectile
+          key={data.id}
+          data={data}
+          livePositions={livePositions}
+          onHit={handleHit}
+          onExpire={removeProjectile}
+        />
+      ))}
+      {explosions.map((data) => (
+        <Explosion key={data.id} data={data} onDone={removeExplosion} />
+      ))}
+    </>
+  )
+}

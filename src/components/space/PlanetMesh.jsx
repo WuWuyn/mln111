@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { planetPalette } from '../../data/cosmos'
 import OrbitPath from './OrbitPath'
 
-export default function PlanetMesh({ planet, selected, onSelect }) {
+export default function PlanetMesh({ planet, selected, onSelect, showLabel = true, interactive = true }) {
   const orbit = useRef()
   const mesh = useRef()
   const glow = useRef()
@@ -23,7 +23,11 @@ export default function PlanetMesh({ planet, selected, onSelect }) {
       <OrbitPath radius={planet.distance} />
       <group ref={orbit}>
         <group position={[planet.distance, 0, 0]}>
-          <mesh ref={mesh} onClick={() => onSelect(planet)} onPointerOver={() => onSelect(planet)}>
+          <mesh
+            ref={mesh}
+            onClick={interactive ? () => onSelect(planet) : undefined}
+            onPointerOver={interactive ? () => onSelect(planet) : undefined}
+          >
             <sphereGeometry args={[planet.size, 48, 48]} />
             <meshStandardMaterial
               color={palette[1]}
@@ -48,12 +52,14 @@ export default function PlanetMesh({ planet, selected, onSelect }) {
               <meshBasicMaterial color="#ffffff" transparent opacity={0.58} />
             </mesh>
           )}
-          <Html position={[0, planet.size + 0.55, 0]} center distanceFactor={13}>
-            <button className={`space-label ${selected ? 'is-selected' : ''}`} type="button" onClick={() => onSelect(planet)}>
-              <small>{planet.signal}</small>
-              {planet.name}
-            </button>
-          </Html>
+          {showLabel && (
+            <Html position={[0, planet.size + 0.55, 0]} center distanceFactor={13}>
+              <button className={`space-label ${selected ? 'is-selected' : ''}`} type="button" onClick={() => onSelect(planet)}>
+                <small>{planet.signal}</small>
+                {planet.name}
+              </button>
+            </Html>
+          )}
         </group>
       </group>
     </group>
