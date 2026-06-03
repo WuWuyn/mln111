@@ -121,8 +121,12 @@ export default function Scene({
   gameMode = false,
   destroyed = [],
   onDestroyPlanet,
+  resetKey = 0,
 }) {
   const controlsRef = useRef()
+  // Shared between the asteroid belt (which publishes live positions + hides
+  // shot rocks) and the shooter (which tests collisions + marks rocks dead).
+  const asteroidStore = useRef({ live: [], destroyed: new Set() })
   // While shooting, planet clicks/hovers should fire rocks — not change the
   // knowledge-panel selection — so suppress the planets' own pointer handlers.
   const interactive = !gameMode
@@ -139,7 +143,7 @@ export default function Scene({
       <Stars radius={260} depth={140} count={11000} factor={6} saturation={0} fade speed={0.25} />
       <GalaxyParticles />
       <CosmicDust />
-      <AsteroidField />
+      <AsteroidField store={asteroidStore} resetKey={resetKey} active={gameMode} />
       {!destroyed.includes('central') && (
         <CentralPlanet
           onClick={() => setSelectedPlanet(planets[0])}
@@ -164,6 +168,7 @@ export default function Scene({
         planets={planets}
         destroyed={destroyed}
         onDestroy={onDestroyPlanet}
+        asteroidStore={asteroidStore}
       />
       <OrbitControls
         ref={controlsRef}

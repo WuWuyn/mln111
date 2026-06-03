@@ -39,7 +39,20 @@ function colorFor(id, planets) {
   return planet ? planetPalette[planet.color][1] : '#ffffff'
 }
 
-function Projectile({ data, livePositions, onHit, onExpire }) {
+// Resolve the world position of a locked target (planet id, or "ast:<index>").
+function findTargetPos(targetId, livePositions, asteroidStore) {
+  if (!targetId) return null
+  if (targetId.startsWith('ast:')) {
+    const index = Number(targetId.slice(4))
+    if (asteroidStore.current.destroyed.has(index)) return null
+    const rock = asteroidStore.current.live.find((a) => a.index === index)
+    return rock ? rock.pos : null
+  }
+  const planet = livePositions.current.find((p) => p.id === targetId)
+  return planet ? planet.pos : null
+}
+
+function Projectile({ data, livePositions, asteroidStore, onHitPlanet, onHitAsteroid, onExpire }) {
   const mesh = useRef()
   const pos = useRef(new THREE.Vector3().fromArray(data.origin))
   const vel = useRef(new THREE.Vector3().fromArray(data.dir).multiplyScalar(SPEED))
@@ -47,15 +60,12 @@ function Projectile({ data, livePositions, onHit, onExpire }) {
 
   useFrame((_, delta) => {
     age.current += delta
-    const alive = livePositions.current
 
     // Home toward the locked target if it's still alive.
-    if (data.targetId) {
-      const target = alive.find((p) => p.id === data.targetId)
-      if (target) {
-        steer.copy(target.pos).sub(pos.current).normalize().multiplyScalar(SPEED)
-        vel.current.lerp(steer, HOMING)
-      }
+    const targetPos = findTargetPos(data.targetId, livePositions, asteroidStore)
+    if (targetPos) {
+      steer.copy(targetPos).sub(pos.current).normalize().multiplyScalar(SPEED)
+      vel.current.lerp(steer, HOMING)
     }
 
     pos.current.addScaledVector(vel.current, delta)
@@ -63,9 +73,22 @@ function Projectile({ data, livePositions, onHit, onExpire }) {
     mesh.current.rotation.x += delta * 5
     mesh.current.rotation.y += delta * 6
 
-    for (const planet of alive) {
+    // Planets first (bigger, fewer), then the asteroid belt.
+    for (const planet of livePositions.current) {
       if (pos.current.distanceTo(planet.pos) < planet.radius) {
-        onHit(planet.id, pos.current.clone())
+        onHitPlanet(planet.id, pos.current.clone())
+        onExpire(data.id)
+        return
+      }
+    }
+
+    const rocks = asteroidStore.current.live
+    const dead = asteroidStore.current.destroyed
+    for (let i = 0; i < rocks.length; i += 1) {
+      const rock = rocks[i]
+      if (dead.has(rock.index)) continue
+      if (pos.current.distanceTo(rock.pos) < rock.radius) {
+        onHitAsteroid(rock.index, pos.current.clone())
         onExpire(data.id)
         return
       }
@@ -92,6 +115,7 @@ function Explosion({ data, onDone }) {
   const inst = useRef()
   const flash = useRef()
   const life = useRef(0)
+  const burst = data.scale ?? 1
 
   const shards = useMemo(
     () =>
@@ -102,12 +126,12 @@ function Explosion({ data, onDone }) {
           Math.random() - 0.5,
         ).normalize()
         return {
-          vel: dir.multiplyScalar(3 + Math.random() * 6),
-          scale: 0.12 + Math.random() * 0.28,
+          vel: dir.multiplyScalar((3 + Math.random() * 6) * burst),
+          scale: (0.12 + Math.random() * 0.28) * burst,
           spin: 2 + Math.random() * 5,
         }
       }),
-    [],
+    [burst],
   )
 
   useFrame((_, delta) => {
@@ -135,7 +159,7 @@ function Explosion({ data, onDone }) {
     inst.current.instanceMatrix.needsUpdate = true
 
     // White-hot flash sphere expands and fades fast.
-    const flashScale = 1 + t * 5
+    const flashScale = (1 + t * 5) * burst
     flash.current.scale.setScalar(flashScale)
     flash.current.material.opacity = Math.max(0, 0.9 - t * 1.6)
   })
@@ -154,7 +178,7 @@ function Explosion({ data, onDone }) {
   )
 }
 
-export default function GameShooter({ enabled, planets, destroyed, onDestroy }) {
+export default function GameShooter({ enabled, planets, destroyed, onDestroy, asteroidStore }) {
   const { camera, gl } = useThree()
   const livePositions = useRef([])
   const nextId = useRef(0)
@@ -187,7 +211,7 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy }) 
     setExplosions((prev) => prev.filter((e) => e.id !== id))
   }, [])
 
-  const handleHit = useCallback(
+  const handleHitPlanet = useCallback(
     (planetId, hitPos) => {
       onDestroy(planetId)
       const id = nextId.current++
@@ -197,6 +221,19 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy }) 
       ])
     },
     [onDestroy, planets],
+  )
+
+  const handleHitAsteroid = useCallback(
+    (index, hitPos) => {
+      asteroidStore.current.destroyed.add(index)
+      const id = nextId.current++
+      // Smaller, dusty burst for the little rocks.
+      setExplosions((prev) => [
+        ...prev,
+        { id, position: hitPos.toArray(), color: '#b8a890', scale: 0.5 },
+      ])
+    },
+    [asteroidStore],
   )
 
   // Fire on a deliberate tap (not a camera-orbit drag): small movement, quick.
@@ -232,19 +269,31 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy }) 
       const origin = raycaster.ray.origin.clone()
       const dir = raycaster.ray.direction.clone().normalize()
 
-      // Lock onto the alive planet closest to the aim ray (in front of camera).
+      // Lock onto the alive target closest to the aim ray (in front of camera).
+      // Planets get a generous lock window; asteroids a tighter one (they're
+      // small and there are hundreds, so only a near-direct aim grabs one).
       let targetId = null
       let bestScore = Infinity
-      const toPlanet = new THREE.Vector3()
-      for (const planet of livePositions.current) {
-        toPlanet.copy(planet.pos).sub(origin)
-        const along = toPlanet.dot(dir)
-        if (along <= 0) continue
-        const perpendicular = Math.sqrt(Math.max(0, toPlanet.lengthSq() - along * along))
-        if (perpendicular < planet.radius + 1.8 && along < bestScore) {
+      const toTarget = new THREE.Vector3()
+      const consider = (id, targetPos, lockRadius) => {
+        toTarget.copy(targetPos).sub(origin)
+        const along = toTarget.dot(dir)
+        if (along <= 0) return
+        const perpendicular = Math.sqrt(Math.max(0, toTarget.lengthSq() - along * along))
+        if (perpendicular < lockRadius && along < bestScore) {
           bestScore = along
-          targetId = planet.id
+          targetId = id
         }
+      }
+
+      for (const planet of livePositions.current) {
+        consider(planet.id, planet.pos, planet.radius + 1.8)
+      }
+      const rocks = asteroidStore.current.live
+      const dead = asteroidStore.current.destroyed
+      for (let i = 0; i < rocks.length; i += 1) {
+        if (dead.has(rocks[i].index)) continue
+        consider(`ast:${rocks[i].index}`, rocks[i].pos, rocks[i].radius + 0.7)
       }
 
       const id = nextId.current++
@@ -261,7 +310,7 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy }) 
       dom.removeEventListener('pointerdown', onDown)
       dom.removeEventListener('pointerup', onUp)
     }
-  }, [enabled, gl, camera])
+  }, [enabled, gl, camera, asteroidStore])
 
   if (!enabled) return null
 
@@ -272,7 +321,9 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy }) 
           key={data.id}
           data={data}
           livePositions={livePositions}
-          onHit={handleHit}
+          asteroidStore={asteroidStore}
+          onHitPlanet={handleHitPlanet}
+          onHitAsteroid={handleHitAsteroid}
           onExpire={removeProjectile}
         />
       ))}

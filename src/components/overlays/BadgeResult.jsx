@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { planets } from '../../data/cosmos'
 import { resolveBadge } from '../../data/learning'
 import OverlayShell from './OverlayShell'
+import './BadgeResult.css'
 
 // Closing "Huy hiệu Nhà du hành" page. Turns the session's progress into a score,
 // resolves a badge tier, and offers a downloadable certificate + share.

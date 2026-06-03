@@ -814,6 +814,96 @@ p {
   cursor: pointer;
 }
 
+/* ── Game mode: "phá vỡ hành tinh" controls ───────────────────────────────── */
+.space-game-controls {
+  position: absolute;
+  right: 1rem;
+  top: 5.8rem;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.game-toggle,
+.game-reset {
+  min-height: 2.7rem;
+  padding: 0 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(4, 9, 22, 0.66);
+  box-shadow: 0 22px 90px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.game-toggle:hover,
+.game-reset:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 154, 51, 0.6);
+}
+
+.game-toggle.is-active {
+  border-color: rgba(255, 154, 51, 0.7);
+  background: linear-gradient(135deg, rgba(255, 154, 51, 0.32), rgba(240, 73, 28, 0.32));
+}
+
+.game-reset:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.game-score {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(4, 9, 22, 0.66);
+  backdrop-filter: blur(18px);
+  color: #ffd17a;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.game-hint {
+  position: absolute;
+  left: 50%;
+  top: 5.9rem;
+  z-index: 7;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(4, 9, 22, 0.66);
+  backdrop-filter: blur(18px);
+  color: #eaf2ff;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 640px) {
+  .space-game-controls {
+    right: 0.5rem;
+    top: auto;
+    bottom: 8.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .game-hint {
+    width: calc(100% - 1rem);
+    font-size: 0.82rem;
+    text-align: center;
+    white-space: normal;
+  }
+}
+
 @keyframes cosmicDrift {
   from {
     transform: scale(1.04) translate3d(-0.7rem, -0.4rem, 0);

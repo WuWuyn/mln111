@@ -2,6 +2,7 @@ import { planetPalette, planets } from '../../data/cosmos'
 import PlanetWidget from '../interactives'
 import MiniQuiz from './MiniQuiz'
 import OverlayShell from './OverlayShell'
+import './PlanetDetail.css'
 
 // Full detail "page" for a planet: definition + plain explanation + life example
 // on the left, the matching interactive experiment on the right, and a mini quiz
@@ -51,13 +52,13 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
 
       <footer className="detail-foot">
         <button type="button" className="detail-nav" onClick={() => onNavigate?.(prev)}>
-          ← {prev.name}
+          {prev.name}
         </button>
         <span className="detail-foot-meta">
           Hành tinh {index + 1}/{planets.length}
         </span>
         <button type="button" className="detail-nav detail-nav--next" onClick={() => onNavigate?.(next)}>
-          {next.name} →
+          {next.name}
         </button>
       </footer>
     </OverlayShell>

@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { seededRandom } from './random'
 
@@ -10,6 +10,10 @@ import { seededRandom } from './random'
  * asteroid gets a deterministic orbit (angle + radius + height), a random
  * scale and a slow individual tumble, so the belt feels alive without ever
  * crowding the planets at the centre.
+ *
+ * In game mode the asteroids are shootable: every frame we publish each rock's
+ * live world position into `store.current.live` so GameShooter can test
+ * collisions, and we hide (scale → 0) any index in `store.current.destroyed`.
  */
 const COUNT = 320
 const INNER_RADIUS = 14
@@ -18,7 +22,7 @@ const TWO_PI = Math.PI * 2
 
 const dummy = new THREE.Object3D()
 
-export default function AsteroidField() {
+export default function AsteroidField({ store, resetKey = 0, active = false }) {
   const mesh = useRef()
 
   // Per-asteroid orbital parameters, computed once.
@@ -49,6 +53,22 @@ export default function AsteroidField() {
     return items
   }, [])
 
+  // Live-position records shared with the shooter. A generous radius makes the
+  // small, fast rocks reasonably easy to hit.
+  const live = useMemo(
+    () => rocks.map((rock, index) => ({ index, pos: new THREE.Vector3(), radius: rock.scale + 0.45 })),
+    [rocks],
+  )
+
+  useLayoutEffect(() => {
+    if (store) store.current.live = live
+  }, [store, live])
+
+  // Restore every asteroid when the game resets or game mode turns off.
+  useEffect(() => {
+    if (store) store.current.destroyed.clear()
+  }, [store, resetKey, active])
+
   // Slightly varied per-instance colour so the belt isn't a flat grey mass.
   useLayoutEffect(() => {
     const color = new THREE.Color()
@@ -62,22 +82,34 @@ export default function AsteroidField() {
 
   useFrame((state) => {
     const elapsed = state.clock.elapsedTime
+    const destroyed = store?.current.destroyed
 
     for (let i = 0; i < COUNT; i += 1) {
       const rock = rocks[i]
       const angle = rock.angle + elapsed * rock.orbitSpeed
 
-      dummy.position.set(
-        Math.cos(angle) * rock.radius,
-        rock.height + Math.sin(angle * 1.3 + rock.tilt) * 0.6,
-        Math.sin(angle) * rock.radius,
-      )
-      dummy.rotation.set(
-        elapsed * rock.spin.x + rock.tilt,
-        elapsed * rock.spin.y + rock.tilt,
-        elapsed * rock.spin.z,
-      )
-      dummy.scale.setScalar(rock.scale)
+      const x = Math.cos(angle) * rock.radius
+      const y = rock.height + Math.sin(angle * 1.3 + rock.tilt) * 0.6
+      const z = Math.sin(angle) * rock.radius
+
+      // Publish the live position for collision tests.
+      if (store) live[i].pos.set(x, y, z)
+
+      // A shot-down rock is hidden by collapsing its instance to zero scale.
+      if (destroyed && destroyed.has(i)) {
+        dummy.scale.setScalar(0.0001)
+        dummy.position.set(x, y, z)
+        dummy.rotation.set(0, 0, 0)
+      } else {
+        dummy.position.set(x, y, z)
+        dummy.rotation.set(
+          elapsed * rock.spin.x + rock.tilt,
+          elapsed * rock.spin.y + rock.tilt,
+          elapsed * rock.spin.z,
+        )
+        dummy.scale.setScalar(rock.scale)
+      }
+
       dummy.updateMatrix()
       mesh.current.setMatrixAt(i, dummy.matrix)
     }

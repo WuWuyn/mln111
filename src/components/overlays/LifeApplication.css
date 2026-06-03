@@ -1,0 +1,252 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   LifeApplication.css — "Triết học trong đời sống" full-page overlay
+   ALL rules scoped under .content-page.overlay-panel--life so they cannot
+   leak to other pages and also out-specifiy any shared rules in
+   SpaceExperience.css.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Page-level ambient glow unique to this overlay ──────────────────────── */
+.content-page.overlay-panel--life {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(255, 168, 92, 0.08), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 85% 85%, rgba(126, 220, 255, 0.07), transparent 55%),
+    linear-gradient(150deg, #02040b, #07101f 55%, #120716);
+}
+
+/* ── Header refinements ───────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.content-page.overlay-panel--life .life-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.content-page.overlay-panel--life .life-header-text .overlay-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.content-page.overlay-panel--life .life-header-text .overlay-eyebrow::before {
+  display: inline-block;
+  width: 1.8rem;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #7edcff, #9fc3ff);
+  content: '';
+  flex-shrink: 0;
+}
+
+.content-page.overlay-panel--life .life-title {
+  margin: 0;
+  color: #fff;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.75rem, 3.8vw, 2.6rem);
+  line-height: 1.05;
+  /* Subtle text gradient */
+  background: linear-gradient(120deg, #ffffff 30%, #ffd17a 80%, #ff9a33 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Lead paragraph ───────────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-lead {
+  max-width: 58rem;
+  padding: 1.5rem 0 2.2rem;
+  margin: 0;
+  color: rgba(220, 229, 255, 0.76);
+  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+  line-height: 1.7;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Responsive card grid ─────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  padding-top: 2.2rem;
+}
+
+/* ── Individual card ─────────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 1.6rem 1.5rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 16px;
+  background: rgba(4, 9, 22, 0.66);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 2px 0 0 rgba(255, 255, 255, 0.05) inset,
+    0 20px 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  cursor: default;
+  /* Staggered entrance animation */
+  animation: lifeCardIn 480ms cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+
+/* Top accent line — unique warm gradient for this page */
+.content-page.overlay-panel--life .life-card::before {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, #ffd17a 0%, #ff9a33 50%, transparent 100%);
+  content: '';
+  opacity: 0.7;
+  transition: opacity 220ms ease;
+}
+
+/* Hover glow halo */
+.content-page.overlay-panel--life .life-card::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255, 213, 132, 0.07), transparent 70%);
+  content: '';
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+.content-page.overlay-panel--life .life-card:hover {
+  border-color: rgba(255, 213, 132, 0.28);
+  box-shadow:
+    0 2px 0 0 rgba(255, 255, 255, 0.08) inset,
+    0 8px 40px rgba(255, 154, 51, 0.14),
+    0 24px 70px rgba(0, 0, 0, 0.4);
+  transform: translateY(-4px);
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.9, 0.3, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.content-page.overlay-panel--life .life-card:hover::before {
+  opacity: 1;
+}
+
+.content-page.overlay-panel--life .life-card:hover::after {
+  opacity: 1;
+}
+
+/* Default transition (no hover) */
+.content-page.overlay-panel--life .life-card {
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.9, 0.3, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+/* ── Icon treatment ──────────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1.1rem;
+  border: 1px solid rgba(255, 213, 132, 0.2);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 213, 132, 0.12), rgba(255, 154, 51, 0.06));
+  font-size: 1.5rem;
+  line-height: 1;
+  box-shadow: 0 4px 16px rgba(255, 154, 51, 0.12);
+  flex-shrink: 0;
+}
+
+/* ── Card title ──────────────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-card-title {
+  margin: 0 0 0.65rem;
+  color: #fff;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ── Lens chip / accent tag ──────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-lens {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  padding: 0.2rem 0.65rem;
+  margin-bottom: 0.9rem;
+  border: 1px solid rgba(255, 213, 132, 0.32);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 241, 166, 0.1), rgba(255, 154, 51, 0.08));
+  color: #ffd17a;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.content-page.overlay-panel--life .life-lens::before {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ff9a33;
+  content: '';
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(255, 154, 51, 0.6);
+}
+
+/* ── Insight text ────────────────────────────────────────────────────────── */
+.content-page.overlay-panel--life .life-insight {
+  margin: 0;
+  margin-top: auto;
+  color: rgba(220, 229, 255, 0.76);
+  font-size: clamp(0.82rem, 1.2vw, 0.9rem);
+  line-height: 1.65;
+}
+
+/* ── Entrance keyframes ──────────────────────────────────────────────────── */
+@keyframes lifeCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger each card using nth-child */
+.content-page.overlay-panel--life .life-card:nth-child(1) { animation-delay: 60ms; }
+.content-page.overlay-panel--life .life-card:nth-child(2) { animation-delay: 110ms; }
+.content-page.overlay-panel--life .life-card:nth-child(3) { animation-delay: 160ms; }
+.content-page.overlay-panel--life .life-card:nth-child(4) { animation-delay: 210ms; }
+.content-page.overlay-panel--life .life-card:nth-child(5) { animation-delay: 260ms; }
+.content-page.overlay-panel--life .life-card:nth-child(6) { animation-delay: 310ms; }
+.content-page.overlay-panel--life .life-card:nth-child(7) { animation-delay: 360ms; }
+.content-page.overlay-panel--life .life-card:nth-child(8) { animation-delay: 410ms; }
+
+/* ── Reduced-motion overrides ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .content-page.overlay-panel--life .life-card {
+    animation: none;
+  }
+
+  .content-page.overlay-panel--life .life-card:hover {
+    transform: none;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { challengeQuestions } from '../../data/learning'
 import OverlayShell from './OverlayShell'
+import './QuizChallenge.css'
 
 // "Thử thách Nhà du hành Biện chứng" — situational questions, one at a time,
 // with instant feedback. Reports the final score so the badge page can rank the
@@ -42,6 +43,13 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
 
   if (finished) {
     const score = Math.round((correctCount / total) * 100)
+    const tier =
+      score >= 80
+        ? { cls: 'quiz-tier--gold', label: '★ Biện chứng gia' }
+        : score >= 50
+          ? { cls: 'quiz-tier--silver', label: '◈ Nhà thám hiểm' }
+          : { cls: 'quiz-tier--bronze', label: '◇ Người học việc' }
+
     return (
       <OverlayShell variant="overlay-panel--quiz" onClose={onClose}>
         <header className="overlay-head">
@@ -55,12 +63,15 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
         </header>
         <div className="quiz-result">
           <div className="quiz-score-ring" style={{ '--p': score }}>
-            <span>
+            <span data-pct={`${score}%`}>
               {correctCount}/{total}
             </span>
           </div>
+          <p className="quiz-score-label">Điểm số</p>
+          <span className={`quiz-tier ${tier.cls}`}>{tier.label}</span>
           <p className="quiz-score-line">
-            Bạn trả lời đúng <strong>{correctCount}</strong> trên <strong>{total}</strong> tình huống ({score}%).
+            Bạn trả lời đúng <strong>{correctCount}</strong> trên <strong>{total}</strong> tình
+            huống ({score}%).
           </p>
           <div className="quiz-actions">
             <button type="button" className="primary-action" onClick={onGoBadge}>
@@ -90,12 +101,23 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
         </button>
       </header>
 
+      {/* Progress bar */}
       <div className="quiz-progress" aria-hidden="true">
-        <div className="quiz-progress-fill" style={{ width: `${(index / total) * 100}%` }} />
+        <div className="quiz-progress-fill" style={{ width: `${((index) / total) * 100}%` }} />
       </div>
 
+      {/* Step dots */}
+      <ol className="quiz-steps" aria-hidden="true">
+        {Array.from({ length: total }, (_, i) => (
+          <li
+            key={i}
+            className={`quiz-step${i < index ? ' is-done' : i === index ? ' is-current' : ''}`}
+          />
+        ))}
+      </ol>
+
       <div className="quiz-body">
-        <p className="quiz-prompt">{question.prompt}</p>
+        <p className="quiz-prompt" key={index}>{question.prompt}</p>
         <div className="quiz-options">
           {question.options.map((option) => {
             const isAnswer = option.value === question.answer
@@ -124,7 +146,10 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
 
         {answered && (
           <div className={`quiz-feedback ${isCorrect ? 'is-correct' : 'is-wrong'}`}>
-            <strong>{isCorrect ? '✓ Chính xác' : '✗ Chưa đúng'}</strong>
+            <div className="quiz-feedback-head">
+              <span className="quiz-feedback-icon">{isCorrect ? '✓' : '✗'}</span>
+              <strong>{isCorrect ? 'Chính xác!' : 'Chưa đúng'}</strong>
+            </div>
             <p>{question.explain}</p>
             <button type="button" className="primary-action" onClick={next}>
               {index + 1 >= total ? 'Xem kết quả' : 'Câu tiếp theo →'}

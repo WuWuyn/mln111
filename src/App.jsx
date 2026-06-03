@@ -22,17 +22,26 @@ function getPageFromLocation() {
   return window.location.hash.startsWith(EXPLORE_HASH) ? 'explore' : 'landing'
 }
 
+// True when a standalone content page (chi-tiet/thu-thach/...) is open — those
+// pages have no 3D scene, so the hand-tracking (computer vision) UI is hidden.
+function isContentSubPage() {
+  if (typeof window === 'undefined') return false
+  return Boolean(window.location.hash.split('/')[1])
+}
+
 function App() {
   const [currentPage, setCurrentPage] = useState(() => getPageFromLocation())
   // The hand-control signal updates ~60fps; keep it out of React state so it
   // never re-renders the tree. The store itself is created once and is stable;
   // consumers read it imperatively via get()/subscribe().
   const [handControlStore] = useState(createHandControlStore)
+  const [onContentPage, setOnContentPage] = useState(isContentSubPage)
 
   useEffect(() => {
     const syncPage = () => {
       startTransition(() => {
         setCurrentPage(getPageFromLocation())
+        setOnContentPage(isContentSubPage())
       })
     }
 
@@ -52,6 +61,7 @@ function App() {
 
     startTransition(() => {
       setCurrentPage('explore')
+      setOnContentPage(false)
     })
   }, [])
 
@@ -62,6 +72,7 @@ function App() {
 
     startTransition(() => {
       setCurrentPage('landing')
+      setOnContentPage(false)
     })
   }, [])
 
@@ -75,8 +86,10 @@ function App() {
         <LandingPage onExplore={openExplorePage} handControlStore={handControlStore} />
       )}
 
-      <HandPointer store={handControlStore} />
-      <HandTrackingPanel store={handControlStore} />
+      {/* Hand-tracking (computer vision) UI is only useful where there's a 3D
+          scene to steer — hide it on the standalone content pages. */}
+      {!onContentPage && <HandPointer store={handControlStore} />}
+      {!onContentPage && <HandTrackingPanel store={handControlStore} />}
       {/* Comet cursor on every page. It renders on a Web Worker (OffscreenCanvas)
           so the heavy 3D scene on the explore page can't stall its animation. */}
       <GenshinCursor />

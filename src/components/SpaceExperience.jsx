@@ -52,12 +52,17 @@ export default function SpaceExperience({ onBack, handControlStore }) {
   // Arcade "phá vỡ hành tinh" mode: shoot rocks at planets, they shatter.
   const [gameMode, setGameMode] = useState(false)
   const [destroyed, setDestroyed] = useState([])
+  // Bumped on reset so the asteroid belt knows to restore shot-down rocks.
+  const [resetSignal, setResetSignal] = useState(0)
 
   const destroyPlanet = useCallback((id) => {
     setDestroyed((prev) => (prev.includes(id) ? prev : [...prev, id]))
   }, [])
 
-  const resetGame = useCallback(() => setDestroyed([]), [])
+  const resetGame = useCallback(() => {
+    setDestroyed([])
+    setResetSignal((n) => n + 1)
+  }, [])
 
   // Total targets = central planet + all orbiting planets.
   const totalTargets = planets.length + 1
@@ -181,6 +186,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
               gameMode={gameMode}
               destroyed={destroyed}
               onDestroyPlanet={destroyPlanet}
+              resetKey={resetSignal}
             />
           </Suspense>
         </Canvas>
@@ -198,7 +204,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
               <span className="game-score">
                 Đã phá {destroyed.length}/{totalTargets}
               </span>
-              <button type="button" className="game-reset" onClick={resetGame} disabled={destroyed.length === 0}>
+              <button type="button" className="game-reset" onClick={resetGame}>
                 ↺ Khôi phục
               </button>
             </>
