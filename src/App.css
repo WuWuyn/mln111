@@ -580,7 +580,7 @@ p {
   width: min(25rem, calc(100% - 2rem));
   padding: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 8px;
+  border-radius: 12px;
   color: #f7f9ff;
   background: rgba(4, 9, 22, 0.68);
   box-shadow: 0 22px 90px rgba(0, 0, 0, 0.3);
@@ -630,9 +630,14 @@ p {
   line-height: 1.45;
 }
 
+.hand-tracking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 .hand-tracking-copy button {
   min-height: 2.35rem;
-  margin: 0 0.4rem 0.4rem 0;
   padding: 0 0.8rem;
   border: 1px solid rgba(126, 220, 255, 0.24);
   border-radius: 999px;
@@ -662,6 +667,18 @@ p {
 
 .hand-tracking-panel.is-enabled {
   border-color: rgba(126, 220, 255, 0.28);
+}
+
+/* Peripheral cue that replaces the camera preview: a soft inset glow that
+   brightens as the hand nears the edge of the camera's view, telling the user
+   to bring their hand back to centre before tracking is lost. */
+.hand-edge-warning {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+  box-shadow: inset 0 0 7rem 1.6rem rgba(255, 176, 122, 0.55);
+  transition: opacity 90ms linear;
 }
 
 .hand-pointer-reticle {

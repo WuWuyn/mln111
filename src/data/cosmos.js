@@ -9,13 +9,18 @@ export const planetPalette = {
   silver: ['#ffffff', '#a9c0dc', '#3d4e70'],
 }
 
+// Each planet carries both its 3D orbital parameters (distance/size/orbitSpeed…)
+// and the learning content shown in the 2D detail overlay: a short definition,
+// a plain-language explanation, a real-life example, an interactive `widget`
+// key, and a one-question mini-quiz to confirm understanding.
 export const planets = [
   {
     id: 'vat-chat',
-    name: 'V\u1eadt ch\u1ea5t',
-    type: 'H\u00e0nh tinh n\u1ec1n t\u1ea3ng',
-    concept: 'C\u01a1 s\u1edf kh\u00e1ch quan',
+    name: 'Vật chất',
+    type: 'Hành tinh nền tảng',
+    concept: 'Cơ sở khách quan',
     signal: 'Ontology',
+    chapter: 'Chương 2 · Mục I — Vật chất và ý thức',
     distance: 6.5,
     size: 0.74,
     orbitSpeed: 0.12,
@@ -23,19 +28,39 @@ export const planets = [
     axialTilt: 0.12,
     phase: 3.7,
     color: 'cyan',
-    summary: 'Ph\u1ea1m tr\u00f9 n\u1ec1n t\u1ea3ng \u0111\u1ec3 hi\u1ec3u th\u1ebf gi\u1edbi kh\u00e1ch quan t\u1ed3n t\u1ea1i \u0111\u1ed9c l\u1eadp v\u1edbi \u00fd th\u1ee9c.',
+    widget: 'matter',
+    summary: 'Phạm trù nền tảng để hiểu thế giới khách quan tồn tại độc lập với ý thức.',
+    definition:
+      'Vật chất là một phạm trù triết học dùng để chỉ thực tại khách quan được đem lại cho con người trong cảm giác, được cảm giác của chúng ta chép lại, chụp lại, phản ánh và tồn tại không lệ thuộc vào cảm giác.',
+    explanation:
+      'Nói gọn: vật chất là tất cả những gì tồn tại thật bên ngoài đầu óc ta, dù ta có nghĩ tới nó hay không. Bàn ghế, cơ thể, xã hội, các quy luật tự nhiên… đều là vật chất. Con người nhận biết nó qua cảm giác, nhưng nó không sinh ra từ cảm giác.',
+    example:
+      'Bạn không tin có trọng lực thì trọng lực vẫn tồn tại và vẫn kéo bạn xuống đất. Hiện thực vật chất không thay đổi theo việc ta thừa nhận hay phủ nhận nó.',
     details: [
-      'V\u1eadt ch\u1ea5t l\u00e0 th\u1ef1c t\u1ea1i kh\u00e1ch quan, \u0111\u01b0\u1ee3c con ng\u01b0\u1eddi ph\u1ea3n \u00e1nh th\u00f4ng qua c\u1ea3m gi\u00e1c v\u00e0 nh\u1eadn th\u1ee9c.',
-      'N\u1eafm \u0111\u01b0\u1ee3c v\u1eadt ch\u1ea5t gi\u00fap ng\u01b0\u1eddi h\u1ecdc tr\u00e1nh nh\u00ecn th\u1ebf gi\u1edbi b\u1eb1ng c\u1ea3m t\u00ednh thu\u1ea7n t\u00fay ho\u1eb7c ch\u1ee7 quan.',
-      'M\u1ecdi hi\u1ec7n t\u01b0\u1ee3ng x\u00e3 h\u1ed9i v\u00e0 t\u1ef1 nhi\u00ean \u0111\u1ec1u c\u1ea7n \u0111\u01b0\u1ee3c xem x\u00e9t t\u1eeb \u0111i\u1ec1u ki\u1ec7n v\u1eadt ch\u1ea5t c\u1ee5 th\u1ec3.',
+      'Vật chất là thực tại khách quan, được con người phản ánh thông qua cảm giác và nhận thức.',
+      'Nắm được vật chất giúp người học tránh nhìn thế giới bằng cảm tính thuần túy hoặc chủ quan.',
+      'Mọi hiện tượng xã hội và tự nhiên đều cần được xem xét từ điều kiện vật chất cụ thể.',
     ],
+    miniQuiz: {
+      question: 'Đặc trưng cơ bản nhất của vật chất theo định nghĩa của Lênin là gì?',
+      options: [
+        'Có thể nhìn thấy và sờ được bằng tay',
+        'Là thực tại khách quan, tồn tại độc lập với ý thức',
+        'Do con người tưởng tượng và quy ước ra',
+        'Chỉ gồm các vật rắn có khối lượng',
+      ],
+      answer: 1,
+      explain:
+        'Thuộc tính chung nhất của vật chất là "thực tại khách quan tồn tại độc lập với ý thức". Không phải mọi vật chất đều sờ thấy được (ví dụ trường, sóng), nên các đáp án còn lại đều phiến diện.',
+    },
   },
   {
     id: 'y-thuc',
-    name: '\u00dd th\u1ee9c',
-    type: 'H\u00e0nh tinh ph\u1ea3n \u00e1nh',
-    concept: 'T\u01b0 duy n\u0103ng \u0111\u1ed9ng',
+    name: 'Ý thức',
+    type: 'Hành tinh phản ánh',
+    concept: 'Tư duy năng động',
     signal: 'Mind',
+    chapter: 'Chương 2 · Mục I — Vật chất và ý thức',
     distance: 8.4,
     size: 0.66,
     orbitSpeed: 0.095,
@@ -43,19 +68,39 @@ export const planets = [
     axialTilt: 0.24,
     phase: 5.65,
     color: 'gold',
-    summary: 'S\u1ef1 ph\u1ea3n \u00e1nh n\u0103ng \u0111\u1ed9ng, s\u00e1ng t\u1ea1o c\u1ee7a th\u1ebf gi\u1edbi v\u1eadt ch\u1ea5t trong b\u1ed9 \u00f3c con ng\u01b0\u1eddi.',
+    widget: 'matter',
+    summary: 'Sự phản ánh năng động, sáng tạo của thế giới vật chất trong bộ óc con người.',
+    definition:
+      'Ý thức là sự phản ánh năng động, sáng tạo thế giới khách quan vào bộ óc con người; là hình ảnh chủ quan của thế giới khách quan. Vật chất có trước, quyết định ý thức; ý thức có tính độc lập tương đối và tác động trở lại vật chất thông qua hoạt động thực tiễn.',
+    explanation:
+      'Ý thức không phải là một "thứ" tồn tại riêng, mà là cách bộ óc phản ánh hiện thực rồi đặt ra mục tiêu, kế hoạch. Mong muốn, ý chí, tri thức là ý thức — nhưng muốn thành hiện thực, chúng phải thông qua hành động vật chất cụ thể.',
+    example:
+      'Một sinh viên muốn đạt điểm cao. Mong muốn đó thuộc về ý thức, nhưng muốn biến nó thành kết quả thật thì phải thông qua hoạt động vật chất cụ thể: học tập, ghi chép, luyện tập, làm bài.',
     details: [
-      '\u00dd th\u1ee9c kh\u00f4ng t\u00e1ch r\u1eddi v\u1eadt ch\u1ea5t, nh\u01b0ng c\u00f3 vai tr\u00f2 \u0111\u1ecbnh h\u01b0\u1edbng ho\u1ea1t \u0111\u1ed9ng th\u1ef1c ti\u1ec5n.',
-      'Ng\u00f4n ng\u1eef, lao \u0111\u1ed9ng v\u00e0 \u0111\u1eddi s\u1ed1ng x\u00e3 h\u1ed9i l\u00e0 nh\u1eefng \u0111i\u1ec1u ki\u1ec7n quan tr\u1ecdng h\u00ecnh th\u00e0nh \u00fd th\u1ee9c.',
-      'Quan h\u1ec7 v\u1eadt ch\u1ea5t v\u00e0 \u00fd th\u1ee9c gi\u00fap gi\u1ea3i th\u00edch v\u00ec sao t\u01b0 duy \u0111\u00fang c\u1ea7n d\u1ef1a tr\u00ean hi\u1ec7n th\u1ef1c.',
+      'Ý thức không tách rời vật chất, nhưng có vai trò định hướng hoạt động thực tiễn.',
+      'Ngôn ngữ, lao động và đời sống xã hội là những điều kiện quan trọng hình thành ý thức.',
+      'Quan hệ vật chất và ý thức giúp giải thích vì sao tư duy đúng cần dựa trên hiện thực.',
     ],
+    miniQuiz: {
+      question: 'Theo chủ nghĩa duy vật biện chứng, mối quan hệ vật chất – ý thức là?',
+      options: [
+        'Ý thức có trước và sinh ra vật chất',
+        'Vật chất và ý thức tồn tại tách rời, không liên quan',
+        'Vật chất quyết định ý thức, ý thức tác động trở lại qua thực tiễn',
+        'Ý thức quyết định hoàn toàn vật chất',
+      ],
+      answer: 2,
+      explain:
+        'Vật chất có trước, quyết định ý thức; nhưng ý thức có tính năng động, tác động trở lại vật chất thông qua hoạt động thực tiễn của con người.',
+    },
   },
   {
     id: 'moi-lien-he',
-    name: 'M\u1ed1i li\u00ean h\u1ec7 ph\u1ed5 bi\u1ebfn',
-    type: 'H\u00e0nh tinh m\u1ea1ng l\u01b0\u1edbi',
-    concept: 'Quan h\u1ec7 to\u00e0n di\u1ec7n',
+    name: 'Mối liên hệ phổ biến',
+    type: 'Hành tinh mạng lưới',
+    concept: 'Quan hệ toàn diện',
     signal: 'Relation',
+    chapter: 'Chương 2 · Mục II — Phép biện chứng duy vật',
     distance: 10.4,
     size: 0.6,
     orbitSpeed: 0.075,
@@ -63,19 +108,39 @@ export const planets = [
     axialTilt: 0.18,
     phase: 4.43,
     color: 'violet',
-    summary: 'M\u1ecdi s\u1ef1 v\u1eadt, hi\u1ec7n t\u01b0\u1ee3ng t\u1ed3n t\u1ea1i trong m\u1ea1ng l\u01b0\u1edbi quan h\u1ec7 t\u00e1c \u0111\u1ed9ng qua l\u1ea1i.',
+    widget: 'relation',
+    summary: 'Mọi sự vật, hiện tượng tồn tại trong mạng lưới quan hệ tác động qua lại.',
+    definition:
+      'Nguyên lý về mối liên hệ phổ biến khẳng định: các sự vật, hiện tượng và quá trình của thế giới không tồn tại biệt lập, tách rời nhau mà tồn tại trong sự liên hệ, ràng buộc, tác động qua lại và chuyển hóa lẫn nhau.',
+    explanation:
+      'Muốn hiểu đúng một sự vật, phải đặt nó trong mạng lưới quan hệ với những cái khác, chứ không nhìn cô lập, phiến diện. Đây là cơ sở của quan điểm toàn diện: xem xét nhiều mặt, nhiều mối liên hệ rồi rút ra cái cơ bản, chủ yếu.',
+    example:
+      'Hỏi "Vì sao một sinh viên học kém?" — không thể quy về một nguyên nhân. Phương pháp học, môi trường lớp, tâm lý, thời gian, sức khỏe, động lực, cách giảng dạy… đều liên hệ và cùng tác động.',
     details: [
-      'Kh\u00f4ng c\u00f3 kh\u00e1i ni\u1ec7m n\u00e0o n\u00ean \u0111\u01b0\u1ee3c h\u1ecdc nh\u01b0 m\u1ed9t m\u1ea3nh r\u1eddi kh\u1ecfi h\u1ec7 th\u1ed1ng.',
-      'Mu\u1ed1n hi\u1ec3u m\u1ed9t hi\u1ec7n t\u01b0\u1ee3ng c\u1ea7n xem x\u00e9t quan h\u1ec7 c\u1ee7a n\u00f3 v\u1edbi ho\u00e0n c\u1ea3nh, l\u1ecbch s\u1eed v\u00e0 \u0111i\u1ec1u ki\u1ec7n xung quanh.',
-      '\u0110\u00e2y l\u00e0 c\u01a1 s\u1edf \u0111\u1ec3 h\u00ecnh th\u00e0nh t\u01b0 duy to\u00e0n di\u1ec7n trong h\u1ecdc t\u1eadp v\u00e0 nghi\u00ean c\u1ee9u.',
+      'Không có khái niệm nào nên được học như một mảnh rời khỏi hệ thống.',
+      'Muốn hiểu một hiện tượng cần xem xét quan hệ của nó với hoàn cảnh, lịch sử và điều kiện xung quanh.',
+      'Đây là cơ sở để hình thành tư duy toàn diện trong học tập và nghiên cứu.',
     ],
+    miniQuiz: {
+      question: 'Bài học phương pháp luận rút ra từ nguyên lý về mối liên hệ phổ biến là?',
+      options: [
+        'Quan điểm phiến diện, chỉ xét một mặt',
+        'Quan điểm toàn diện và lịch sử – cụ thể',
+        'Chỉ cần tìm một nguyên nhân duy nhất',
+        'Tách rời sự vật khỏi hoàn cảnh để xét',
+      ],
+      answer: 1,
+      explain:
+        'Vì mọi sự vật đều liên hệ với nhau nên phải có quan điểm toàn diện (xét nhiều mối liên hệ) và lịch sử – cụ thể (xét trong điều kiện, hoàn cảnh xác định).',
+    },
   },
   {
     id: 'su-phat-trien',
-    name: 'S\u1ef1 ph\u00e1t tri\u1ec3n',
-    type: 'H\u00e0nh tinh v\u1eadn \u0111\u1ed9ng',
-    concept: 'C\u00e1i m\u1edbi h\u00ecnh th\u00e0nh',
+    name: 'Sự phát triển',
+    type: 'Hành tinh vận động',
+    concept: 'Cái mới hình thành',
     signal: 'Motion',
+    chapter: 'Chương 2 · Mục II — Phép biện chứng duy vật',
     distance: 12.8,
     size: 0.68,
     orbitSpeed: 0.06,
@@ -83,19 +148,39 @@ export const planets = [
     axialTilt: 0.3,
     phase: 0.55,
     color: 'emerald',
-    summary: 'Th\u1ebf gi\u1edbi lu\u00f4n v\u1eadn \u0111\u1ed9ng theo h\u01b0\u1edbng bi\u1ebfn \u0111\u1ed5i, t\u1ea1o ra c\u00e1i m\u1edbi trong nh\u1eefng \u0111i\u1ec1u ki\u1ec7n nh\u1ea5t \u0111\u1ecbnh.',
+    widget: 'spiral',
+    summary: 'Thế giới luôn vận động theo hướng biến đổi, tạo ra cái mới trong những điều kiện nhất định.',
+    definition:
+      'Phát triển là quá trình vận động đi lên từ thấp đến cao, từ đơn giản đến phức tạp, từ kém hoàn thiện đến hoàn thiện hơn. Phát triển có tính khách quan, tính phổ biến, tính đa dạng và diễn ra theo đường "xoáy ốc", không phải đường thẳng.',
+    explanation:
+      'Phát triển không chỉ là tăng về số lượng mà là sự ra đời của cái mới thay thế cái cũ. Khuynh hướng chung là đi lên, nhưng con đường thì quanh co, có những bước lùi tạm thời — như đường xoáy trôn ốc.',
+    example:
+      'Việc học của bạn không tiến lên theo đường thẳng: có ngày hiểu nhanh, có ngày bế tắc, thậm chí tưởng như thụt lùi. Nhưng nhìn cả quá trình, năng lực tư duy vẫn được nâng lên một trình độ cao hơn.',
     details: [
-      'Ph\u00e1t tri\u1ec3n kh\u00f4ng ch\u1ec9 l\u00e0 t\u0103ng l\u00ean v\u1ec1 s\u1ed1 l\u01b0\u1ee3ng m\u00e0 c\u00f2n bao g\u1ed3m bi\u1ebfn \u0111\u1ed5i v\u1ec1 ch\u1ea5t.',
-      'C\u00e1i m\u1edbi h\u00ecnh th\u00e0nh th\u00f4ng qua m\u00e2u thu\u1eabn, \u0111i\u1ec1u ki\u1ec7n, qu\u00e1 tr\u00ecnh v\u00e0 b\u01b0\u1edbc chuy\u1ec3n.',
-      'Nh\u00ecn s\u1ef1 v\u1eadt trong ph\u00e1t tri\u1ec3n gi\u00fap tr\u00e1nh c\u00e1ch h\u1ecdc thu\u1ed9c l\u00f2ng, \u0111\u1ee9ng y\u00ean v\u00e0 m\u00e1y m\u00f3c.',
+      'Phát triển không chỉ là tăng lên về số lượng mà còn bao gồm biến đổi về chất.',
+      'Cái mới hình thành thông qua mâu thuẫn, điều kiện, quá trình và bước chuyển.',
+      'Nhìn sự vật trong phát triển giúp tránh cách học thuộc lòng, đứng yên và máy móc.',
     ],
+    miniQuiz: {
+      question: 'Hình ảnh nào diễn tả đúng nhất con đường của sự phát triển?',
+      options: [
+        'Một đường thẳng đi lên liên tục',
+        'Một vòng tròn lặp lại y nguyên',
+        'Một đường xoáy ốc đi lên, có quanh co',
+        'Một đường thẳng đi xuống',
+      ],
+      answer: 2,
+      explain:
+        'Phát triển có tính kế thừa và quanh co: khuynh hướng chung là tiến lên nhưng qua những bước thăng trầm, lặp lại ở trình độ cao hơn — hình ảnh đường xoáy ốc.',
+    },
   },
   {
     id: 'mau-thuan',
-    name: 'M\u00e2u thu\u1eabn',
-    type: 'H\u00e0nh tinh xung l\u1ef1c',
-    concept: 'Ngu\u1ed3n g\u1ed1c v\u1eadn \u0111\u1ed9ng',
+    name: 'Mâu thuẫn',
+    type: 'Hành tinh xung lực',
+    concept: 'Nguồn gốc vận động',
     signal: 'Dialectic',
+    chapter: 'Chương 2 · Mục II — Quy luật thống nhất và đấu tranh của các mặt đối lập',
     distance: 15.2,
     size: 0.72,
     orbitSpeed: 0.047,
@@ -103,19 +188,39 @@ export const planets = [
     axialTilt: 0.38,
     phase: 2.72,
     color: 'red',
-    summary: 'Ngu\u1ed3n g\u1ed1c b\u00ean trong c\u1ee7a v\u1eadn \u0111\u1ed9ng v\u00e0 ph\u00e1t tri\u1ec3n.',
+    widget: 'contradiction',
+    summary: 'Nguồn gốc bên trong của vận động và phát triển.',
+    definition:
+      'Mâu thuẫn biện chứng là sự thống nhất và đấu tranh giữa các mặt đối lập trong cùng một sự vật. Sự đấu tranh giữa các mặt đối lập là nguồn gốc, động lực bên trong của mọi vận động và phát triển.',
+    explanation:
+      'Mâu thuẫn ở đây không có nghĩa là "cãi nhau". Đó là quan hệ giữa hai mặt vừa nương tựa, vừa bài trừ nhau trong một chỉnh thể. Khi đấu tranh giữa hai mặt đó được giải quyết, sự vật chuyển sang trạng thái mới — đó là phát triển.',
+    example:
+      'Một sinh viên vừa muốn nghỉ ngơi, vừa muốn đạt điểm cao. Mâu thuẫn giữa "thoải mái hiện tại" và "mục tiêu tương lai" buộc bạn ấy phải thay đổi cách quản lý thời gian — và nhờ đó mà trưởng thành hơn.',
     details: [
-      'M\u00e2u thu\u1eabn l\u00e0 s\u1ef1 th\u1ed1ng nh\u1ea5t v\u00e0 \u0111\u1ea5u tranh gi\u1eefa c\u00e1c m\u1eb7t \u0111\u1ed1i l\u1eadp trong c\u00f9ng m\u1ed9t s\u1ef1 v\u1eadt.',
-      'Nh\u1eadn di\u1ec7n m\u00e2u thu\u1eabn ch\u1ee7 y\u1ebfu gi\u00fap t\u00ecm \u0111\u00fang v\u1ea5n \u0111\u1ec1 trung t\u00e2m c\u1ea7n gi\u1ea3i quy\u1ebft.',
-      'C\u00e1ch ti\u1ebfp c\u1eadn n\u00e0y bi\u1ebfn tri\u1ebft h\u1ecdc th\u00e0nh c\u00f4ng c\u1ee5 ph\u00e2n t\u00edch thay v\u00ec ch\u1ec9 l\u00e0 \u0111\u1ecbnh ngh\u0129a.',
+      'Mâu thuẫn là sự thống nhất và đấu tranh giữa các mặt đối lập trong cùng một sự vật.',
+      'Nhận diện mâu thuẫn chủ yếu giúp tìm đúng vấn đề trung tâm cần giải quyết.',
+      'Cách tiếp cận này biến triết học thành công cụ phân tích thay vì chỉ là định nghĩa.',
     ],
+    miniQuiz: {
+      question: 'Theo phép biện chứng, vai trò của mâu thuẫn đối với sự phát triển là gì?',
+      options: [
+        'Là điều cần loại bỏ hoàn toàn để ổn định',
+        'Là nguồn gốc, động lực bên trong của sự phát triển',
+        'Chỉ là sự xung đột, cãi vã không có ích',
+        'Không liên quan gì đến phát triển',
+      ],
+      answer: 1,
+      explain:
+        'Sự thống nhất và đấu tranh của các mặt đối lập (mâu thuẫn) chính là nguồn gốc, động lực bên trong thúc đẩy sự vật vận động và phát triển.',
+    },
   },
   {
     id: 'luong-chat',
-    name: 'L\u01b0\u1ee3ng - Ch\u1ea5t',
-    type: 'H\u00e0nh tinh b\u01b0\u1edbc nh\u1ea3y',
-    concept: 'T\u00edch l\u0169y v\u00e0 chuy\u1ec3n h\u00f3a',
+    name: 'Lượng - Chất',
+    type: 'Hành tinh bước nhảy',
+    concept: 'Tích lũy và chuyển hóa',
     signal: 'Threshold',
+    chapter: 'Chương 2 · Mục II — Quy luật chuyển hóa lượng – chất',
     distance: 17.4,
     size: 0.64,
     orbitSpeed: 0.04,
@@ -123,19 +228,39 @@ export const planets = [
     axialTilt: 0.2,
     phase: 1.7,
     color: 'blue',
-    summary: 'S\u1ef1 t\u00edch l\u0169y v\u1ec1 l\u01b0\u1ee3ng \u0111\u1ebfn m\u1ed9t gi\u1edbi h\u1ea1n s\u1ebd d\u1eabn t\u1edbi b\u01b0\u1edbc nh\u1ea3y v\u1ec1 ch\u1ea5t.',
+    widget: 'quantity',
+    summary: 'Sự tích lũy về lượng đến một giới hạn sẽ dẫn tới bước nhảy về chất.',
+    definition:
+      'Quy luật lượng – chất: những thay đổi về lượng khi đạt tới điểm nút (vượt khỏi độ) sẽ dẫn đến bước nhảy, làm thay đổi về chất; chất mới ra đời lại tạo nên độ và điểm nút mới. Lượng và chất thống nhất trong "độ".',
+    explanation:
+      'Thay đổi nhỏ tích lũy dần về lượng, đến một ngưỡng (điểm nút) sẽ tạo ra sự thay đổi căn bản về chất. "Độ" là khoảng giới hạn mà lượng thay đổi nhưng chất chưa đổi; vượt độ thì xảy ra bước nhảy.',
+    example:
+      'Học triết mỗi ngày 20 phút có vẻ ít, nhưng sau nhiều ngày, lượng kiến thức tích lũy đủ sẽ tạo ra sự thay đổi về chất: từ "không hiểu gì" thành "biết phân tích vấn đề".',
     details: [
-      'L\u01b0\u1ee3ng bi\u1ec3u th\u1ecb quy m\u00f4, tr\u00ecnh \u0111\u1ed9, nh\u1ecbp \u0111\u1ed9; ch\u1ea5t l\u00e0m n\u00ean t\u00ednh quy \u0111\u1ecbnh c\u1ee7a s\u1ef1 v\u1eadt.',
-      '\u0110i\u1ec3m n\u00fat v\u00e0 b\u01b0\u1edbc nh\u1ea3y gi\u00fap gi\u1ea3i th\u00edch v\u00ec sao thay \u0111\u1ed5i nh\u1ecf c\u00f3 th\u1ec3 t\u00edch l\u0169y th\u00e0nh chuy\u1ec3n bi\u1ebfn l\u1edbn.',
-      'Quy lu\u1eadt n\u00e0y r\u1ea5t g\u1ea7n v\u1edbi vi\u1ec7c h\u1ecdc: ki\u1ebfn th\u1ee9c t\u00edch l\u0169y \u0111\u1ec1u \u0111\u1eb7n t\u1ea1o ra n\u0103ng l\u1ef1c m\u1edbi.',
+      'Lượng biểu thị quy mô, trình độ, nhịp độ; chất làm nên tính quy định của sự vật.',
+      'Điểm nút và bước nhảy giúp giải thích vì sao thay đổi nhỏ có thể tích lũy thành chuyển biến lớn.',
+      'Quy luật này rất gần với việc học: kiến thức tích lũy đều đặn tạo ra năng lực mới.',
     ],
+    miniQuiz: {
+      question: 'Khi sự tích lũy về lượng vượt qua điểm nút thì điều gì xảy ra?',
+      options: [
+        'Sự vật giữ nguyên chất cũ mãi mãi',
+        'Xảy ra bước nhảy, chất mới ra đời',
+        'Lượng tự biến mất',
+        'Chất quyết định lại lượng ngay lập tức',
+      ],
+      answer: 1,
+      explain:
+        'Lượng thay đổi trong giới hạn "độ" thì chất chưa đổi; nhưng khi đạt tới điểm nút và vượt qua, bước nhảy xảy ra và chất mới ra đời.',
+    },
   },
   {
     id: 'phu-dinh',
-    name: 'Ph\u1ee7 \u0111\u1ecbnh c\u1ee7a ph\u1ee7 \u0111\u1ecbnh',
-    type: 'H\u00e0nh tinh k\u1ebf th\u1eeba',
-    concept: 'V\u01b0\u1ee3t b\u1ecf bi\u1ec7n ch\u1ee9ng',
+    name: 'Phủ định của phủ định',
+    type: 'Hành tinh kế thừa',
+    concept: 'Vượt bỏ biện chứng',
     signal: 'Spiral',
+    chapter: 'Chương 2 · Mục II — Quy luật phủ định của phủ định',
     distance: 19.6,
     size: 0.62,
     orbitSpeed: 0.033,
@@ -143,19 +268,39 @@ export const planets = [
     axialTilt: 0.28,
     phase: 5.05,
     color: 'rose',
-    summary: 'Qu\u00e1 tr\u00ecnh ph\u00e1t tri\u1ec3n k\u1ebf th\u1eeba, v\u01b0\u1ee3t b\u1ecf v\u00e0 t\u00e1i t\u1ea1o \u1edf tr\u00ecnh \u0111\u1ed9 cao h\u01a1n.',
+    widget: 'spiral',
+    summary: 'Quá trình phát triển kế thừa, vượt bỏ và tái tạo ở trình độ cao hơn.',
+    definition:
+      'Quy luật phủ định của phủ định chỉ ra khuynh hướng của sự phát triển: thông qua những lần phủ định biện chứng, sự vật dường như quay lại cái ban đầu nhưng trên cơ sở cao hơn. Phủ định biện chứng có tính kế thừa và tính khách quan.',
+    explanation:
+      'Phủ định biện chứng không phải là xóa sạch cái cũ, mà là "vượt bỏ": giữ lại yếu tố hợp lý, loại bỏ cái lỗi thời để cái mới ra đời. Qua hai lần phủ định, sự phát triển có vẻ lặp lại cái ban đầu nhưng ở một trình độ cao hơn — đường xoáy ốc.',
+    example:
+      'Hạt thóc (khẳng định) → gieo xuống nảy thành cây lúa, phủ định hạt thóc → cây lúa lại cho ra nhiều hạt thóc mới (phủ định của phủ định): vẫn là hạt thóc nhưng nhiều hơn, ở vòng phát triển cao hơn.',
     details: [
-      'Ph\u1ee7 \u0111\u1ecbnh bi\u1ec7n ch\u1ee9ng kh\u00f4ng x\u00f3a s\u1ea1ch c\u00e1i c\u0169 m\u00e0 gi\u1eef l\u1ea1i y\u1ebfu t\u1ed1 h\u1ee3p l\u00fd \u0111\u1ec3 ph\u00e1t tri\u1ec3n ti\u1ebfp.',
-      'S\u1ef1 ph\u00e1t tri\u1ec3n c\u00f3 t\u00ednh quanh co, kh\u00f4ng ph\u1ea3i \u0111\u01b0\u1eddng th\u1eb3ng \u0111\u01a1n gi\u1ea3n.',
-      'Kh\u00e1i ni\u1ec7m n\u00e0y gi\u00fap nh\u00ecn l\u1ecbch s\u1eed tri th\u1ee9c nh\u01b0 m\u1ed9t chu\u1ed7i k\u1ebf th\u1eeba v\u00e0 \u0111\u1ed5i m\u1edbi.',
+      'Phủ định biện chứng không xóa sạch cái cũ mà giữ lại yếu tố hợp lý để phát triển tiếp.',
+      'Sự phát triển có tính quanh co, không phải đường thẳng đơn giản.',
+      'Khái niệm này giúp nhìn lịch sử tri thức như một chuỗi kế thừa và đổi mới.',
     ],
+    miniQuiz: {
+      question: 'Đặc điểm quan trọng của "phủ định biện chứng" là gì?',
+      options: [
+        'Xóa bỏ sạch trơn cái cũ',
+        'Giữ nguyên cái cũ không thay đổi',
+        'Vượt bỏ: kế thừa yếu tố hợp lý của cái cũ',
+        'Quay lại y hệt điểm xuất phát ban đầu',
+      ],
+      answer: 2,
+      explain:
+        'Phủ định biện chứng mang tính kế thừa: cái mới ra đời trên cơ sở giữ lại, cải tạo những yếu tố hợp lý của cái cũ chứ không phủ định sạch trơn.',
+    },
   },
   {
     id: 'thuc-tien',
-    name: 'Th\u1ef1c ti\u1ec5n & Nh\u1eadn th\u1ee9c',
-    type: 'Tr\u1ea1m li\u00ean h\u1ee3p',
-    concept: 'Ki\u1ec3m nghi\u1ec7m ch\u00e2n l\u00fd',
+    name: 'Thực tiễn & Nhận thức',
+    type: 'Trạm liên hợp',
+    concept: 'Kiểm nghiệm chân lý',
     signal: 'Praxis',
+    chapter: 'Chương 2 · Mục III — Lý luận nhận thức',
     distance: 11.2,
     size: 0.82,
     orbitSpeed: 0.085,
@@ -163,11 +308,30 @@ export const planets = [
     axialTilt: 0.15,
     phase: 0.96,
     color: 'silver',
-    summary: 'N\u01a1i ki\u1ec3m nghi\u1ec7m, \u0111i\u1ec1u ch\u1ec9nh v\u00e0 ph\u00e1t tri\u1ec3n tri th\u1ee9c.',
+    widget: 'praxis',
+    summary: 'Nơi kiểm nghiệm, điều chỉnh và phát triển tri thức.',
+    definition:
+      'Thực tiễn là toàn bộ hoạt động vật chất – cảm tính, có tính lịch sử – xã hội của con người nhằm cải tạo tự nhiên và xã hội. Thực tiễn là cơ sở, động lực, mục đích của nhận thức và là tiêu chuẩn để kiểm tra chân lý.',
+    explanation:
+      'Nhận thức không dừng ở suy nghĩ trong đầu. Con đường biện chứng là: từ trực quan sinh động đến tư duy trừu tượng, rồi từ tư duy trừu tượng trở về thực tiễn để kiểm nghiệm. Đúng hay sai phải do thực tiễn trả lời.',
+    example:
+      'Bạn tin rằng học nhóm hiệu quả hơn học một mình. Niềm tin đó chỉ là giả thuyết cho tới khi bạn thử học nhóm vài tuần, đo kết quả, rồi điều chỉnh phương pháp — đó là chu trình thực tiễn ↔ nhận thức.',
     details: [
-      'Th\u1ef1c ti\u1ec5n l\u00e0 c\u01a1 s\u1edf, \u0111\u1ed9ng l\u1ef1c, m\u1ee5c \u0111\u00edch v\u00e0 ti\u00eau chu\u1ea9n ki\u1ec3m tra ch\u00e2n l\u00fd c\u1ee7a nh\u1eadn th\u1ee9c.',
-      'Nh\u1eadn th\u1ee9c \u0111\u00fang kh\u00f4ng d\u1eebng \u1edf suy ngh\u0129, m\u00e0 c\u1ea7n \u0111\u01b0\u1ee3c ki\u1ec3m ch\u1ee9ng trong ho\u1ea1t \u0111\u1ed9ng th\u1ef1c t\u1ebf.',
-      'Tr\u1ea1m n\u00e0y k\u1ebft n\u1ed1i to\u00e0n b\u1ed9 b\u1ea3n \u0111\u1ed3 v\u00ec h\u1ecdc tri\u1ebft cu\u1ed1i c\u00f9ng ph\u1ea3i quay v\u1ec1 c\u00e1ch nh\u00ecn v\u00e0 c\u00e1ch h\u00e0nh \u0111\u1ed9ng.',
+      'Thực tiễn là cơ sở, động lực, mục đích và tiêu chuẩn kiểm tra chân lý của nhận thức.',
+      'Nhận thức đúng không dừng ở suy nghĩ, mà cần được kiểm chứng trong hoạt động thực tế.',
+      'Trạm này kết nối toàn bộ bản đồ vì học triết cuối cùng phải quay về cách nhìn và cách hành động.',
     ],
+    miniQuiz: {
+      question: 'Theo triết học Mác – Lênin, tiêu chuẩn để kiểm tra chân lý là gì?',
+      options: [
+        'Ý kiến của số đông',
+        'Sự hợp lý trong suy luận logic thuần túy',
+        'Thực tiễn',
+        'Uy tín của người phát biểu',
+      ],
+      answer: 2,
+      explain:
+        'Thực tiễn là tiêu chuẩn của chân lý: một nhận thức chỉ được khẳng định là đúng khi được kiểm nghiệm và xác nhận qua hoạt động thực tiễn.',
+    },
   },
 ]

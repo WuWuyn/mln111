@@ -36,7 +36,9 @@ function HandPointerSelector({ store, selectedPlanet, onSelect }) {
   useFrame((state) => {
     const control = store.get()
 
-    if (!control.active) {
+    // Only the pointing gesture selects; an open (steering) or closed hand
+    // must not snap the selection around while the camera moves.
+    if (!control.active || control.mode !== 'point') {
       lastSelectedId.current = selectedPlanet.id
       return
     }
@@ -87,15 +89,17 @@ function HandCameraRig({ store, controlsRef }) {
 
     if (!control.active || !controlsRef.current) return
 
-    const roll = control.roll ?? 0
-    const azimuth = control.rotationX * 1.35 + roll * 0.55
-    const radius = 30 - control.zoom * 14
-    const height = 13 - control.rotationY * 5.5
-    const targetX = control.rotationX * 3.2
-    const targetZ = control.rotationY * 2.4
+    // rotationX/rotationY come only from the open-palm gesture, zoom only from
+    // the pinch gesture — so horizontal hand motion orbits, vertical motion
+    // tilts, and pinch-scrub dollies, with no cross-talk between them.
+    const azimuth = control.rotationX * 1.7
+    const radius = clamp(31 - control.zoom * 21, 9, 32)
+    const height = clamp(13 - control.rotationY * 6, 8.5, 18)
+    const targetX = control.rotationX * 2.6
+    const targetZ = control.rotationY * 2
 
     cameraTarget.set(targetX, 0, targetZ)
-    desiredCameraPosition.set(Math.sin(azimuth) * radius, clamp(height, 8.5, 18), Math.cos(azimuth) * radius)
+    desiredCameraPosition.set(Math.sin(azimuth) * radius, height, Math.cos(azimuth) * radius)
 
     controlsRef.current.target.lerp(cameraTarget, 0.1)
     camera.position.lerp(desiredCameraPosition, 0.085)

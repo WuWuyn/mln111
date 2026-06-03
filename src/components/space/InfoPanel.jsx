@@ -1,4 +1,4 @@
-export default function InfoPanel({ planet, onClose }) {
+export default function InfoPanel({ planet, onClose, onOpenDetail, visited }) {
   return (
     <aside className="info-panel">
       <div className="panel-top">
@@ -19,6 +19,9 @@ export default function InfoPanel({ planet, onClose }) {
         <span>Khái niệm trọng tâm</span>
         <strong>{planet.concept}</strong>
       </div>
+      <button type="button" className="panel-cta" onClick={() => onOpenDetail(planet)}>
+        {visited ? 'Mở lại trang chi tiết' : 'Khám phá chi tiết'} →
+      </button>
     </aside>
   )
 }

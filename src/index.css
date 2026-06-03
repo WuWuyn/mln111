@@ -13,10 +13,10 @@
   box-sizing: border-box;
 }
 
-/* Ẩn con trỏ hệ thống trên toàn trang — vệt sao băng (GenshinCursor) thay thế nó. */
-html,
-body,
-* {
+/* Ẩn con trỏ hệ thống ở mọi trang — vệt sao băng (GenshinCursor, chạy trên
+   Web Worker) thay thế nó. */
+.cosmos,
+.cosmos * {
   cursor: none !important;
 }
 

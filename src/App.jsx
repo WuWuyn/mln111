@@ -75,10 +75,9 @@ function App() {
 
       <HandPointer store={handControlStore} />
       <HandTrackingPanel store={handControlStore} />
-      {/* Comet cursor only on the landing page: over the heavy 3D scene it would
-          fight for the GPU and stutter, and the native cursor (compositor-driven,
-          with grab/grabbing on the canvas) is perfectly smooth there. */}
-      {currentPage !== 'explore' && <GenshinCursor />}
+      {/* Comet cursor on every page. It renders on a Web Worker (OffscreenCanvas)
+          so the heavy 3D scene on the explore page can't stall its animation. */}
+      <GenshinCursor />
     </main>
   )
 }
