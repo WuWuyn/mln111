@@ -1,8 +1,14 @@
-import { startTransition, useCallback, useEffect, useState } from 'react'
+import { lazy, startTransition, Suspense, useCallback, useEffect, useState } from 'react'
+import GenshinCursor from './components/GenshinCursor'
+import HandPointer from './components/HandPointer'
 import HandTrackingPanel from './components/HandTrackingPanel'
 import LandingPage from './components/LandingPage'
-import SpaceExperience from './components/SpaceExperience'
+import { createHandControlStore } from './hand/handControlStore'
 import './App.css'
+
+// The 3D experience pulls in Three.js + fiber + drei. Load it lazily so the
+// landing page ships without that weight; it only arrives when the user travels.
+const SpaceExperience = lazy(() => import('./components/SpaceExperience'))
 
 const EXPLORE_HASH = '#kham-pha'
 
@@ -16,7 +22,10 @@ function getPageFromLocation() {
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => getPageFromLocation())
-  const [handControl, setHandControl] = useState({ active: false })
+  // The hand-control signal updates ~60fps; keep it out of React state so it
+  // never re-renders the tree. The store itself is created once and is stable;
+  // consumers read it imperatively via get()/subscribe().
+  const [handControlStore] = useState(createHandControlStore)
 
   useEffect(() => {
     const syncPage = () => {
@@ -54,30 +63,22 @@ function App() {
     })
   }, [])
 
-  const updateHandControl = useCallback((control) => {
-    setHandControl(control)
-  }, [])
-
   return (
     <main className={`cosmos ${currentPage === 'explore' ? 'cosmos--explore' : 'cosmos--landing'}`}>
       {currentPage === 'explore' ? (
-        <SpaceExperience onBack={openLandingPage} handControl={handControl} />
+        <Suspense fallback={<div className="route-loading">Đang mở vũ trụ…</div>}>
+          <SpaceExperience onBack={openLandingPage} handControlStore={handControlStore} />
+        </Suspense>
       ) : (
-        <LandingPage onExplore={openExplorePage} handControl={handControl} />
+        <LandingPage onExplore={openExplorePage} handControlStore={handControlStore} />
       )}
 
-      {handControl.active && (
-        <div
-          className={`hand-pointer-reticle ${handControl.pinched ? 'is-pinched' : ''}`}
-          style={{
-            left: `${handControl.x * 100}%`,
-            top: `${handControl.y * 100}%`,
-          }}
-          aria-hidden="true"
-        />
-      )}
-
-      <HandTrackingPanel onHandControl={updateHandControl} />
+      <HandPointer store={handControlStore} />
+      <HandTrackingPanel store={handControlStore} />
+      {/* Comet cursor only on the landing page: over the heavy 3D scene it would
+          fight for the GPU and stutter, and the native cursor (compositor-driven,
+          with grab/grabbing on the canvas) is perfectly smooth there. */}
+      {currentPage !== 'explore' && <GenshinCursor />}
     </main>
   )
 }

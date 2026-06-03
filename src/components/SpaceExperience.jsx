@@ -4,7 +4,7 @@ import { planets } from '../data/cosmos'
 import InfoPanel from './space/InfoPanel'
 import Scene from './space/Scene'
 
-export default function SpaceExperience({ onBack, handControl }) {
+export default function SpaceExperience({ onBack, handControlStore }) {
   const [selectedPlanet, setSelectedPlanet] = useState(planets[0])
   const [panelVisible, setPanelVisible] = useState(true)
 
@@ -26,9 +26,14 @@ export default function SpaceExperience({ onBack, handControl }) {
       </div>
 
       <div className="space-experience">
-        <Canvas camera={{ position: [0, 14, 23], fov: 48, near: 0.1, far: 120 }} dpr={[1, 2]}>
+        <Canvas
+          camera={{ position: [0, 14, 23], fov: 48, near: 0.1, far: 120 }}
+          dpr={[1, 1.5]}
+          gl={{ powerPreference: 'high-performance' }}
+          performance={{ min: 0.5 }}
+        >
           <Suspense fallback={null}>
-            <Scene selectedPlanet={selectedPlanet} setSelectedPlanet={selectPlanet} handControl={handControl} />
+            <Scene selectedPlanet={selectedPlanet} setSelectedPlanet={selectPlanet} handControlStore={handControlStore} />
           </Suspense>
         </Canvas>
 

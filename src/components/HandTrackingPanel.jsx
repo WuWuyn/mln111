@@ -1,5 +1,4 @@
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const MODEL_PATH = '/mediapipe/hand_landmarker.task'
 const WASM_PATH = '/mediapipe/wasm'
@@ -142,13 +141,14 @@ function createControlFromLandmarks(landmarks, previousControl, calibration) {
   }
 }
 
-export default function HandTrackingPanel({ onHandControl }) {
+export default function HandTrackingPanel({ store }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const landmarkerRef = useRef(null)
   const frameRef = useRef(null)
   const streamRef = useRef(null)
   const controlRef = useRef({ active: false })
+  const statusRef = useRef('Tắt hand tracking')
   const calibrationRef = useRef({
     cursorX: 0.5,
     cursorY: 0.5,
@@ -163,9 +163,17 @@ export default function HandTrackingPanel({ onHandControl }) {
   const [enabled, setEnabled] = useState(false)
   const [status, setStatus] = useState('Tắt hand tracking')
 
+  // The detect loop runs every frame; only push status changes to React state
+  // so we don't queue a redundant render ~60 times per second.
+  const updateStatus = useCallback((next) => {
+    if (statusRef.current === next) return
+    statusRef.current = next
+    setStatus(next)
+  }, [])
+
   const calibrate = () => {
     if (!lastRawControlRef.current) {
-      setStatus('Chưa thấy bàn tay để căn chỉnh')
+      updateStatus('Chưa thấy bàn tay để căn chỉnh')
       return
     }
 
@@ -179,13 +187,13 @@ export default function HandTrackingPanel({ onHandControl }) {
       zoom: lastRawControlRef.current.handScale,
     }
     controlRef.current = { active: false }
-    setStatus('Đã căn chỉnh tâm tay')
+    updateStatus('Đã căn chỉnh tâm tay')
   }
 
   useEffect(() => {
     if (!enabled) {
       controlRef.current = { active: false }
-      onHandControl({ active: false })
+      store.set({ active: false })
       return undefined
     }
 
@@ -193,8 +201,9 @@ export default function HandTrackingPanel({ onHandControl }) {
 
     const start = async () => {
       try {
-        setStatus('Đang tải MediaPipe...')
+        updateStatus('Đang tải MediaPipe...')
 
+        const { FilesetResolver, HandLandmarker } = await import('@mediapipe/tasks-vision')
         const vision = await FilesetResolver.forVisionTasks(WASM_PATH)
         const landmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
@@ -214,7 +223,7 @@ export default function HandTrackingPanel({ onHandControl }) {
         }
 
         landmarkerRef.current = landmarker
-        setStatus('Đang xin quyền camera...')
+        updateStatus('Đang xin quyền camera...')
 
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -233,7 +242,7 @@ export default function HandTrackingPanel({ onHandControl }) {
         streamRef.current = stream
         videoRef.current.srcObject = stream
         await videoRef.current.play()
-        setStatus('Đưa bàn tay vào khung hình')
+        updateStatus('Đưa bàn tay vào khung hình')
 
         const detect = () => {
           if (!videoRef.current || !canvasRef.current || !landmarkerRef.current) return
@@ -253,13 +262,13 @@ export default function HandTrackingPanel({ onHandControl }) {
             controlRef.current = control
             lastRawControlRef.current = control
             drawHand(canvas, landmarks)
-            onHandControl(control)
-            setStatus('Ngón trỏ chọn, bàn tay xoay, đưa gần/xa để zoom')
+            store.set(control)
+            updateStatus('Ngón trỏ chọn, bàn tay xoay, đưa gần/xa để zoom')
           } else {
             controlRef.current = { active: false }
             drawHand(canvas, null)
-            onHandControl({ active: false })
-            setStatus('Đưa bàn tay vào khung hình')
+            store.set({ active: false })
+            updateStatus('Đưa bàn tay vào khung hình')
           }
 
           frameRef.current = requestAnimationFrame(detect)
@@ -267,9 +276,9 @@ export default function HandTrackingPanel({ onHandControl }) {
 
         detect()
       } catch (error) {
-        setStatus(error instanceof Error ? error.message : 'Không thể bật hand tracking')
+        updateStatus(error instanceof Error ? error.message : 'Không thể bật hand tracking')
         setEnabled(false)
-        onHandControl({ active: false })
+        store.set({ active: false })
       }
     }
 
@@ -284,7 +293,7 @@ export default function HandTrackingPanel({ onHandControl }) {
       landmarkerRef.current?.close()
       landmarkerRef.current = null
     }
-  }, [enabled, onHandControl])
+  }, [enabled, store, updateStatus])
 
   return (
     <aside className={`hand-tracking-panel ${enabled ? 'is-enabled' : ''}`}>

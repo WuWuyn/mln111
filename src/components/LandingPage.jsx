@@ -15,13 +15,35 @@ const introItems = [
   },
 ]
 
-export default function LandingPage({ onExplore, handControl }) {
+export default function LandingPage({ onExplore, handControlStore }) {
+  const sectionRef = useRef(null)
   const buttonRef = useRef(null)
   const clickedByHandRef = useRef(false)
-  const [pointer, setPointer] = useState({ x: 50, y: 50 })
-  const [pressed, setPressed] = useState(false)
+
+  // Mirror low-frequency UI state in refs so the per-frame hand subscription can
+  // compare against the latest value without re-subscribing or reading stale
+  // closures, and only call setState when something actually changes.
+  const handActiveRef = useRef(false)
+  const hoverRef = useRef(false)
+  const pressedRef = useRef(false)
+
+  const [handActive, setHandActive] = useState(false)
   const [handHovering, setHandHovering] = useState(false)
+  const [pressed, setPressed] = useState(false)
   const [burstKey, setBurstKey] = useState(0)
+
+  const setPressedSafe = useCallback((next) => {
+    if (pressedRef.current === next) return
+    pressedRef.current = next
+    setPressed(next)
+  }, [])
+
+  const setPointer = useCallback((x, y) => {
+    const section = sectionRef.current
+    if (!section) return
+    section.style.setProperty('--pointer-x', `${x}%`)
+    section.style.setProperty('--pointer-y', `${y}%`)
+  }, [])
 
   const handleExplore = useCallback(() => {
     setBurstKey((key) => key + 1)
@@ -29,76 +51,88 @@ export default function LandingPage({ onExplore, handControl }) {
   }, [onExplore])
 
   const handlePointerMove = (event) => {
-    if (handControl?.active) return
+    if (handActiveRef.current) return
 
     const rect = event.currentTarget.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
 
-    setPointer({ x, y })
+    setPointer(x, y)
   }
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      if (!handControl?.active) {
-        setHandHovering(false)
+    setPointer(50, 50)
+
+    const apply = (control) => {
+      if (!control.active) {
+        if (handActiveRef.current) {
+          handActiveRef.current = false
+          setHandActive(false)
+        }
+        if (hoverRef.current) {
+          hoverRef.current = false
+          setHandHovering(false)
+        }
         clickedByHandRef.current = false
+        setPressedSafe(false)
         return
       }
 
-      setPointer({
-        x: handControl.x * 100,
-        y: handControl.y * 100,
-      })
+      if (!handActiveRef.current) {
+        handActiveRef.current = true
+        setHandActive(true)
+      }
+
+      setPointer(control.x * 100, control.y * 100)
 
       const button = buttonRef.current
       if (!button) return
 
       const rect = button.getBoundingClientRect()
-      const cursorX = handControl.x * window.innerWidth
-      const cursorY = handControl.y * window.innerHeight
+      const cursorX = control.x * window.innerWidth
+      const cursorY = control.y * window.innerHeight
       const isInside =
         cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom
 
-      setHandHovering(isInside)
+      if (hoverRef.current !== isInside) {
+        hoverRef.current = isInside
+        setHandHovering(isInside)
+      }
 
-      if (!handControl.pinched) {
+      if (!control.pinched) {
         clickedByHandRef.current = false
-        setPressed(false)
+        setPressedSafe(false)
         return
       }
 
-      setPressed(isInside)
+      setPressedSafe(isInside)
 
       if (isInside && !clickedByHandRef.current) {
         clickedByHandRef.current = true
         handleExplore()
       }
-    })
+    }
 
-    return () => window.cancelAnimationFrame(frame)
-  }, [handleExplore, handControl])
+    apply(handControlStore.get())
+    return handControlStore.subscribe(apply)
+  }, [handControlStore, handleExplore, setPointer, setPressedSafe])
 
   return (
     <section
+      ref={sectionRef}
       className={`landing-page landing-page--minimal ${pressed ? 'is-pressed' : ''} ${
-        handControl?.active ? 'is-hand-active' : ''
+        handActive ? 'is-hand-active' : ''
       }`}
-      style={{
-        '--pointer-x': `${pointer.x}%`,
-        '--pointer-y': `${pointer.y}%`,
-      }}
       aria-labelledby="landing-title"
       onPointerMove={handlePointerMove}
-      onPointerDown={() => setPressed(true)}
-      onPointerUp={() => setPressed(false)}
-      onPointerCancel={() => setPressed(false)}
+      onPointerDown={() => setPressedSafe(true)}
+      onPointerUp={() => setPressedSafe(false)}
+      onPointerCancel={() => setPressedSafe(false)}
       onPointerLeave={() => {
-        if (!handControl?.active) setPressed(false)
+        if (!handActiveRef.current) setPressedSafe(false)
       }}
     >
       <div className="landing-wallpaper" aria-hidden="true" />
-      <div className="landing-cursor-light" aria-hidden="true" />
       {burstKey > 0 && <div key={burstKey} className="landing-click-burst" aria-hidden="true" />}
       <div className="landing-ambient landing-ambient--one" aria-hidden="true" />
       <div className="landing-ambient landing-ambient--two" aria-hidden="true" />

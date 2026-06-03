@@ -13,6 +13,13 @@
   box-sizing: border-box;
 }
 
+/* Ẩn con trỏ hệ thống trên toàn trang — vệt sao băng (GenshinCursor) thay thế nó. */
+html,
+body,
+* {
+  cursor: none !important;
+}
+
 html {
   background: #03040a;
 }

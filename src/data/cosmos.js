@@ -1,24 +1,3 @@
-export const introCards = [
-  {
-    id: 'definition',
-    index: '01',
-    title: 'Tri\u1ebft h\u1ecdc l\u00e0 g\u00ec?',
-    text: 'Tri\u1ebft h\u1ecdc nghi\u00ean c\u1ee9u nh\u1eefng v\u1ea5n \u0111\u1ec1 chung nh\u1ea5t v\u1ec1 th\u1ebf gi\u1edbi, con ng\u01b0\u1eddi v\u00e0 t\u01b0 duy.',
-  },
-  {
-    id: 'value',
-    index: '02',
-    title: 'V\u00ec sao c\u1ea7n h\u1ecdc?',
-    text: 'Tri\u1ebft h\u1ecdc gi\u00fap con ng\u01b0\u1eddi nh\u1eadn th\u1ee9c th\u1ebf gi\u1edbi c\u00f3 h\u1ec7 th\u1ed1ng, bi\u1ebft \u0111\u1eb7t c\u00e2u h\u1ecfi v\u00e0 t\u00ecm b\u1ea3n ch\u1ea5t.',
-  },
-  {
-    id: 'visualize',
-    index: '03',
-    title: 'Web n\u00e0y gi\u00fap g\u00ec?',
-    text: 'C\u00e1c kh\u00e1i ni\u1ec7m \u0111\u01b0\u1ee3c tr\u1ef1c quan h\u00f3a th\u00e0nh b\u1ea3n \u0111\u1ed3 \u0111\u1ec3 th\u1ea5y quan h\u1ec7 gi\u1eefa t\u1eebng ph\u1ea7n ki\u1ebfn th\u1ee9c.',
-  },
-]
-
 export const planetPalette = {
   cyan: ['#b9f7ff', '#21b8ff', '#123c76'],
   gold: ['#fff4b8', '#f7b84d', '#8d5529'],

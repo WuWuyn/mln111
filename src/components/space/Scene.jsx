@@ -1,4 +1,5 @@
-import { OrbitControls, Stars } from '@react-three/drei'
+import { AdaptiveDpr, OrbitControls, Stars } from '@react-three/drei'
+import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRef } from 'react'
 import * as THREE from 'three'
@@ -8,7 +9,7 @@ import GalaxyParticles from './GalaxyParticles'
 import PlanetMesh from './PlanetMesh'
 
 const projectedPosition = new THREE.Vector3()
-const worldPosition = new THREE.Vector3()
+const planetPosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
 const desiredCameraPosition = new THREE.Vector3()
 
@@ -16,23 +17,26 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
 
-function getPlanetPosition(planet, elapsedTime) {
+// Writes the orbital world position of `planet` into `target` and returns it.
+function setPlanetPosition(target, planet, elapsedTime) {
   const angle = elapsedTime * planet.orbitSpeed + planet.phase
 
-  worldPosition.set(Math.cos(angle) * planet.distance, 0, -Math.sin(angle) * planet.distance)
-  return worldPosition
+  target.set(Math.cos(angle) * planet.distance, 0, -Math.sin(angle) * planet.distance)
+  return target
 }
 
 function isPointVisible(point) {
   return point.z > -1 && point.z < 1 && Math.abs(point.x) <= 1.15 && Math.abs(point.y) <= 1.15
 }
 
-function HandPointerSelector({ control, selectedPlanet, onSelect }) {
+function HandPointerSelector({ store, selectedPlanet, onSelect }) {
   const { camera } = useThree()
   const lastSelectedId = useRef(selectedPlanet.id)
 
   useFrame((state) => {
-    if (!control?.active) {
+    const control = store.get()
+
+    if (!control.active) {
       lastSelectedId.current = selectedPlanet.id
       return
     }
@@ -54,11 +58,11 @@ function HandPointerSelector({ control, selectedPlanet, onSelect }) {
     }
 
     planets.forEach((planet) => {
-      getPlanetPosition(planet, state.clock.elapsedTime).project(camera)
+      setPlanetPosition(planetPosition, planet, state.clock.elapsedTime).project(camera)
 
-      if (!isPointVisible(worldPosition)) return
+      if (!isPointVisible(planetPosition)) return
 
-      const distance = Math.hypot(worldPosition.x - pointerX, worldPosition.y - pointerY)
+      const distance = Math.hypot(planetPosition.x - pointerX, planetPosition.y - pointerY)
 
       if (distance < closestDistance) {
         closestPlanet = planet
@@ -75,11 +79,13 @@ function HandPointerSelector({ control, selectedPlanet, onSelect }) {
   return null
 }
 
-function HandCameraRig({ control, controlsRef }) {
+function HandCameraRig({ store, controlsRef }) {
   const { camera } = useThree()
 
   useFrame(() => {
-    if (!control?.active || !controlsRef.current) return
+    const control = store.get()
+
+    if (!control.active || !controlsRef.current) return
 
     const roll = control.roll ?? 0
     const azimuth = control.rotationX * 1.35 + roll * 0.55
@@ -100,7 +106,7 @@ function HandCameraRig({ control, controlsRef }) {
   return null
 }
 
-export default function Scene({ selectedPlanet, setSelectedPlanet, handControl }) {
+export default function Scene({ selectedPlanet, setSelectedPlanet, handControlStore }) {
   const controlsRef = useRef()
 
   return (
@@ -109,7 +115,7 @@ export default function Scene({ selectedPlanet, setSelectedPlanet, handControl }
       <fog attach="fog" args={['#030612', 12, 58]} />
       <ambientLight intensity={0.55} />
       <directionalLight position={[7, 9, 6]} intensity={1.6} color="#d9edff" />
-      <Stars radius={80} depth={42} count={2500} factor={4} saturation={0.25} fade speed={0.6} />
+      <Stars radius={100} depth={60} count={6000} factor={4} saturation={0.25} fade speed={0.6} />
       <GalaxyParticles />
       <CentralPlanet onClick={() => setSelectedPlanet(planets[0])} />
       {planets.map((planet) => (
@@ -129,8 +135,18 @@ export default function Scene({ selectedPlanet, setSelectedPlanet, handControl }
         maxPolarAngle={Math.PI * 0.72}
         minPolarAngle={Math.PI * 0.2}
       />
-      <HandCameraRig control={handControl} controlsRef={controlsRef} />
-      <HandPointerSelector control={handControl} selectedPlanet={selectedPlanet} onSelect={setSelectedPlanet} />
+      <AdaptiveDpr pixelated />
+      <HandCameraRig store={handControlStore} controlsRef={controlsRef} />
+      <HandPointerSelector store={handControlStore} selectedPlanet={selectedPlanet} onSelect={setSelectedPlanet} />
+      <EffectComposer>
+        <Bloom
+          mipmapBlur
+          intensity={0.85}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.5}
+          radius={0.7}
+        />
+      </EffectComposer>
     </>
   )
 }
