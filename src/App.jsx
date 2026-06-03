@@ -1,4 +1,5 @@
-import { startTransition, useEffect, useState } from 'react'
+import { startTransition, useCallback, useEffect, useState } from 'react'
+import HandTrackingPanel from './components/HandTrackingPanel'
 import LandingPage from './components/LandingPage'
 import SpaceExperience from './components/SpaceExperience'
 import './App.css'
@@ -15,6 +16,7 @@ function getPageFromLocation() {
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => getPageFromLocation())
+  const [handControl, setHandControl] = useState({ active: false })
 
   useEffect(() => {
     const syncPage = () => {
@@ -32,7 +34,7 @@ function App() {
     }
   }, [])
 
-  const openExplorePage = () => {
+  const openExplorePage = useCallback(() => {
     if (window.location.hash !== EXPLORE_HASH) {
       window.location.hash = EXPLORE_HASH
     }
@@ -40,9 +42,9 @@ function App() {
     startTransition(() => {
       setCurrentPage('explore')
     })
-  }
+  }, [])
 
-  const openLandingPage = () => {
+  const openLandingPage = useCallback(() => {
     const nextUrl = `${window.location.pathname}${window.location.search}`
 
     window.history.pushState(null, '', nextUrl)
@@ -50,15 +52,32 @@ function App() {
     startTransition(() => {
       setCurrentPage('landing')
     })
-  }
+  }, [])
+
+  const updateHandControl = useCallback((control) => {
+    setHandControl(control)
+  }, [])
 
   return (
     <main className={`cosmos ${currentPage === 'explore' ? 'cosmos--explore' : 'cosmos--landing'}`}>
       {currentPage === 'explore' ? (
-        <SpaceExperience onBack={openLandingPage} />
+        <SpaceExperience onBack={openLandingPage} handControl={handControl} />
       ) : (
-        <LandingPage onExplore={openExplorePage} />
+        <LandingPage onExplore={openExplorePage} handControl={handControl} />
       )}
+
+      {handControl.active && (
+        <div
+          className={`hand-pointer-reticle ${handControl.pinched ? 'is-pinched' : ''}`}
+          style={{
+            left: `${handControl.x * 100}%`,
+            top: `${handControl.y * 100}%`,
+          }}
+          aria-hidden="true"
+        />
+      )}
+
+      <HandTrackingPanel onHandControl={updateHandControl} />
     </main>
   )
 }

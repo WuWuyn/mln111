@@ -1,17 +1,17 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import { planets } from '../data/cosmos'
 import InfoPanel from './space/InfoPanel'
 import Scene from './space/Scene'
 
-export default function SpaceExperience({ onBack }) {
+export default function SpaceExperience({ onBack, handControl }) {
   const [selectedPlanet, setSelectedPlanet] = useState(planets[0])
   const [panelVisible, setPanelVisible] = useState(true)
 
-  const selectPlanet = (planet) => {
+  const selectPlanet = useCallback((planet) => {
     setSelectedPlanet(planet)
     setPanelVisible(true)
-  }
+  }, [])
 
   return (
     <section className="experience-page">
@@ -28,7 +28,7 @@ export default function SpaceExperience({ onBack }) {
       <div className="space-experience">
         <Canvas camera={{ position: [0, 14, 23], fov: 48, near: 0.1, far: 120 }} dpr={[1, 2]}>
           <Suspense fallback={null}>
-            <Scene selectedPlanet={selectedPlanet} setSelectedPlanet={selectPlanet} />
+            <Scene selectedPlanet={selectedPlanet} setSelectedPlanet={selectPlanet} handControl={handControl} />
           </Suspense>
         </Canvas>
 
@@ -40,7 +40,13 @@ export default function SpaceExperience({ onBack }) {
             <span>Scroll</span> zoom
           </div>
           <div>
-            <span>Click</span> mở hành tinh
+            <span>Ngón trỏ</span> chọn như chuột
+          </div>
+          <div>
+            <span>Bàn tay</span> nghiêng/xoay để đổi góc nhìn
+          </div>
+          <div>
+            <span>Đưa tay gần/xa</span> zoom in/out
           </div>
         </div>
 

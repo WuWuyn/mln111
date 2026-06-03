@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const introItems = [
   {
@@ -15,12 +15,22 @@ const introItems = [
   },
 ]
 
-export default function LandingPage({ onExplore }) {
+export default function LandingPage({ onExplore, handControl }) {
+  const buttonRef = useRef(null)
+  const clickedByHandRef = useRef(false)
   const [pointer, setPointer] = useState({ x: 50, y: 50 })
   const [pressed, setPressed] = useState(false)
+  const [handHovering, setHandHovering] = useState(false)
   const [burstKey, setBurstKey] = useState(0)
 
+  const handleExplore = useCallback(() => {
+    setBurstKey((key) => key + 1)
+    window.setTimeout(onExplore, 420)
+  }, [onExplore])
+
   const handlePointerMove = (event) => {
+    if (handControl?.active) return
+
     const rect = event.currentTarget.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
@@ -28,14 +38,52 @@ export default function LandingPage({ onExplore }) {
     setPointer({ x, y })
   }
 
-  const handleExplore = () => {
-    setBurstKey((key) => key + 1)
-    window.setTimeout(onExplore, 420)
-  }
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (!handControl?.active) {
+        setHandHovering(false)
+        clickedByHandRef.current = false
+        return
+      }
+
+      setPointer({
+        x: handControl.x * 100,
+        y: handControl.y * 100,
+      })
+
+      const button = buttonRef.current
+      if (!button) return
+
+      const rect = button.getBoundingClientRect()
+      const cursorX = handControl.x * window.innerWidth
+      const cursorY = handControl.y * window.innerHeight
+      const isInside =
+        cursorX >= rect.left && cursorX <= rect.right && cursorY >= rect.top && cursorY <= rect.bottom
+
+      setHandHovering(isInside)
+
+      if (!handControl.pinched) {
+        clickedByHandRef.current = false
+        setPressed(false)
+        return
+      }
+
+      setPressed(isInside)
+
+      if (isInside && !clickedByHandRef.current) {
+        clickedByHandRef.current = true
+        handleExplore()
+      }
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [handleExplore, handControl])
 
   return (
     <section
-      className={`landing-page landing-page--minimal ${pressed ? 'is-pressed' : ''}`}
+      className={`landing-page landing-page--minimal ${pressed ? 'is-pressed' : ''} ${
+        handControl?.active ? 'is-hand-active' : ''
+      }`}
       style={{
         '--pointer-x': `${pointer.x}%`,
         '--pointer-y': `${pointer.y}%`,
@@ -45,7 +93,9 @@ export default function LandingPage({ onExplore }) {
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerCancel={() => setPressed(false)}
-      onPointerLeave={() => setPressed(false)}
+      onPointerLeave={() => {
+        if (!handControl?.active) setPressed(false)
+      }}
     >
       <div className="landing-wallpaper" aria-hidden="true" />
       <div className="landing-cursor-light" aria-hidden="true" />
@@ -73,7 +123,12 @@ export default function LandingPage({ onExplore }) {
             ))}
           </div>
 
-          <button className="primary-action" type="button" onClick={handleExplore}>
+          <button
+            ref={buttonRef}
+            className={`primary-action ${handHovering ? 'is-hand-target' : ''}`}
+            type="button"
+            onClick={handleExplore}
+          >
             Bắt đầu du hành
           </button>
         </div>
