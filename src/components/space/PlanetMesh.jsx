@@ -32,11 +32,21 @@ function configureTexture(texture) {
   texture.anisotropy = 8
 }
 
-export default function PlanetMesh({ planet, selected, onSelect, showLabel = true, interactive = true }) {
+export default function PlanetMesh({ planet, selected, onSelect, onOpenExperience, showLabel = true, interactive = true }) {
   const orbit = useRef()
   const mesh = useRef()
   const look = PLANET_LOOK[planet.id] ?? PLANET_LOOK['vat-chat']
   const surfaceTexture = useTexture(look.texture, configureTexture)
+
+  const selectPlanet = (event) => {
+    event?.stopPropagation?.()
+    onSelect(planet)
+  }
+
+  const openExperience = (event) => {
+    event?.stopPropagation?.()
+    onOpenExperience?.(planet)
+  }
 
   useFrame((state, delta) => {
     orbit.current.rotation.y = state.clock.elapsedTime * planet.orbitSpeed + planet.phase
@@ -51,8 +61,9 @@ export default function PlanetMesh({ planet, selected, onSelect, showLabel = tru
         <group position={[planet.distance, 0, 0]}>
           <mesh
             ref={mesh}
-            onClick={interactive ? () => onSelect(planet) : undefined}
-            onPointerOver={interactive ? () => onSelect(planet) : undefined}
+            onClick={interactive ? selectPlanet : undefined}
+            onDoubleClick={interactive ? openExperience : undefined}
+            onPointerOver={interactive ? selectPlanet : undefined}
           >
             <sphereGeometry args={[planet.size, 80, 80]} />
             <meshPhysicalMaterial
@@ -68,7 +79,13 @@ export default function PlanetMesh({ planet, selected, onSelect, showLabel = tru
 
           {showLabel && (
             <Html position={[0, planet.size + 0.52, 0]} center distanceFactor={13}>
-              <button className={`space-label ${selected ? 'is-selected' : ''}`} type="button" onClick={() => onSelect(planet)}>
+              <button
+                className={`space-label ${selected ? 'is-selected' : ''}`}
+                type="button"
+                onClick={selectPlanet}
+                onDoubleClick={openExperience}
+                title="Double click để mở thực nghiệm"
+              >
                 {planet.name}
               </button>
             </Html>

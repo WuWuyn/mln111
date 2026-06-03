@@ -116,6 +116,7 @@ function HandCameraRig({ store, controlsRef }) {
 export default function Scene({
   selectedPlanet,
   setSelectedPlanet,
+  onOpenExperience,
   handControlStore,
   overlayOpen,
   gameMode = false,
@@ -158,6 +159,7 @@ export default function Scene({
             planet={planet}
             selected={selectedPlanet.id === planet.id}
             onSelect={setSelectedPlanet}
+            onOpenExperience={onOpenExperience}
             showLabel={!overlayOpen && !gameMode}
             interactive={interactive}
           />

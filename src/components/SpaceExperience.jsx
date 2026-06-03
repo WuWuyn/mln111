@@ -204,6 +204,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
             <Scene
               selectedPlanet={selectedPlanet}
               setSelectedPlanet={selectPlanet}
+              onOpenExperience={openExperience}
               handControlStore={handControlStore}
               overlayOpen={Boolean(activeView)}
               gameMode={gameMode}
@@ -242,6 +243,9 @@ export default function SpaceExperience({ onBack, handControlStore }) {
           </div>
           <div>
             <span>Scroll</span> zoom
+          </div>
+          <div>
+            <span>Double click</span> thực nghiệm
           </div>
           <div>
             <span>Ngón trỏ</span> chọn hành tinh
