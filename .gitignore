@@ -6,11 +6,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+vite-dev*.log
 
 node_modules
 dist
 dist-ssr
 *.local
+
+# Local agent / Codex workspace files
+.agents/
+.codex/
+skills-lock.json
 
 # Editor directories and files
 .vscode/*
