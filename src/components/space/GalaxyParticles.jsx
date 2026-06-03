@@ -3,79 +3,110 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { seededRandom } from './random'
 
-/**
- * Spherical dust cloud — a full 3D shell of points wrapped around the scene so
- * the camera is *inside* it and dust is visible in every direction, instead of
- * the old flat spiral disk that only read as a plane.
- *
- *   - direction picked uniformly on the unit sphere (no clumping at the poles)
- *   - radius from an INNER..OUTER shell, biased outward so the dense core near
- *     the planets stays clear while the halo fills the far background
- *   - colour by radius: inner shell = cool blue, outer halo = warm orange
- */
-const COUNT = 14000
-const INNER_RADIUS = 18
-const OUTER_RADIUS = 60
+const COUNT = 150000
+const FIELD_RADIUS = 210
 const TWO_PI = Math.PI * 2
-const DENSE_COLOR = new THREE.Color('#1885ff')
-const SPARSE_COLOR = new THREE.Color('#ffb28a')
+const COLD = new THREE.Color('#8fc9ff')
+const WARM = new THREE.Color('#ffd09a')
+const WHITE = new THREE.Color('#ffffff')
 
 export default function GalaxyParticles() {
-  const points = useRef()
+  const field = useRef()
+  const depthField = useRef()
 
-  const { positions, colors } = useMemo(() => {
+  const { positions, colors, depthPositions, depthColors } = useMemo(() => {
     const positionsArray = new Float32Array(COUNT * 3)
     const colorsArray = new Float32Array(COUNT * 3)
+    const depthCount = Math.floor(COUNT * 0.38)
+    const depthPositionsArray = new Float32Array(depthCount * 3)
+    const depthColorsArray = new Float32Array(depthCount * 3)
     const color = new THREE.Color()
 
     for (let i = 0; i < COUNT; i += 1) {
       const i3 = i * 3
-
-      // Uniform direction on the unit sphere: phi from acos(2u-1) avoids the
-      // density pinch you get from a naive uniform polar angle.
       const theta = seededRandom(i + 1) * TWO_PI
       const phi = Math.acos(2 * seededRandom(i + 2) - 1)
+      const radius = 18 + seededRandom(i + 3) ** 0.34 * FIELD_RADIUS
       const sinPhi = Math.sin(phi)
 
-      // cbrt -> even volume density; ** 0.6 pushes points toward the outer
-      // shell so the middle (where the planets live) stays uncluttered.
-      const t = Math.cbrt(seededRandom(i + 3)) ** 0.6
-      const radius = INNER_RADIUS + t * (OUTER_RADIUS - INNER_RADIUS)
-
       positionsArray[i3] = radius * sinPhi * Math.cos(theta)
-      positionsArray[i3 + 1] = radius * Math.cos(phi)
+      positionsArray[i3 + 1] = radius * Math.cos(phi) * (0.62 + seededRandom(i + 4) * 0.42)
       positionsArray[i3 + 2] = radius * sinPhi * Math.sin(theta)
 
-      // colour by depth into the shell: inner = blue, outer halo = warm orange
-      color.copy(DENSE_COLOR).lerp(SPARSE_COLOR, t)
-      const brightness = 0.75 + seededRandom(i + 6) * 0.5
+      const tint = seededRandom(i + 5)
+      color.copy(tint > 0.78 ? WARM : tint > 0.18 ? COLD : WHITE)
+      const brightness = 0.52 + seededRandom(i + 6) ** 2 * 1.25
       colorsArray[i3] = color.r * brightness
       colorsArray[i3 + 1] = color.g * brightness
       colorsArray[i3 + 2] = color.b * brightness
     }
 
-    return { positions: positionsArray, colors: colorsArray }
+    for (let i = 0; i < depthCount; i += 1) {
+      const i3 = i * 3
+      const theta = seededRandom(i + 101) * TWO_PI
+      const phi = Math.acos(2 * seededRandom(i + 102) - 1)
+      const radius = 70 + seededRandom(i + 103) ** 0.28 * FIELD_RADIUS * 1.45
+      const sinPhi = Math.sin(phi)
+
+      depthPositionsArray[i3] = radius * sinPhi * Math.cos(theta)
+      depthPositionsArray[i3 + 1] = radius * Math.cos(phi)
+      depthPositionsArray[i3 + 2] = radius * sinPhi * Math.sin(theta)
+
+      color.copy(seededRandom(i + 104) > 0.64 ? WARM : COLD)
+      const brightness = 0.24 + seededRandom(i + 105) * 0.58
+      depthColorsArray[i3] = color.r * brightness
+      depthColorsArray[i3 + 1] = color.g * brightness
+      depthColorsArray[i3 + 2] = color.b * brightness
+    }
+
+    return {
+      positions: positionsArray,
+      colors: colorsArray,
+      depthPositions: depthPositionsArray,
+      depthColors: depthColorsArray,
+    }
   }, [])
 
-  useFrame((_, delta) => {
-    points.current.rotation.y += delta * 0.025
-    points.current.rotation.z += delta * 0.006
+  useFrame((state, delta) => {
+    const elapsed = state.clock.elapsedTime
+
+    field.current.rotation.y += delta * 0.008
+    field.current.rotation.x = Math.sin(elapsed * 0.035) * 0.018
+    depthField.current.rotation.y -= delta * 0.003
+    depthField.current.rotation.z = Math.cos(elapsed * 0.028) * 0.014
   })
 
   return (
-    <points ref={points} rotation={[0.18, 0, -0.16]}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.07}
-        vertexColors
-        transparent
-        opacity={0.9}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
+    <group>
+      <points ref={depthField}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={depthPositions.length / 3} array={depthPositions} itemSize={3} />
+          <bufferAttribute attach="attributes-color" count={depthColors.length / 3} array={depthColors} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.075}
+          vertexColors
+          transparent
+          opacity={0.56}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </points>
+
+      <points ref={field}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
+          <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.058}
+          vertexColors
+          transparent
+          opacity={0.92}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </points>
+    </group>
   )
 }

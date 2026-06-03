@@ -2,6 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { planetPalette } from '../../../data/cosmos'
+import { seededRandom } from '../random'
 
 /**
  * "Phá vỡ hành tinh" game mode.
@@ -119,19 +120,20 @@ function Explosion({ data, onDone }) {
 
   const shards = useMemo(
     () =>
-      Array.from({ length: SHARDS }, () => {
+      Array.from({ length: SHARDS }, (_, index) => {
+        const seed = data.id * 101 + index * 17
         const dir = new THREE.Vector3(
-          Math.random() - 0.5,
-          Math.random() - 0.5,
-          Math.random() - 0.5,
+          seededRandom(seed + 1) - 0.5,
+          seededRandom(seed + 2) - 0.5,
+          seededRandom(seed + 3) - 0.5,
         ).normalize()
         return {
-          vel: dir.multiplyScalar((3 + Math.random() * 6) * burst),
-          scale: (0.12 + Math.random() * 0.28) * burst,
-          spin: 2 + Math.random() * 5,
+          vel: dir.multiplyScalar((3 + seededRandom(seed + 4) * 6) * burst),
+          scale: (0.12 + seededRandom(seed + 5) * 0.28) * burst,
+          spin: 2 + seededRandom(seed + 6) * 5,
         }
       }),
-    [burst],
+    [burst, data.id],
   )
 
   useFrame((_, delta) => {
@@ -239,9 +241,11 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy, as
   // Fire on a deliberate tap (not a camera-orbit drag): small movement, quick.
   useEffect(() => {
     if (!enabled) {
-      setProjectiles([])
-      setExplosions([])
-      return undefined
+      const frame = window.requestAnimationFrame(() => {
+        setProjectiles([])
+        setExplosions([])
+      })
+      return () => window.cancelAnimationFrame(frame)
     }
 
     const dom = gl.domElement

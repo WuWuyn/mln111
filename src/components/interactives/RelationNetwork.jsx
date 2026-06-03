@@ -1,98 +1,168 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import './RelationNetwork.css'
 
-// Mối liên hệ phổ biến: a star network around the question "Vì sao một sinh viên
-// học kém?". Selecting any cause lights up the whole web — a single fact never
-// stands alone; understanding it means seeing its connections.
-const CENTER = { id: 'center', label: 'Học kém?' }
+const MODES = {
+  static: {
+    label: 'Nhìn siêu hình',
+    message: 'Nhìn sự vật cô lập, tách rời, đứng yên.',
+  },
+  dialectic: {
+    label: 'Nhìn biện chứng',
+    message: 'Nhìn sự vật trong mối liên hệ, vận động và phát triển.',
+  },
+}
 
-const NODES = [
-  { id: 'method', label: 'Phương pháp học' },
-  { id: 'class', label: 'Môi trường lớp' },
-  { id: 'mind', label: 'Tâm lý' },
-  { id: 'time', label: 'Thời gian' },
-  { id: 'health', label: 'Sức khỏe' },
-  { id: 'motive', label: 'Động lực' },
-  { id: 'teach', label: 'Cách giảng dạy' },
+const PHASES = [
+  {
+    label: 'Bụi vũ trụ',
+    message: 'Sự vật bắt đầu từ những dạng tồn tại đơn giản.',
+  },
+  {
+    label: 'Kết tụ',
+    message: 'Các yếu tố liên hệ với nhau, tạo nên cấu trúc.',
+  },
+  {
+    label: 'Hệ ổn định',
+    message: 'Khi các mối liên hệ đạt trật tự nhất định, hệ thống mới ra đời.',
+  },
+  {
+    label: 'Điều kiện sống',
+    message: 'Sự phát triển diễn ra qua quá trình tích lũy và biến đổi điều kiện.',
+  },
+  {
+    label: 'Nhận thức xuất hiện',
+    message: 'Sự phát triển có thể tạo ra trình độ mới, phức tạp hơn.',
+  },
 ]
 
-// Pre-compute node positions on a circle so the SVG is stable across renders.
-function useLayout() {
-  return useMemo(() => {
-    const radius = 38
-    return NODES.map((node, index) => {
-      const angle = (index / NODES.length) * Math.PI * 2 - Math.PI / 2
-      return {
-        ...node,
-        x: 50 + Math.cos(angle) * radius,
-        y: 50 + Math.sin(angle) * radius,
-      }
-    })
-  }, [])
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function pointPercent(event, element) {
+  const rect = element?.getBoundingClientRect()
+  if (!rect) return null
+  return {
+    x: clamp(((event.clientX - rect.left) / rect.width) * 100, 12, 88),
+    y: clamp(((event.clientY - rect.top) / rect.height) * 100, 14, 86),
+  }
+}
+
+function distanceFromCenter(point) {
+  return Math.hypot(point.x - 50, point.y - 52)
 }
 
 export default function RelationNetwork() {
-  const layout = useLayout()
-  const [active, setActive] = useState(null)
-  const lit = active !== null
+  const stageRef = useRef(null)
+  const [mode, setMode] = useState('dialectic')
+  const [dragging, setDragging] = useState(false)
+  const [planet, setPlanet] = useState({ x: 69, y: 42 })
+  const [time, setTime] = useState(2)
+  const phase = PHASES[time]
+  const influence = useMemo(() => {
+    const pull = clamp(Math.abs(distanceFromCenter(planet) - 24) / 28, 0, 1)
+    return mode === 'dialectic' ? pull : 0
+  }, [mode, planet])
+
+  const updatePlanet = (event) => {
+    const point = pointPercent(event, stageRef.current)
+    if (!point) return
+    setPlanet(point)
+  }
+
+  const startDrag = (event) => {
+    event.preventDefault()
+    setDragging(true)
+    event.currentTarget.setPointerCapture(event.pointerId)
+    updatePlanet(event)
+  }
+
+  const moveDrag = (event) => {
+    if (dragging) updatePlanet(event)
+  }
+
+  const stopDrag = (event) => {
+    setDragging(false)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
 
   return (
-    <div className="widget widget-relation">
-      <svg viewBox="0 0 100 100" className={`relation-web ${lit ? 'is-lit' : ''}`} role="presentation">
-        {layout.map((node) => (
-          <line
-            key={`edge-${node.id}`}
-            x1="50"
-            y1="50"
-            x2={node.x}
-            y2={node.y}
-            className={`relation-edge ${active === node.id ? 'is-active' : ''}`}
-          />
-        ))}
-        {/* peripheral cross-links to suggest a real web, only shown when lit */}
-        {lit &&
-          layout.map((node, index) => {
-            const next = layout[(index + 1) % layout.length]
-            return (
-              <line
-                key={`ring-${node.id}`}
-                x1={node.x}
-                y1={node.y}
-                x2={next.x}
-                y2={next.y}
-                className="relation-ring"
-              />
-            )
-          })}
-        <circle cx="50" cy="50" r="9" className="relation-center" />
-      </svg>
+    <div
+      className={`widget dialectic-system is-${mode} is-phase-${time} ${dragging ? 'is-dragging' : ''}`}
+      style={{
+        '--planet-x': `${planet.x}%`,
+        '--planet-y': `${planet.y}%`,
+        '--influence': influence,
+        '--speed': `${8 - influence * 5}s`,
+        '--phase': time,
+      }}
+    >
+      <div ref={stageRef} className="dialectic-stage">
+        <div className="cosmic-dust-cloud" aria-hidden="true" />
+        <div className="dialectic-star" aria-hidden="true" />
 
-      <div className="relation-nodes">
+        <div className="orbit orbit--one" aria-hidden="true" />
+        <div className="orbit orbit--two" aria-hidden="true" />
+        <div className="orbit orbit--three" aria-hidden="true" />
+        <div className="force-line force-line--a" aria-hidden="true" />
+        <div className="force-line force-line--b" aria-hidden="true" />
+        <div className="force-line force-line--c" aria-hidden="true" />
+
         <button
           type="button"
-          className="relation-chip relation-chip--center"
-          onClick={() => setActive(null)}
+          className="system-planet system-planet--driver"
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={stopDrag}
+          onPointerCancel={stopDrag}
+          aria-label="Kéo hành tinh để thay đổi quỹ đạo"
         >
-          {CENTER.label}
+          <span />
         </button>
-        {NODES.map((node) => (
-          <button
-            key={node.id}
-            type="button"
-            className={`relation-chip ${active === node.id ? 'is-active' : ''} ${lit ? 'is-lit' : ''}`}
-            onClick={() => setActive((current) => (current === node.id ? null : node.id))}
-          >
-            {node.label}
-          </button>
-        ))}
+        <div className="system-planet system-planet--echo system-planet--echo-a" aria-hidden="true" />
+        <div className="system-planet system-planet--echo system-planet--echo-b" aria-hidden="true" />
+        <div className="system-planet system-planet--echo system-planet--echo-c" aria-hidden="true" />
+        <div className="asteroid-deflect" aria-hidden="true" />
+        <div className="life-band" aria-hidden="true" />
+        <div className="observer-station" aria-hidden="true" />
+
+        <div className="system-readout" role="status">
+          <strong>{mode === 'dialectic' ? 'Toàn hệ phản ứng' : 'Chỉ một vật đổi chỗ'}</strong>
+          <p>{mode === 'dialectic' ? 'Một yếu tố lệch quỹ đạo làm đường lực, tốc độ và thiên thể khác biến đổi.' : MODES.static.message}</p>
+        </div>
       </div>
 
-      <div className="widget-readout">
-        <span className="widget-tag">{lit ? 'Một mối liên hệ trong mạng lưới' : 'Hãy chọn một nguyên nhân'}</span>
-        <p>
-          {lit
-            ? 'Không nguyên nhân nào tồn tại cô lập — chọn một yếu tố, cả mạng lưới sáng lên. Muốn hiểu đúng phải nhìn toàn diện, không phiến diện.'
-            : 'Click vào một nguyên nhân để thấy nó liên hệ với tất cả những yếu tố còn lại như thế nào.'}
-        </p>
+      <div className="dialectic-controls">
+        <div className="mode-switch" aria-label="Chọn cách nhìn">
+          {Object.entries(MODES).map(([id, item]) => (
+            <button key={id} type="button" className={mode === id ? 'is-active' : ''} onClick={() => setMode(id)}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <label className="time-control">
+          <span>
+            Kéo thời gian
+            <strong>{phase.label}</strong>
+          </span>
+          <input
+            type="range"
+            min="0"
+            max={PHASES.length - 1}
+            step="1"
+            value={time}
+            onChange={(event) => setTime(Number(event.target.value))}
+            aria-label="Dòng thời gian phát triển của hệ sao"
+          />
+        </label>
+
+        <div className="dialectic-message">
+          <span>{mode === 'dialectic' ? MODES.dialectic.message : MODES.static.message}</span>
+          <p>{phase.message}</p>
+        </div>
       </div>
     </div>
   )

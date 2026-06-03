@@ -1,0 +1,1077 @@
+.consciousness-mirror {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(0.55rem, 1.3svh, 0.85rem);
+  height: 100%;
+  min-height: 0;
+}
+
+.mirror-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(4.8rem, 0.24fr) minmax(0, 1fr);
+  gap: clamp(0.45rem, 1vw, 0.7rem);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 52% 18%, rgba(255, 209, 122, 0.13), transparent 25%),
+    linear-gradient(135deg, rgba(6, 9, 19, 0.96), rgba(15, 18, 35, 0.95) 54%, rgba(24, 12, 22, 0.96));
+  isolation: isolate;
+}
+
+.mirror-stage::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.5) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 209, 122, 0.36) 0 1px, transparent 1.7px);
+  background-size: 72px 72px, 119px 119px;
+  opacity: 0.26;
+  animation: mirrorStarDrift 24s linear infinite;
+  content: '';
+}
+
+.mirror-world {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  transform-style: preserve-3d;
+}
+
+.mirror-world--real {
+  background:
+    radial-gradient(circle at 70% 28%, rgba(255, 209, 122, 0.18), transparent 27%),
+    radial-gradient(circle at 24% 68%, rgba(126, 220, 255, 0.12), transparent 34%);
+}
+
+.mirror-world--mind {
+  opacity: calc(0.36 + var(--clarity) * 0.64);
+  filter: blur(calc((1 - var(--clarity)) * 2.5px)) saturate(calc(0.72 + var(--clarity) * 0.45));
+  background:
+    radial-gradient(circle at 50% 48%, rgba(126, 220, 255, calc(0.05 + var(--clarity) * 0.1)), transparent 38%),
+    rgba(255, 255, 255, 0.025);
+  transition: opacity 260ms ease, filter 260ms ease;
+}
+
+.mirror-panel-label {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 3;
+  padding: 0.24rem 0.55rem;
+  border: 1px solid rgba(126, 220, 255, 0.22);
+  border-radius: 999px;
+  color: #9fe8ff;
+  background: rgba(6, 12, 24, 0.62);
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mirror-star,
+.mirror-planet,
+.mirror-orbit,
+.mirror-meteor,
+.mirror-storm,
+.mind-grid,
+.mirror-error,
+.plan-arc,
+.mirror-robot,
+.mirror-station {
+  position: absolute;
+}
+
+.mirror-star {
+  right: 10%;
+  top: 13%;
+  width: clamp(3rem, 7vw, 5.2rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fff9d8, #ffd55d 38%, #ed8d19 68%, transparent 72%);
+  box-shadow: 0 0 3rem rgba(255, 200, 90, 0.48);
+  animation: mirrorFloat 5s ease-in-out infinite;
+}
+
+.mirror-orbit {
+  left: 50%;
+  top: 58%;
+  width: min(88%, 23rem);
+  aspect-ratio: 1 / 0.48;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-9deg);
+}
+
+.mirror-orbit--mind {
+  border-color: rgba(126, 220, 255, calc(0.12 + var(--clarity) * 0.22));
+  transform: translate(-50%, -50%) rotate(calc(-22deg + var(--clarity) * 13deg));
+}
+
+.mirror-planet {
+  left: 46%;
+  top: 55%;
+  width: clamp(7rem, 16vw, 12rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 32%, rgba(255, 255, 222, 0.88), transparent 12%),
+    radial-gradient(circle at 62% 58%, rgba(255, 187, 62, 0.74), transparent 24%),
+    linear-gradient(135deg, #1e806b, #226d86 48%, #725a38);
+  box-shadow:
+    inset -1.8rem -1.5rem 2.6rem rgba(0, 0, 0, 0.58),
+    0 1rem 2.6rem rgba(0, 0, 0, 0.36);
+  transform: translate(-50%, -50%);
+  animation: mirrorPlanetTurn 9s linear infinite;
+}
+
+.mirror-planet--mind {
+  left: 50%;
+  width: clamp(5.8rem, 13vw, 9.2rem);
+  opacity: calc(0.42 + var(--clarity) * 0.58);
+  transform: translate(-50%, -50%) scale(calc(0.82 + var(--clarity) * 0.18));
+  background:
+    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, calc(0.28 + var(--clarity) * 0.5)), transparent 13%),
+    linear-gradient(135deg, rgba(126, 220, 255, 0.55), rgba(255, 209, 122, calc(0.2 + var(--clarity) * 0.45)));
+}
+
+.mirror-core {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background: rgba(255, 209, 122, 0.48);
+  box-shadow: 0 0 1.5rem rgba(255, 209, 122, 0.48);
+}
+
+.mirror-meteor {
+  left: 2%;
+  top: 18%;
+  width: 0.52rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #eaf7ff;
+  box-shadow: -3rem 0 1.1rem rgba(126, 220, 255, 0.34);
+  animation: mirrorMeteor 5.6s linear infinite;
+}
+
+.mirror-storm {
+  right: 20%;
+  bottom: 20%;
+  width: 1.1rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 91, 91, 0.75);
+  border-radius: 50%;
+  background: rgba(255, 91, 91, 0.12);
+  box-shadow: 0 0 1.2rem rgba(255, 91, 91, 0.42);
+  animation: mirrorPulse 1.8s ease-in-out infinite;
+}
+
+.mind-grid {
+  inset: 0;
+  background:
+    linear-gradient(rgba(126, 220, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(126, 220, 255, 0.07) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: calc(var(--clarity) * 0.9);
+}
+
+.mirror-astronaut {
+  position: relative;
+  z-index: 4;
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  width: clamp(4.2rem, 8vw, 6.8rem);
+  aspect-ratio: 0.82;
+  place-items: center;
+  border-radius: 45% 45% 38% 38%;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(126, 220, 255, 0.08)),
+    rgba(4, 10, 20, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 2.2rem rgba(126, 220, 255, 0.18);
+  transform: perspective(22rem) rotateY(-8deg);
+  animation: mirrorHelmetFloat 4.6s ease-in-out infinite;
+}
+
+.helmet-visor,
+.helmet-shell,
+.helmet-brain {
+  position: absolute;
+}
+
+.helmet-shell {
+  inset: 9% 13% 20%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 48%;
+}
+
+.helmet-visor {
+  inset: 22% 17% 39%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 65% 45%, rgba(255, 209, 122, 0.3), transparent 28%),
+    linear-gradient(135deg, rgba(126, 220, 255, 0.72), rgba(5, 12, 26, 0.86));
+  box-shadow: inset 0 0 1.4rem rgba(255, 255, 255, 0.12);
+}
+
+.helmet-brain {
+  inset: 46% 30% 22%;
+  border: 1px solid rgba(126, 220, 255, 0.44);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(126, 220, 255, 0.32), transparent 65%);
+  opacity: calc(0.35 + var(--clarity) * 0.65);
+}
+
+.mirror-beam {
+  position: absolute;
+  z-index: 2;
+  top: 49%;
+  height: 0.25rem;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.mirror-beam--in {
+  left: 32%;
+  width: 18%;
+  background: linear-gradient(90deg, transparent, rgba(126, 220, 255, 0.74));
+  animation: mirrorBeamIn 1.7s ease-in-out infinite;
+}
+
+.mirror-beam--out {
+  right: 32%;
+  width: 18%;
+  background: linear-gradient(90deg, rgba(255, 209, 122, calc(var(--clarity) * 0.72)), transparent);
+  opacity: calc(var(--clarity) * 0.85);
+  animation: mirrorBeamOut 2.1s ease-in-out infinite;
+}
+
+.mirror-scan-handle {
+  position: absolute;
+  left: var(--scan-x);
+  top: 49%;
+  z-index: 8;
+  display: grid;
+  width: 3rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 209, 122, 0.58);
+  border-radius: 50%;
+  color: #120d04;
+  background:
+    radial-gradient(circle at 35% 28%, #fffbdc, #ffd17a 54%, #f2a23b),
+    rgba(255, 209, 122, 0.9);
+  box-shadow:
+    0 0 0 0.55rem rgba(255, 209, 122, 0.1),
+    0 0 2rem rgba(255, 209, 122, 0.5);
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+  transition: box-shadow 160ms ease, filter 160ms ease;
+}
+
+.mirror-scan-handle::before,
+.mirror-scan-handle::after {
+  position: absolute;
+  top: 50%;
+  height: 0.18rem;
+  border-radius: 999px;
+  pointer-events: none;
+  content: '';
+}
+
+.mirror-scan-handle::before {
+  right: 50%;
+  width: calc(var(--scan-x) - 6%);
+  background: linear-gradient(90deg, transparent, rgba(126, 220, 255, 0.68), rgba(255, 209, 122, 0.8));
+}
+
+.mirror-scan-handle::after {
+  left: 50%;
+  width: calc(94% - var(--scan-x));
+  opacity: var(--clarity);
+  background: linear-gradient(90deg, rgba(255, 209, 122, 0.74), rgba(126, 220, 255, 0.42), transparent);
+}
+
+.mirror-scan-handle span {
+  display: grid;
+  width: 1.35rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.mirror-scan-handle span::before {
+  color: #130d04;
+  font-size: 0.9rem;
+  font-weight: 950;
+  content: '↔';
+}
+
+.mirror-scan-handle:hover,
+.consciousness-mirror.is-dragging-scan .mirror-scan-handle {
+  filter: brightness(1.08);
+  box-shadow:
+    0 0 0 0.75rem rgba(255, 209, 122, 0.14),
+    0 0 2.3rem rgba(255, 209, 122, 0.68);
+}
+
+.consciousness-mirror.is-dragging-scan .mirror-scan-handle {
+  cursor: grabbing;
+}
+
+.mirror-error {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.mirror-error--orbit {
+  left: 18%;
+  top: 26%;
+  width: 4rem;
+  height: 1px;
+  background: #ff715d;
+  transform: rotate(-23deg);
+}
+
+.mirror-error--storm {
+  right: 22%;
+  bottom: 26%;
+  width: 1.2rem;
+  aspect-ratio: 1;
+  border: 1px solid #ff715d;
+  border-radius: 50%;
+}
+
+.consciousness-mirror.is-verify:not(.is-corrected) .mirror-error,
+.consciousness-mirror.is-corrected .mirror-error {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.consciousness-mirror.is-corrected .mirror-error {
+  border-color: rgba(111, 240, 171, 0.72);
+  background: rgba(111, 240, 171, 0.12);
+}
+
+.plan-arc {
+  left: 18%;
+  top: 24%;
+  width: 64%;
+  aspect-ratio: 1 / 0.52;
+  border: 2px solid rgba(255, 209, 122, 0.52);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-14deg);
+  animation: mirrorPlanDraw 1.8s ease-in-out infinite;
+}
+
+.mirror-robot {
+  width: 1.25rem;
+  aspect-ratio: 1;
+  border-radius: 0.32rem;
+  background: linear-gradient(135deg, #eaf7ff, #7edcff);
+  box-shadow: 0 0 1rem rgba(126, 220, 255, 0.42);
+}
+
+.mirror-robot--mind {
+  left: 34%;
+  top: 38%;
+}
+
+.mirror-robot--real {
+  left: 28%;
+  top: 34%;
+  animation: mirrorRobotLand 3.2s ease-in-out infinite;
+}
+
+.mirror-station {
+  right: 24%;
+  top: 28%;
+  width: 1.8rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  background: rgba(255, 209, 122, 0.8);
+  box-shadow: 0 0 1rem rgba(255, 209, 122, 0.38);
+}
+
+.mirror-status {
+  position: absolute;
+  left: 50%;
+  bottom: 0.85rem;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.12rem 0.65rem;
+  width: min(28rem, calc(100% - 1.7rem));
+  padding: 0.72rem 0.82rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(5, 9, 20, 0.76);
+  box-shadow: 0 1rem 2.4rem rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(16px);
+  transform: translateX(-50%);
+}
+
+.mirror-status span {
+  grid-row: span 2;
+  display: grid;
+  width: 1.9rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  color: #120d04;
+  background: #ffd17a;
+  font-weight: 950;
+}
+
+.mirror-status strong {
+  color: #fff8dc;
+  font-size: 0.86rem;
+  line-height: 1.15;
+}
+
+.mirror-status p {
+  margin: 0;
+  color: #cbd5ee;
+  font-size: 0.76rem;
+  line-height: 1.38;
+}
+
+.mirror-controls {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.85fr) minmax(18rem, 1.15fr);
+  gap: 0.65rem;
+}
+
+.mirror-stepper,
+.mirror-actions {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.mirror-stepper {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mirror-step,
+.mirror-action,
+.mirror-tool {
+  min-height: 2.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  color: #eaf2ff;
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, opacity 150ms ease;
+}
+
+.mirror-step {
+  display: grid;
+  align-content: center;
+  gap: 0.12rem;
+  padding: 0.42rem 0.5rem;
+  text-align: center;
+}
+
+.mirror-step strong {
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+.mirror-step span {
+  color: rgba(203, 213, 238, 0.7);
+  font-size: 0.62rem;
+  line-height: 1.1;
+}
+
+.mirror-step:hover,
+.mirror-action:hover,
+.mirror-tool:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 209, 122, 0.34);
+  background: rgba(255, 209, 122, 0.08);
+}
+
+.mirror-step.is-active,
+.mirror-tool.is-active {
+  border-color: rgba(255, 209, 122, 0.48);
+  background: rgba(255, 209, 122, 0.12);
+}
+
+.mirror-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mirror-drag-brief {
+  display: grid;
+  align-content: center;
+  min-height: 2.55rem;
+  padding: 0.38rem 0.7rem;
+  border: 1px solid rgba(255, 209, 122, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 209, 122, 0.07);
+}
+
+.mirror-drag-brief strong {
+  color: #fff8dc;
+  font-size: 0.74rem;
+  line-height: 1.1;
+}
+
+.mirror-drag-brief span {
+  color: rgba(203, 213, 238, 0.72);
+  font-size: 0.63rem;
+  line-height: 1.2;
+}
+
+.mirror-action {
+  padding: 0 0.85rem;
+  color: #160f05;
+  background: linear-gradient(135deg, #fff1a8, #ffd17a);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.mirror-action--ghost {
+  color: #eaf2ff;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.mirror-action--execute {
+  grid-column: span 2;
+}
+
+.mirror-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.mirror-tool-row {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.mirror-tool {
+  min-height: 2.25rem;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+@keyframes mirrorStarDrift {
+  to {
+    transform: translate3d(72px, 72px, 0);
+  }
+}
+
+@keyframes mirrorFloat {
+  50% {
+    transform: translateY(-0.45rem) scale(1.03);
+  }
+}
+
+@keyframes mirrorHelmetFloat {
+  50% {
+    transform: perspective(22rem) rotateY(8deg) translateY(-0.35rem);
+  }
+}
+
+@keyframes mirrorPlanetTurn {
+  to {
+    filter: hue-rotate(14deg);
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes mirrorMeteor {
+  from {
+    transform: translate3d(-4rem, -2rem, 0) rotate(18deg);
+    opacity: 0;
+  }
+  20%,
+  70% {
+    opacity: 0.75;
+  }
+  to {
+    transform: translate3d(24rem, 10rem, 0) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes mirrorPulse {
+  50% {
+    transform: scale(1.22);
+    opacity: 0.62;
+  }
+}
+
+@keyframes mirrorBeamIn {
+  50% {
+    transform: scaleX(0.72);
+    opacity: 0.5;
+  }
+}
+
+@keyframes mirrorBeamOut {
+  50% {
+    transform: scaleX(1.16);
+    opacity: calc(var(--clarity) * 0.55);
+  }
+}
+
+@keyframes mirrorPlanDraw {
+  50% {
+    transform: rotate(-14deg) translateY(-0.25rem);
+    opacity: 0.62;
+  }
+}
+
+@keyframes mirrorRobotLand {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(6rem, 4.2rem, 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .mirror-stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(9rem, 1fr) minmax(4rem, auto) minmax(9rem, 1fr);
+  }
+
+  .mirror-astronaut {
+    width: 4.2rem;
+  }
+
+  .mirror-beam--in,
+  .mirror-beam--out {
+    display: none;
+  }
+
+  .mirror-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .mirror-controls,
+  .mirror-actions,
+  .mirror-tool-row,
+  .mirror-stepper {
+    grid-template-columns: 1fr;
+  }
+
+  .mirror-action--execute,
+  .mirror-tool-row {
+    grid-column: auto;
+  }
+
+  .mirror-status {
+    bottom: 0.55rem;
+    width: calc(100% - 1.1rem);
+  }
+}
+
+/* Cosmic Mirror redesign: magnifier reflection + drag/drop planning. */
+.mirror-redesign .mirror-stage--lens {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(0.6rem, 1.3vw, 0.9rem);
+  padding: clamp(0.55rem, 1.1vw, 0.8rem);
+}
+
+.mirror-redesign {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.mirror-redesign .mirror-controls {
+  display: none;
+}
+
+.mirror-redesign .mirror-world {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-clip: padding-box;
+}
+
+.mirror-redesign .mirror-world--mind {
+  cursor: crosshair;
+}
+
+.mirror-redesign .mirror-world--mind::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at var(--lens-x) var(--lens-y),
+      rgba(255, 241, 168, calc(0.06 + var(--clarity) * 0.3)) 0 12%,
+      rgba(126, 220, 255, calc(0.04 + var(--clarity) * 0.18)) 13% 28%,
+      rgba(3, 7, 16, calc(0.72 - var(--clarity) * 0.42)) 44%
+    );
+  mix-blend-mode: screen;
+  content: '';
+}
+
+.mirror-hotspot {
+  position: absolute;
+  z-index: 4;
+  width: 1rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 209, 122, 0.34);
+  border-radius: 50%;
+  background: rgba(255, 209, 122, 0.1);
+  opacity: 0.44;
+  transform: translate(-50%, -50%);
+  transition: background 180ms ease, border-color 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+}
+
+.mirror-hotspot--planet {
+  left: 46%;
+  top: 55%;
+}
+
+.mirror-hotspot--orbit {
+  left: 50%;
+  top: 58%;
+}
+
+.mirror-hotspot--storm {
+  left: 80%;
+  top: 80%;
+}
+
+.mirror-hotspot.is-scanned {
+  border-color: rgba(111, 240, 171, 0.72);
+  background: rgba(111, 240, 171, 0.28);
+  box-shadow: 0 0 1rem rgba(111, 240, 171, 0.45);
+  opacity: 1;
+}
+
+.mirror-lens {
+  position: absolute;
+  left: var(--lens-x);
+  top: var(--lens-y);
+  z-index: 8;
+  display: grid;
+  width: clamp(3.2rem, 6vw, 4.7rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 2px solid rgba(255, 241, 168, 0.82);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.15), rgba(126, 220, 255, 0.08) 58%, rgba(8, 16, 30, 0.44)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 0 0 1.2rem rgba(255, 255, 255, 0.14),
+    0 0 0 0.55rem rgba(255, 209, 122, 0.08),
+    0 1rem 2rem rgba(0, 0, 0, 0.28);
+  cursor: grab;
+  touch-action: none;
+  transform: translate(-50%, -50%);
+  transition: box-shadow 160ms ease, filter 160ms ease;
+}
+
+.mirror-lens::before {
+  position: absolute;
+  right: -0.9rem;
+  bottom: -0.7rem;
+  width: 1.8rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffd17a, #8a6631);
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.32);
+  transform: rotate(42deg);
+  content: '';
+}
+
+.mirror-lens span {
+  width: 54%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.78), rgba(126, 220, 255, 0.28) 58%, transparent);
+  box-shadow: 0 0 1.8rem rgba(126, 220, 255, 0.42);
+}
+
+.mirror-redesign.is-dragging-lens .mirror-lens,
+.mirror-lens:hover {
+  filter: brightness(1.12);
+  box-shadow:
+    inset 0 0 1.4rem rgba(255, 255, 255, 0.2),
+    0 0 0 0.75rem rgba(255, 209, 122, 0.12),
+    0 1.1rem 2.3rem rgba(0, 0, 0, 0.36);
+}
+
+.mirror-redesign.is-dragging-lens .mirror-lens {
+  cursor: grabbing;
+}
+
+.mirror-redesign .mirror-planet--mind,
+.mirror-redesign .mind-grid,
+.mirror-redesign .mirror-orbit--mind {
+  z-index: 2;
+}
+
+.mind-part {
+  position: absolute;
+  z-index: 4;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+
+.mind-part.is-lit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mind-part--planet {
+  left: 50%;
+  top: 55%;
+  width: clamp(5.5rem, 11vw, 8.5rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 241, 168, 0.28), transparent 62%);
+  box-shadow: 0 0 2rem rgba(255, 209, 122, 0.28);
+  transform: translate(-50%, -50%) scale(0.88);
+}
+
+.mind-part--planet.is-lit {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.mind-part--orbit {
+  left: 50%;
+  top: 58%;
+  width: min(82%, 20rem);
+  aspect-ratio: 1 / 0.48;
+  border: 1px solid rgba(111, 240, 171, 0.62);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-9deg) scale(0.88);
+}
+
+.mind-part--orbit.is-lit {
+  transform: translate(-50%, -50%) rotate(-9deg) scale(1);
+}
+
+.mind-part--storm {
+  right: 18%;
+  bottom: 18%;
+  width: 1.2rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(111, 240, 171, 0.72);
+  border-radius: 50%;
+  background: rgba(111, 240, 171, 0.14);
+}
+
+.mirror-redesign .mirror-error {
+  z-index: 4;
+}
+
+.mirror-redesign.is-verify:not(.is-corrected) .mirror-world--mind {
+  animation: mirrorMisread 700ms ease both;
+}
+
+.mirror-redesign.is-corrected .mirror-world--mind {
+  filter: saturate(1.08);
+}
+
+.mirror-redesign .mirror-controls--redesign {
+  grid-template-columns: minmax(15rem, 0.72fr) minmax(22rem, 1.28fr);
+}
+
+.mirror-redesign .mirror-step {
+  cursor: default;
+}
+
+.mirror-redesign .mirror-step:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.mirror-planner {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.9fr) minmax(17rem, 1.1fr) minmax(10rem, 0.9fr);
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.mirror-redesign .mirror-tool-row {
+  grid-column: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mirror-redesign .mirror-action--execute {
+  grid-column: auto;
+}
+
+.mirror-tool:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.mirror-tool--draw {
+  display: grid;
+  place-items: center;
+  cursor: crosshair;
+}
+
+.mirror-plan-palette {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.38rem;
+  width: min(22rem, calc(100% - 1.4rem));
+  padding: 0.42rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(5, 9, 20, 0.72);
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+}
+
+.drawn-orbit {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.drawn-orbit path {
+  fill: none;
+  stroke: rgba(255, 209, 122, 0.88);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 4 3;
+  filter: drop-shadow(0 0 0.5rem rgba(255, 209, 122, 0.55));
+  animation: mirrorPlanDraw 1.8s ease-in-out infinite;
+}
+
+.placed-tool {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  width: 2rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.55rem;
+  color: #07101f;
+  background: linear-gradient(135deg, #eaf7ff, #7edcff);
+  box-shadow: 0 0 1rem rgba(126, 220, 255, 0.34);
+  font-size: 0.75rem;
+  font-weight: 950;
+  transform: translate(-50%, -50%);
+}
+
+.placed-tool--station {
+  background: linear-gradient(135deg, #fff4b8, #ffd17a);
+}
+
+.drag-ghost {
+  position: fixed;
+  z-index: 100;
+  display: grid;
+  min-width: 4.2rem;
+  min-height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(255, 209, 122, 0.45);
+  border-radius: 999px;
+  color: #150d08;
+  background: #ffd17a;
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.35);
+  font-size: 0.78rem;
+  font-weight: 900;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.mirror-execute {
+  position: absolute;
+  right: 0.85rem;
+  top: 3.3rem;
+  z-index: 9;
+  min-height: 2.45rem;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(255, 209, 122, 0.46);
+  border-radius: 999px;
+  color: #160f05;
+  background: linear-gradient(135deg, #fff1a8, #ffd17a);
+  box-shadow: 0 0.85rem 1.8rem rgba(0, 0, 0, 0.28);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+.mirror-execute:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.plan-arc--realized {
+  left: 18%;
+  top: 22%;
+  z-index: 5;
+  opacity: 0.9;
+}
+
+.mirror-station--real {
+  right: 32%;
+  top: 36%;
+  z-index: 5;
+}
+
+@keyframes mirrorMisread {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-0.35rem);
+  }
+  60% {
+    transform: translateX(0.25rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .mirror-redesign .mirror-stage--lens {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(10rem, 1fr) minmax(10rem, 1fr);
+  }
+
+  .mirror-planner,
+  .mirror-redesign .mirror-controls--redesign {
+    grid-template-columns: 1fr;
+  }
+
+  .mirror-plan-palette {
+    grid-template-columns: 1fr;
+    width: min(11rem, calc(100% - 1.4rem));
+  }
+}

@@ -23,6 +23,12 @@
     linear-gradient(160deg, #02040b 0%, #07101f 55%, #120716 100%);
 }
 
+.content-page.overlay-panel--detail .content-page-inner {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: clamp(0.75rem, 1.8svh, 1.15rem);
+}
+
 /* ── Header ───────────────────────────────────────────────────────────────── */
 .content-page.overlay-panel--detail .detail-head {
   position: relative;
@@ -30,8 +36,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1.5rem;
-  padding-bottom: 1.75rem;
-  margin-bottom: 2rem;
+  padding-bottom: clamp(0.75rem, 1.8svh, 1.2rem);
+  margin-bottom: 0;
   /* replace the razor-thin bottom line with a more intentional separator */
   border-bottom: none;
 }
@@ -76,9 +82,9 @@
 /* Large serif title */
 .content-page.overlay-panel--detail .detail-title {
   margin: 0 0 0.4rem;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2rem, 4.5vw, 3.2rem);
-  font-weight: 400; /* Georgia looks better at normal weight for big display */
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.8vw, 2.75rem);
+  font-weight: 800;
   line-height: 1.02;
   letter-spacing: -0.01em;
   color: #fff;
@@ -135,21 +141,24 @@
 .content-page.overlay-panel--detail .detail-body {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
-  gap: clamp(1.4rem, 3.5vw, 2.8rem);
+  gap: clamp(1rem, 2.4vw, 2rem);
   align-items: start;
+  min-height: 0;
 }
 
 /* ── Text column ─────────────────────────────────────────────────────────── */
 .content-page.overlay-panel--detail .detail-text {
   display: grid;
   gap: 0; /* sections control their own spacing */
+  min-height: 0;
+  overflow: auto;
 }
 
 /* Each content block */
 .content-page.overlay-panel--detail .detail-block {
   position: relative;
-  padding-bottom: 1.6rem;
-  margin-bottom: 1.6rem;
+  padding-bottom: clamp(0.85rem, 1.7svh, 1.2rem);
+  margin-bottom: clamp(0.85rem, 1.7svh, 1.2rem);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -188,20 +197,92 @@
 .content-page.overlay-panel--detail .detail-block p {
   margin: 0;
   color: rgba(220, 229, 255, 0.88);
-  line-height: 1.72;
-  font-size: 0.97rem;
+  line-height: 1.58;
+  font-size: 0.94rem;
 }
 
 .content-page.overlay-panel--detail .detail-define {
   color: #f0f4ff !important;
-  font-size: 1.04rem !important;
-  line-height: 1.68 !important;
-  font-style: italic;
+  font-size: 0.99rem !important;
+  line-height: 1.58 !important;
+  font-style: normal;
+}
+
+.content-page.overlay-panel--detail .detail-block--experience {
+  padding: 1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--accent, #7edcff) 22%, transparent);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      110% 100% at 15% 0%,
+      color-mix(in srgb, var(--accent, #7edcff) 13%, transparent),
+      transparent 70%
+    ),
+    rgba(255, 255, 255, 0.035);
+}
+
+.content-page.overlay-panel--detail .experience-planet-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.content-page.overlay-panel--detail .experience-planet-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+  color: #eaf2ff;
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.content-page.overlay-panel--detail .experience-planet-card:hover,
+.content-page.overlay-panel--detail .experience-planet-card.is-active {
+  transform: translateX(0.22rem);
+  border-color: color-mix(in srgb, var(--accent, #7edcff) 58%, transparent);
+  background: color-mix(in srgb, var(--accent, #7edcff) 10%, rgba(255, 255, 255, 0.045));
+  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.22);
+}
+
+.content-page.overlay-panel--detail .experience-planet-card span {
+  grid-row: span 2;
+  display: grid;
+  width: 2.3rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent, #7edcff) 18%, rgba(255, 255, 255, 0.08));
+  color: var(--accent, #7edcff);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.content-page.overlay-panel--detail .experience-planet-card strong {
+  color: #fff;
+  line-height: 1.1;
+}
+
+.content-page.overlay-panel--detail .experience-planet-card small {
+  color: rgba(220, 229, 255, 0.62);
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
 /* Example block — distinct gold-tinted card */
 .content-page.overlay-panel--detail .detail-block--example {
-  padding: 1.1rem 1.3rem 1.2rem;
+  padding: 0.9rem 1rem;
   border: 1px solid rgba(255, 213, 132, 0.2);
   border-left: 3px solid #ffd17a;
   border-radius: 0 12px 12px 0;
@@ -213,7 +294,7 @@
   );
   /* override default block spacing — card has own padding */
   margin-bottom: 0;
-  padding-bottom: 1.2rem;
+  padding-bottom: 0.9rem;
   border-bottom: 1px solid rgba(255, 213, 132, 0.2); /* keep the card border, not the generic one */
 }
 
@@ -233,8 +314,10 @@
 /* ── Interactive aside card ───────────────────────────────────────────────── */
 .content-page.overlay-panel--detail .detail-interactive {
   position: sticky;
-  top: clamp(1rem, 2.5vw, 1.8rem);
-  padding: 1.4rem 1.3rem 1.5rem;
+  top: 0;
+  max-height: 100%;
+  overflow: auto;
+  padding: clamp(0.9rem, 1.7svh, 1.2rem);
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-top: 2px solid color-mix(in srgb, var(--accent, #7edcff) 55%, transparent);
   border-radius: 14px;
@@ -296,8 +379,8 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 1rem;
-  margin-top: 2rem;
-  padding: 1.2rem 0 0;
+  margin-top: 0;
+  padding: clamp(0.65rem, 1.6svh, 0.95rem) 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -391,6 +474,34 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   white-space: nowrap;
+}
+
+.content-page.overlay-panel--detail .detail-nav {
+  justify-content: center;
+  gap: 0;
+  width: 3rem;
+  max-width: none;
+  padding: 0;
+  text-align: center;
+}
+
+.content-page.overlay-panel--detail .detail-nav-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.content-page.overlay-panel--detail .detail-nav:not(.detail-nav--next)::before {
+  content: '<';
+  font-size: 1.15rem;
+}
+
+.content-page.overlay-panel--detail .detail-nav--next::after {
+  content: '>';
+  font-size: 1.15rem;
 }
 
 /* ── Entrance animation ───────────────────────────────────────────────────── */
@@ -523,5 +634,387 @@
   .content-page.overlay-panel--detail .detail-nav {
     font-size: 0.75rem;
     padding: 0.45rem 0.6rem;
+  }
+}
+
+/* Visual-first matter scene: one-screen demo, no reading column, quiz in a corner. */
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) {
+  overflow: hidden;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+  width: min(62rem, 100%);
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(0.45rem, 1.1svh, 0.75rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  padding-bottom: clamp(0.45rem, 1svh, 0.7rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head .overlay-eyebrow {
+  margin-bottom: 0.25rem;
+  font-size: 0.64rem;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+  margin-bottom: 0.24rem;
+  font-size: clamp(1.55rem, 3.2vw, 2.25rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+  padding: 0.18rem 0.62rem;
+  font-size: 0.64rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  min-height: 0;
+  height: 100%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .detail-text,
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz + .detail-foot {
+  display: none;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive {
+  position: relative;
+  width: min(48rem, 100%);
+  max-height: 100%;
+  overflow: hidden;
+  padding: clamp(0.55rem, 1.3svh, 0.85rem);
+  border-radius: 16px;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive > .overlay-eyebrow {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-universe {
+  gap: clamp(0.45rem, 1.05svh, 0.65rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-scene {
+  min-height: clamp(18rem, 52svh, 30rem);
+  border-radius: 18px;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-planet-model {
+  width: clamp(10rem, 25vw, 16.5rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-controls {
+  gap: 0.55rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .observer-toggle {
+  min-height: 2.55rem;
+  font-size: 0.78rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .cognition-control {
+  padding: 0.52rem 0.72rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .widget-control-label {
+  font-size: 0.74rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .widget-control-label strong {
+  font-size: 0.82rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-row {
+  gap: 0.42rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-dot {
+  min-height: 3.3rem;
+  padding: 0.48rem 0.52rem;
+  border-radius: 12px;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-dot span {
+  width: 1.45rem;
+  font-size: 0.75rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-dot strong {
+  font-size: 0.72rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-dot small {
+  font-size: 0.63rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-interaction-hint {
+  margin: 0;
+  font-size: 0.68rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+  position: fixed;
+  right: clamp(0.8rem, 2vw, 1.3rem);
+  bottom: clamp(0.8rem, 2vw, 1.3rem);
+  z-index: 20;
+  width: min(22rem, calc(100vw - 1.6rem));
+  max-height: min(34rem, calc(100svh - 2rem));
+  overflow: hidden;
+  margin: 0;
+  border-radius: 16px;
+  background: rgba(5, 9, 20, 0.82);
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.44);
+  backdrop-filter: blur(18px);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) {
+  width: auto;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz .mini-quiz-toggle {
+  min-height: 2.7rem;
+  padding: 0.45rem 0.6rem 0.45rem 0.8rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) .mini-quiz-kicker,
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) .mini-quiz-toggle-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) .mini-quiz-toggle {
+  width: 3rem;
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  justify-content: center;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz .mini-quiz-toggle-icon {
+  margin-left: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz .mini-quiz-body {
+  max-height: calc(100svh - 7rem);
+  overflow: auto;
+  padding: 0 0.8rem 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) {
+    padding: 0.65rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    padding-right: 3rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+    font-size: clamp(1.35rem, 7vw, 1.9rem);
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .silent-scene {
+    min-height: clamp(17rem, 48svh, 24rem);
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-dot {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-layer-dot small {
+    display: none;
+  }
+}
+
+/* Silent Universe layout pass: stage first, quiz in its own rail, no overlap. */
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+  width: min(78rem, 100%);
+  grid-template-columns: minmax(0, 1fr) clamp(12rem, 19vw, 17.5rem);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "head head"
+    "stage quiz";
+  column-gap: clamp(0.8rem, 1.8vw, 1.25rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  grid-area: head;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first {
+  grid-area: stage;
+  align-self: stretch;
+  justify-self: stretch;
+  height: 100%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-universe {
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-scene {
+  height: 100%;
+  min-height: 0;
+  border-radius: 18px;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .star-model {
+  right: 9%;
+  top: 12%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-planet-model {
+  left: 50%;
+  top: 53%;
+  width: clamp(11rem, 23vw, 17rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .gravity-well,
+.content-page.overlay-panel--detail .detail-body--visual-first .orbit-arc {
+  top: 57%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .observer-label {
+  max-width: 9.5rem;
+  padding: 0.52rem 0.62rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .observer-label--law {
+  left: clamp(0.75rem, 2vw, 1.2rem);
+  top: clamp(0.75rem, 2vw, 1.2rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .observer-label--planet {
+  right: auto;
+  left: clamp(0.75rem, 2vw, 1.2rem);
+  bottom: clamp(0.75rem, 2vw, 1.2rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .knowledge-pulse--reality {
+  left: clamp(9.5rem, 19vw, 13rem);
+  top: clamp(3.7rem, 9vw, 5.6rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .knowledge-pulse--observer {
+  right: clamp(1rem, 3vw, 1.7rem);
+  bottom: clamp(6.1rem, 12vw, 8.2rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-insight {
+  top: clamp(0.8rem, 2vw, 1rem);
+  right: clamp(0.8rem, 2vw, 1rem);
+  bottom: auto;
+  width: min(19rem, calc(100% - 1.6rem));
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .meteor--one {
+  left: 2%;
+  top: 15%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .meteor--two {
+  right: 8%;
+  bottom: 18%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-controls {
+  grid-template-columns: minmax(10rem, 0.72fr) minmax(16rem, 1.28fr);
+  align-items: stretch;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  grid-area: quiz;
+  align-self: end;
+  justify-self: end;
+  width: 100%;
+  max-height: 100%;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) {
+  width: 3rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open {
+  align-self: stretch;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz .mini-quiz-body {
+  max-height: calc(100svh - 13rem);
+}
+
+@media (max-width: 980px) {
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "stage";
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+    position: fixed;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: min(24rem, calc(100vw - 1.5rem));
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) {
+    width: 3rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open {
+    max-height: min(30rem, calc(100svh - 1.5rem));
+  }
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-insight {
+    width: min(17rem, calc(100% - 1.4rem));
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .knowledge-pulse--reality {
+    left: 42%;
+    top: 22%;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .knowledge-pulse--observer {
+    right: 7%;
+    bottom: 22%;
   }
 }

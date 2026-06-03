@@ -1,0 +1,629 @@
+.dialectic-system {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(0.65rem, 1.4svh, 0.9rem);
+  height: 100%;
+  min-height: 0;
+  --gold: #ffd17a;
+  --cyan: #7edcff;
+}
+
+.dialectic-stage {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 52%, rgba(255, 209, 122, 0.12), transparent 18%),
+    radial-gradient(circle at 25% 74%, rgba(126, 220, 255, 0.12), transparent 28%),
+    linear-gradient(145deg, rgba(6, 9, 19, 0.98), rgba(13, 18, 32, 0.94) 55%, rgba(18, 8, 20, 0.96));
+  perspective: 760px;
+  transform: translateZ(0);
+}
+
+.dialectic-stage::before {
+  position: absolute;
+  inset: -12%;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 1px, transparent 1.7px),
+    radial-gradient(circle, rgba(126, 220, 255, 0.36) 0 1px, transparent 1.6px);
+  background-size: 84px 84px, 129px 129px;
+  opacity: 0.28;
+  animation: dialecticStars 26s linear infinite;
+  content: '';
+}
+
+.cosmic-dust-cloud {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(126, 220, 255, 0.32), transparent 13%),
+    radial-gradient(circle at 60% 62%, rgba(255, 209, 122, 0.28), transparent 16%),
+    radial-gradient(circle at 76% 30%, rgba(255, 255, 255, 0.16), transparent 10%);
+  filter: blur(calc(14px - var(--phase) * 2px));
+  opacity: calc(0.68 - var(--phase) * 0.1);
+  transform: scale(calc(1.12 - var(--phase) * 0.06));
+  transition: opacity 260ms ease, filter 260ms ease, transform 260ms ease;
+}
+
+.dialectic-star {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 5;
+  width: clamp(4.2rem, 10vw, 7rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fffbe1, #ffd17a 42%, #f08a22 68%, rgba(240, 138, 34, 0) 73%);
+  box-shadow:
+    0 0 calc(2rem + var(--influence) * 2rem) rgba(255, 209, 122, 0.46),
+    0 0 calc(4rem + var(--phase) * 0.7rem) rgba(255, 154, 51, 0.2);
+  transform: translate(-50%, -50%) scale(calc(0.72 + var(--phase) * 0.07));
+  transition: box-shadow 220ms ease, transform 260ms ease;
+  animation: dialecticStarPulse 4s ease-in-out infinite;
+}
+
+.orbit,
+.force-line {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.orbit {
+  border: 1px solid rgba(255, 255, 255, calc(0.08 + var(--phase) * 0.025));
+  transform: translate(-50%, -50%) rotateX(64deg) rotate(calc(var(--influence) * 8deg));
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.orbit--one {
+  width: 28%;
+  aspect-ratio: 1;
+}
+
+.orbit--two {
+  width: 48%;
+  aspect-ratio: 1;
+}
+
+.orbit--three {
+  width: 70%;
+  aspect-ratio: 1;
+}
+
+.is-dialectic .orbit {
+  border-color: rgba(126, 220, 255, calc(0.16 + var(--influence) * 0.28));
+  box-shadow: 0 0 calc(var(--influence) * 1.2rem) rgba(126, 220, 255, 0.25);
+  animation: dialecticOrbit 8s linear infinite;
+}
+
+.force-line {
+  width: 58%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(126, 220, 255, calc(var(--influence) * 0.75)), transparent);
+  opacity: calc(var(--phase) * 0.15 + var(--influence) * 0.85);
+  transform-origin: center;
+}
+
+.force-line--a {
+  transform: translate(-50%, -50%) rotate(22deg);
+}
+
+.force-line--b {
+  transform: translate(-50%, -50%) rotate(116deg);
+}
+
+.force-line--c {
+  transform: translate(-50%, -50%) rotate(-34deg);
+}
+
+.is-static .force-line {
+  opacity: 0;
+}
+
+.system-planet {
+  position: absolute;
+  z-index: 7;
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 25%, rgba(255, 255, 255, 0.85), transparent 13%),
+    linear-gradient(135deg, #2f8a7d, #2e6f98 54%, #8b683c);
+  box-shadow:
+    inset -0.8rem -0.75rem 1.4rem rgba(0, 0, 0, 0.52),
+    0 0 1rem rgba(126, 220, 255, 0.24);
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+
+.system-planet--driver {
+  left: var(--planet-x);
+  top: var(--planet-y);
+  width: clamp(2.6rem, 5.6vw, 4.2rem);
+  cursor: grab;
+  transition: box-shadow 160ms ease;
+}
+
+.system-planet--driver span {
+  width: 35%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 209, 122, 0.68);
+}
+
+.is-dragging .system-planet--driver {
+  cursor: grabbing;
+  box-shadow:
+    inset -0.8rem -0.75rem 1.4rem rgba(0, 0, 0, 0.52),
+    0 0 0 0.55rem rgba(255, 209, 122, 0.14),
+    0 0 2rem rgba(255, 209, 122, 0.5);
+}
+
+.system-planet--echo {
+  width: clamp(1.7rem, 3.8vw, 2.8rem);
+  opacity: calc(0.35 + var(--phase) * 0.14);
+  transition: left 220ms ease, top 220ms ease, transform 220ms ease, opacity 220ms ease;
+}
+
+.system-planet--echo-a {
+  left: calc(30% - var(--influence) * 5%);
+  top: calc(34% + var(--influence) * 6%);
+}
+
+.system-planet--echo-b {
+  left: calc(68% + var(--influence) * 6%);
+  top: calc(67% - var(--influence) * 5%);
+  background:
+    radial-gradient(circle at 32% 25%, rgba(255, 255, 255, 0.85), transparent 13%),
+    linear-gradient(135deg, #7668ff, #2e416f);
+}
+
+.system-planet--echo-c {
+  left: calc(39% + var(--influence) * 4%);
+  top: calc(73% + var(--influence) * 4%);
+  background:
+    radial-gradient(circle at 32% 25%, rgba(255, 255, 255, 0.85), transparent 13%),
+    linear-gradient(135deg, #ffd17a, #a84f31);
+}
+
+.is-static .system-planet--echo {
+  left: revert-layer;
+  top: revert-layer;
+}
+
+.asteroid-deflect {
+  position: absolute;
+  left: calc(8% + var(--influence) * 18%);
+  top: calc(22% + var(--influence) * 13%);
+  z-index: 6;
+  width: 0.72rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #eaf7ff;
+  box-shadow: -2.6rem 0 1rem rgba(126, 220, 255, 0.36);
+  opacity: calc(0.45 + var(--influence) * 0.45);
+  transform: rotate(calc(8deg + var(--influence) * 28deg));
+  transition: left 220ms ease, top 220ms ease, transform 220ms ease;
+}
+
+.life-band {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 4;
+  width: 42%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(111, 240, 171, 0.42);
+  border-radius: 50%;
+  opacity: clamp(0, calc((var(--phase) - 2) * 0.42), 1);
+  transform: translate(-50%, -50%) rotateX(64deg);
+  box-shadow: 0 0 1.4rem rgba(111, 240, 171, 0.18);
+}
+
+.observer-station {
+  position: absolute;
+  right: 18%;
+  top: 22%;
+  z-index: 8;
+  width: 2.6rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #eaf7ff, #7edcff);
+  box-shadow: 0 0 1.2rem rgba(126, 220, 255, 0.38);
+  opacity: clamp(0, calc((var(--phase) - 3) * 0.8), 1);
+  transform: translateY(calc((4 - var(--phase)) * 0.8rem));
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.system-readout {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 10;
+  display: grid;
+  width: min(22rem, calc(100% - 1.7rem));
+  gap: 0.22rem;
+  padding: 0.74rem 0.84rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  background: rgba(5, 9, 20, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+.system-readout strong {
+  color: #fff8dc;
+  font-size: 0.84rem;
+}
+
+.system-readout p {
+  margin: 0;
+  color: rgba(220, 229, 255, 0.78);
+  font-size: 0.76rem;
+  line-height: 1.38;
+}
+
+.dialectic-controls {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.8fr) minmax(18rem, 1fr) minmax(18rem, 1.1fr);
+  gap: 0.65rem;
+}
+
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.42rem;
+}
+
+.mode-switch button,
+.time-control,
+.dialectic-message {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.mode-switch button {
+  min-height: 2.75rem;
+  color: #eaf2ff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.mode-switch button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 209, 122, 0.34);
+}
+
+.mode-switch button.is-active {
+  border-color: rgba(255, 209, 122, 0.48);
+  color: #fff8dc;
+  background: rgba(255, 209, 122, 0.11);
+}
+
+.time-control {
+  display: grid;
+  gap: 0.44rem;
+  padding: 0.5rem 0.7rem;
+}
+
+.time-control span {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  color: rgba(220, 229, 255, 0.76);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.time-control strong {
+  color: #fff8dc;
+}
+
+.time-control input {
+  width: 100%;
+  accent-color: var(--gold);
+}
+
+.dialectic-message {
+  display: grid;
+  align-content: center;
+  gap: 0.24rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.dialectic-message span {
+  color: #ffd17a;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.dialectic-message p {
+  margin: 0;
+  color: rgba(220, 229, 255, 0.78);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+@keyframes dialecticStars {
+  to {
+    transform: translate3d(84px, 84px, 0);
+  }
+}
+
+@keyframes dialecticStarPulse {
+  50% {
+    filter: brightness(1.08);
+    transform: translate(-50%, -50%) scale(calc(0.75 + var(--phase) * 0.07 + var(--influence) * 0.04));
+  }
+}
+
+@keyframes dialecticOrbit {
+  to {
+    transform: translate(-50%, -50%) rotateX(64deg) rotate(calc(360deg + var(--influence) * 8deg));
+  }
+}
+
+@media (max-width: 900px) {
+  .dialectic-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .system-readout {
+    width: calc(100% - 1.7rem);
+  }
+}
+
+/* Strong interaction states for relation + development experiment */
+.cosmic-dust-cloud::before,
+.cosmic-dust-cloud::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.cosmic-dust-cloud::before {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.95) 0 0.18rem, transparent 0.22rem),
+    radial-gradient(circle at 31% 58%, rgba(111, 230, 255, 0.8) 0 0.14rem, transparent 0.18rem),
+    radial-gradient(circle at 48% 35%, rgba(248, 210, 78, 0.8) 0 0.16rem, transparent 0.2rem),
+    radial-gradient(circle at 63% 72%, rgba(255, 255, 255, 0.8) 0 0.12rem, transparent 0.16rem),
+    radial-gradient(circle at 78% 44%, rgba(166, 118, 255, 0.9) 0 0.15rem, transparent 0.19rem),
+    radial-gradient(circle at 88% 67%, rgba(111, 230, 255, 0.7) 0 0.12rem, transparent 0.16rem);
+  animation: dustSwirl 9s linear infinite;
+  opacity: 0.85;
+}
+
+.cosmic-dust-cloud::after {
+  inset: 12%;
+  background: conic-gradient(from 24deg, transparent, rgba(112, 217, 255, 0.24), transparent, rgba(248, 210, 78, 0.2), transparent);
+  filter: blur(1rem);
+  animation: dustCondense 7s ease-in-out infinite alternate;
+  opacity: 0.6;
+}
+
+.dialectic-system.is-phase-0 .dialectic-star,
+.dialectic-system.is-phase-0 .orbit,
+.dialectic-system.is-phase-0 .force-line,
+.dialectic-system.is-phase-0 .system-planet,
+.dialectic-system.is-phase-0 .asteroid-deflect,
+.dialectic-system.is-phase-0 .life-band,
+.dialectic-system.is-phase-0 .observer-station {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dialectic-system.is-phase-0 .cosmic-dust-cloud {
+  opacity: 1;
+  transform: scale(1.08);
+  filter: saturate(1.35);
+}
+
+.dialectic-system.is-phase-1 .dialectic-star {
+  opacity: 0.75;
+  transform: translate(-50%, -50%) scale(0.72);
+}
+
+.dialectic-system.is-phase-1 .orbit,
+.dialectic-system.is-phase-1 .force-line,
+.dialectic-system.is-phase-1 .system-planet {
+  opacity: 0.16;
+}
+
+.dialectic-system.is-phase-1 .asteroid-deflect,
+.dialectic-system.is-phase-1 .life-band,
+.dialectic-system.is-phase-1 .observer-station {
+  opacity: 0;
+}
+
+.dialectic-system.is-phase-2 .cosmic-dust-cloud,
+.dialectic-system.is-phase-3 .cosmic-dust-cloud,
+.dialectic-system.is-phase-4 .cosmic-dust-cloud {
+  opacity: 0.2;
+}
+
+.dialectic-system.is-phase-2 .life-band,
+.dialectic-system.is-phase-2 .observer-station,
+.dialectic-system.is-phase-3 .observer-station {
+  opacity: 0;
+}
+
+.dialectic-system.is-static .dialectic-stage {
+  animation: none;
+}
+
+.dialectic-system.is-static .orbit {
+  animation: none;
+  border-color: rgba(172, 186, 220, 0.22);
+  box-shadow: none;
+  transform: translate(-50%, -50%) rotateX(64deg);
+}
+
+.dialectic-system.is-static .force-line {
+  opacity: 0;
+}
+
+.dialectic-system.is-static .system-planet--echo-a {
+  left: 30%;
+  top: 36%;
+  transform: translate(-50%, -50%);
+}
+
+.dialectic-system.is-static .system-planet--echo-b {
+  left: 53%;
+  top: 71%;
+  transform: translate(-50%, -50%);
+}
+
+.dialectic-system.is-static .system-planet--echo-c {
+  left: 78%;
+  top: 53%;
+  transform: translate(-50%, -50%);
+}
+
+.dialectic-system.is-static .asteroid-deflect {
+  left: 9%;
+  top: 23%;
+  opacity: 0.42;
+  transform: rotate(8deg);
+}
+
+.dialectic-system.is-static .dialectic-star {
+  box-shadow:
+    0 0 1.4rem rgba(255, 225, 81, 0.55),
+    0 0 4rem rgba(255, 131, 39, 0.25);
+}
+
+.dialectic-system.is-dialectic .dialectic-stage {
+  animation: systemTremor 720ms ease-in-out infinite;
+}
+
+.dialectic-system.is-dialectic .orbit {
+  animation-duration: var(--speed);
+}
+
+.dialectic-system.is-dialectic .orbit--one {
+  transform: translate(-50%, -50%)
+    rotateX(calc(64deg - (var(--influence) * 8deg)))
+    rotate(calc(var(--influence) * -16deg))
+    scaleX(calc(1 + (var(--influence) * 0.2)))
+    scaleY(calc(1 - (var(--influence) * 0.1)));
+}
+
+.dialectic-system.is-dialectic .orbit--two {
+  border-color: rgba(247, 219, 90, calc(0.24 + (var(--influence) * 0.58)));
+  box-shadow:
+    0 0 calc(0.4rem + (var(--influence) * 1.6rem)) rgba(247, 219, 90, 0.32),
+    inset 0 0 calc(0.3rem + (var(--influence) * 1.1rem)) rgba(112, 217, 255, 0.18);
+  transform: translate(-50%, -50%)
+    rotateX(calc(64deg - (var(--influence) * 14deg)))
+    rotate(calc(var(--influence) * 22deg))
+    scaleX(calc(1 + (var(--influence) * 0.34)))
+    scaleY(calc(1 - (var(--influence) * 0.2)));
+}
+
+.dialectic-system.is-dialectic .orbit--three {
+  transform: translate(-50%, -50%)
+    rotateX(calc(64deg + (var(--influence) * 10deg)))
+    rotate(calc(var(--influence) * 15deg))
+    scaleX(calc(1 - (var(--influence) * 0.16)))
+    scaleY(calc(1 + (var(--influence) * 0.2)));
+}
+
+.dialectic-system.is-dialectic .force-line {
+  opacity: calc(0.22 + (var(--influence) * 0.72));
+  filter: drop-shadow(0 0 calc(0.25rem + (var(--influence) * 1.1rem)) rgba(112, 217, 255, 0.82));
+}
+
+.dialectic-system.is-dialectic .force-line--b {
+  height: calc(0.1rem + (var(--influence) * 0.12rem));
+  background: linear-gradient(90deg, transparent, rgba(247, 219, 90, 0.9), rgba(111, 230, 255, 0.7), transparent);
+}
+
+.dialectic-system.is-dialectic .dialectic-star::after {
+  content: "";
+  position: absolute;
+  inset: -1.8rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 232, 118, 0.34), rgba(255, 126, 42, 0.14) 42%, transparent 72%);
+  opacity: calc(0.26 + (var(--influence) * 0.62));
+  transform: scale(calc(1 + (var(--influence) * 0.42)));
+  transition: opacity 180ms ease, transform 180ms ease;
+  z-index: -1;
+}
+
+.dialectic-system.is-dialectic .system-planet--driver {
+  box-shadow:
+    0 0 0 0.16rem rgba(247, 219, 90, calc(0.16 + (var(--influence) * 0.25))),
+    0 0 calc(1rem + (var(--influence) * 1.2rem)) rgba(247, 219, 90, 0.45);
+}
+
+.dialectic-system.is-dialectic .system-planet--echo-a {
+  transform: translate(-50%, -50%) rotate(calc(var(--influence) * -18deg)) scale(calc(1 + (var(--influence) * 0.12)));
+}
+
+.dialectic-system.is-dialectic .system-planet--echo-b {
+  transform: translate(-50%, -50%) rotate(calc(var(--influence) * 14deg)) scale(calc(1 - (var(--influence) * 0.08)));
+}
+
+.dialectic-system.is-dialectic .system-planet--echo-c {
+  transform: translate(-50%, -50%) rotate(calc(var(--influence) * 22deg)) scale(calc(1 + (var(--influence) * 0.16)));
+}
+
+.dialectic-system.is-dialectic .asteroid-deflect {
+  opacity: calc(0.6 + (var(--influence) * 0.35));
+  box-shadow:
+    -1rem 0 1.2rem rgba(111, 230, 255, calc(0.25 + (var(--influence) * 0.42))),
+    0 0 1rem rgba(247, 219, 90, calc(0.2 + (var(--influence) * 0.35)));
+  transform: translate(
+      calc(var(--influence) * 12rem),
+      calc(var(--influence) * 6rem)
+    )
+    rotate(calc(8deg + (var(--influence) * 42deg)));
+}
+
+@keyframes systemTremor {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  35% {
+    transform: translate3d(calc(var(--influence) * 0.16rem), calc(var(--influence) * -0.08rem), 0);
+  }
+
+  70% {
+    transform: translate3d(calc(var(--influence) * -0.12rem), calc(var(--influence) * 0.1rem), 0);
+  }
+}
+
+@keyframes dustSwirl {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1.04);
+  }
+}
+
+@keyframes dustCondense {
+  from {
+    transform: rotate(-8deg) scale(0.92);
+  }
+
+  to {
+    transform: rotate(16deg) scale(1.1);
+  }
+}

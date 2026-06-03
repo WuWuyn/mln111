@@ -3,9 +3,6 @@ import { challengeQuestions } from '../../data/learning'
 import OverlayShell from './OverlayShell'
 import './QuizChallenge.css'
 
-// "Thử thách Nhà du hành Biện chứng" — situational questions, one at a time,
-// with instant feedback. Reports the final score so the badge page can rank the
-// traveller.
 export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState(null)
@@ -45,16 +42,16 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
     const score = Math.round((correctCount / total) * 100)
     const tier =
       score >= 80
-        ? { cls: 'quiz-tier--gold', label: '★ Biện chứng gia' }
+        ? { cls: 'quiz-tier--gold', label: 'Nhà du hành biện chứng' }
         : score >= 50
-          ? { cls: 'quiz-tier--silver', label: '◈ Nhà thám hiểm' }
-          : { cls: 'quiz-tier--bronze', label: '◇ Người học việc' }
+          ? { cls: 'quiz-tier--silver', label: 'Người kiểm nghiệm thực tiễn' }
+          : { cls: 'quiz-tier--bronze', label: 'Người học việc' }
 
     return (
       <OverlayShell variant="overlay-panel--quiz" onClose={onClose}>
         <header className="overlay-head">
           <div>
-            <p className="overlay-eyebrow">Hoàn thành thử thách</p>
+            <p className="overlay-eyebrow">Hoàn thành thực nghiệm</p>
             <h2>Kết quả của bạn</h2>
           </div>
           <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng">
@@ -67,15 +64,14 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
               {correctCount}/{total}
             </span>
           </div>
-          <p className="quiz-score-label">Điểm số</p>
+          <p className="quiz-score-label">Điểm vận dụng</p>
           <span className={`quiz-tier ${tier.cls}`}>{tier.label}</span>
           <p className="quiz-score-line">
-            Bạn trả lời đúng <strong>{correctCount}</strong> trên <strong>{total}</strong> tình
-            huống ({score}%).
+            Bạn trả lời đúng <strong>{correctCount}</strong> trên <strong>{total}</strong> tình huống ({score}%).
           </p>
           <div className="quiz-actions">
             <button type="button" className="primary-action" onClick={onGoBadge}>
-              Nhận huy hiệu →
+              Nhận huy hiệu
             </button>
             <button type="button" className="ghost-action" onClick={restart}>
               Làm lại
@@ -90,7 +86,7 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
     <OverlayShell variant="overlay-panel--quiz" onClose={onClose}>
       <header className="overlay-head">
         <div>
-          <p className="overlay-eyebrow">Thử thách Nhà du hành Biện chứng</p>
+          <p className="overlay-eyebrow">Quiz vận dụng</p>
           <h2>
             Câu {index + 1}
             <span className="quiz-total"> / {total}</span>
@@ -101,34 +97,25 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
         </button>
       </header>
 
-      {/* Progress bar */}
       <div className="quiz-progress" aria-hidden="true">
-        <div className="quiz-progress-fill" style={{ width: `${((index) / total) * 100}%` }} />
+        <div className="quiz-progress-fill" style={{ width: `${(index / total) * 100}%` }} />
       </div>
 
-      {/* Step dots */}
       <ol className="quiz-steps" aria-hidden="true">
         {Array.from({ length: total }, (_, i) => (
-          <li
-            key={i}
-            className={`quiz-step${i < index ? ' is-done' : i === index ? ' is-current' : ''}`}
-          />
+          <li key={i} className={`quiz-step${i < index ? ' is-done' : i === index ? ' is-current' : ''}`} />
         ))}
       </ol>
 
       <div className="quiz-body">
-        <p className="quiz-prompt" key={index}>{question.prompt}</p>
+        <p className="quiz-prompt" key={index}>
+          {question.prompt}
+        </p>
         <div className="quiz-options">
           {question.options.map((option) => {
             const isAnswer = option.value === question.answer
             const isPicked = option.value === picked
-            const cls = answered
-              ? isAnswer
-                ? 'is-correct'
-                : isPicked
-                  ? 'is-wrong'
-                  : 'is-muted'
-              : ''
+            const cls = answered ? (isAnswer ? 'is-correct' : isPicked ? 'is-wrong' : 'is-muted') : ''
             return (
               <button
                 key={option.value}
@@ -147,12 +134,12 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
         {answered && (
           <div className={`quiz-feedback ${isCorrect ? 'is-correct' : 'is-wrong'}`}>
             <div className="quiz-feedback-head">
-              <span className="quiz-feedback-icon">{isCorrect ? '✓' : '✗'}</span>
-              <strong>{isCorrect ? 'Chính xác!' : 'Chưa đúng'}</strong>
+              <span className="quiz-feedback-icon">{isCorrect ? '✓' : '×'}</span>
+              <strong>{isCorrect ? 'Chính xác' : 'Chưa đúng'}</strong>
             </div>
             <p>{question.explain}</p>
             <button type="button" className="primary-action" onClick={next}>
-              {index + 1 >= total ? 'Xem kết quả' : 'Câu tiếp theo →'}
+              {index + 1 >= total ? 'Xem kết quả' : 'Câu tiếp theo'}
             </button>
           </div>
         )}

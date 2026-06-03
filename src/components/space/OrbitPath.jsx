@@ -1,13 +1,35 @@
-import { Line } from '@react-three/drei'
 import { useMemo } from 'react'
+import * as THREE from 'three'
+
+const DASHES = 96
+const DASH_RATIO = 0.42
+const TWO_PI = Math.PI * 2
 
 export default function OrbitPath({ radius }) {
-  const points = useMemo(() => {
-    return Array.from({ length: 129 }, (_, index) => {
-      const angle = (index / 128) * Math.PI * 2
-      return [Math.cos(angle) * radius, 0, Math.sin(angle) * radius]
-    })
+  const segments = useMemo(() => {
+    const items = []
+
+    for (let i = 0; i < DASHES; i += 1) {
+      const start = (i / DASHES) * TWO_PI
+      const end = start + (TWO_PI / DASHES) * DASH_RATIO
+      const points = [
+        new THREE.Vector3(Math.cos(start) * radius, 0, Math.sin(start) * radius),
+        new THREE.Vector3(Math.cos(end) * radius, 0, Math.sin(end) * radius),
+      ]
+
+      items.push(new THREE.BufferGeometry().setFromPoints(points))
+    }
+
+    return items
   }, [radius])
 
-  return <Line points={points} color="#6bbfff" transparent opacity={0.18} lineWidth={1} />
+  return (
+    <group rotation={[0, 0, 0]}>
+      {segments.map((geometry, index) => (
+        <line key={`${radius}-${index}`} geometry={geometry}>
+          <lineBasicMaterial color="#9fc3ff" transparent opacity={0.085} depthWrite={false} />
+        </line>
+      ))}
+    </group>
+  )
 }

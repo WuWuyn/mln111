@@ -1,4 +1,5 @@
 import ContradictionBalance from './ContradictionBalance'
+import ConsciousnessMirror from './ConsciousnessMirror'
 import DevelopmentSpiral from './DevelopmentSpiral'
 import MatterConsciousnessSlider from './MatterConsciousnessSlider'
 import PraxisLoop from './PraxisLoop'
@@ -9,6 +10,7 @@ import RelationNetwork from './RelationNetwork'
 // so PlanetDetail can resolve the right experiment without a switch statement.
 const WIDGETS = {
   matter: MatterConsciousnessSlider,
+  consciousness: ConsciousnessMirror,
   relation: RelationNetwork,
   contradiction: ContradictionBalance,
   quantity: QuantityQualityBar,

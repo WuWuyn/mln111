@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { Suspense, useCallback, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { planets } from '../data/cosmos'
 import BadgeResult from './overlays/BadgeResult'
 import LifeApplication from './overlays/LifeApplication'
@@ -10,25 +11,40 @@ import Scene from './space/Scene'
 import './SpaceExperience.css'
 
 const NAV_ITEMS = [
-  { id: 'map', label: 'Bản đồ', icon: '🪐' },
-  { id: 'detail', label: 'Chi tiết', icon: '📖' },
-  { id: 'quiz', label: 'Thử thách', icon: '🎯' },
-  { id: 'life', label: 'Đời sống', icon: '🌍' },
-  { id: 'badge', label: 'Huy hiệu', icon: '🏅' },
+  { id: 'map', label: 'Khám phá' },
+  { id: 'detail', label: 'Thực nghiệm' },
+  { id: 'life', label: 'Vận dụng' },
 ]
 
-// Each 2D view gets its own URL so Back/Forward and shareable links work. The
-// explore page lives at #kham-pha; a view appends a slug, e.g. #kham-pha/chi-tiet.
+function BackIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path d="M11 6 5 12l6 6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 12h13" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function PanelIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path d="M5 5.5h14v13H5z" strokeWidth="1.9" strokeLinejoin="round" />
+      <path d="M8 9h8M8 12h8M8 15h5" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 const EXPLORE_BASE = '#kham-pha'
 const VIEW_TO_SLUG = {
-  detail: 'chi-tiet',
+  detail: 'trai-nghiem',
   quiz: 'thu-thach',
   life: 'doi-song',
   badge: 'huy-hieu',
 }
-const SLUG_TO_VIEW = Object.fromEntries(
-  Object.entries(VIEW_TO_SLUG).map(([view, slug]) => [slug, view]),
-)
+const SLUG_TO_VIEW = {
+  ...Object.fromEntries(Object.entries(VIEW_TO_SLUG).map(([view, slug]) => [slug, view])),
+  'chi-tiet': 'detail',
+}
 
 function getViewFromHash() {
   if (typeof window === 'undefined') return null
@@ -36,23 +52,33 @@ function getViewFromHash() {
   return SLUG_TO_VIEW[slug] ?? null
 }
 
-// Adds an id to an array only once — used to track which planets were explored
-// and which mini-quizzes were passed, without duplicates.
 function addUnique(list, id) {
   return list.includes(id) ? list : [...list, id]
+}
+
+function runSceneTransition(update) {
+  const canTransition =
+    typeof document !== 'undefined' &&
+    'startViewTransition' in document &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (!canTransition) {
+    update()
+    return
+  }
+
+  document.startViewTransition(() => {
+    flushSync(update)
+  })
 }
 
 export default function SpaceExperience({ onBack, handControlStore }) {
   const [selectedPlanet, setSelectedPlanet] = useState(planets[0])
   const [panelVisible, setPanelVisible] = useState(true)
-  // null = just the 3D map; otherwise a 2D content overlay is open over it.
-  // Derived from the URL hash so Back/Forward and shared links land on the right view.
   const [activeView, setActiveView] = useState(getViewFromHash)
   const [progress, setProgress] = useState({ visited: [], passed: [], challengeScore: null })
-  // Arcade "phá vỡ hành tinh" mode: shoot rocks at planets, they shatter.
   const [gameMode, setGameMode] = useState(false)
   const [destroyed, setDestroyed] = useState([])
-  // Bumped on reset so the asteroid belt knows to restore shot-down rocks.
   const [resetSignal, setResetSignal] = useState(0)
 
   const destroyPlanet = useCallback((id) => {
@@ -64,11 +90,8 @@ export default function SpaceExperience({ onBack, handControlStore }) {
     setResetSignal((n) => n + 1)
   }, [])
 
-  // Total targets = central planet + all orbiting planets.
   const totalTargets = planets.length + 1
 
-  // Keep the open view in sync with the URL — covers browser Back/Forward and
-  // someone pasting in a #kham-pha/chi-tiet link.
   useEffect(() => {
     const sync = () => setActiveView(getViewFromHash())
     window.addEventListener('hashchange', sync)
@@ -79,14 +102,15 @@ export default function SpaceExperience({ onBack, handControlStore }) {
     }
   }, [])
 
-  // Single entry point for changing the open view: push the matching hash (so a
-  // history entry is created) and update state immediately so the UI is snappy.
   const navigateView = useCallback((view) => {
     const hash = view ? `${EXPLORE_BASE}/${VIEW_TO_SLUG[view]}` : EXPLORE_BASE
-    if (window.location.hash !== hash) {
-      window.location.hash = hash
-    }
-    setActiveView(view)
+
+    runSceneTransition(() => {
+      if (window.location.hash !== hash) {
+        window.location.hash = hash
+      }
+      setActiveView(view)
+    })
   }, [])
 
   const selectPlanet = useCallback((planet) => {
@@ -94,12 +118,15 @@ export default function SpaceExperience({ onBack, handControlStore }) {
     setPanelVisible(true)
   }, [])
 
-  const openDetail = useCallback((planet) => {
-    if (planet) setSelectedPlanet(planet)
-    const target = planet ?? selectedPlanet
-    setProgress((prev) => ({ ...prev, visited: addUnique(prev.visited, target.id) }))
-    navigateView('detail')
-  }, [selectedPlanet, navigateView])
+  const openExperience = useCallback(
+    (planet) => {
+      if (planet) setSelectedPlanet(planet)
+      const target = planet ?? selectedPlanet
+      setProgress((prev) => ({ ...prev, visited: addUnique(prev.visited, target.id) }))
+      navigateView('detail')
+    },
+    [selectedPlanet, navigateView],
+  )
 
   const handleNav = useCallback(
     (id) => {
@@ -108,12 +135,12 @@ export default function SpaceExperience({ onBack, handControlStore }) {
         return
       }
       if (id === 'detail') {
-        openDetail(selectedPlanet)
+        openExperience(selectedPlanet)
         return
       }
       navigateView(id)
     },
-    [openDetail, selectedPlanet, navigateView],
+    [openExperience, selectedPlanet, navigateView],
   )
 
   const markQuizPass = useCallback((planetId) => {
@@ -129,13 +156,17 @@ export default function SpaceExperience({ onBack, handControlStore }) {
 
   return (
     <section className="experience-page">
-      {/* Map-only chrome: the top bar and the section nav belong to the 3D map,
-          not to the standalone content pages. */}
       {activeView === null && (
         <>
           <div className="experience-topbar">
-            <button className="secondary-action" type="button" onClick={onBack}>
-              Trang landing
+            <button
+              className="secondary-action icon-action"
+              type="button"
+              onClick={onBack}
+              aria-label="Quay lại trang landing"
+              title="Quay lại trang landing"
+            >
+              <BackIcon />
             </button>
             <div className="experience-copy">
               <p className="eyebrow">Trang khám phá</p>
@@ -145,9 +176,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
 
           <nav className="experience-nav" aria-label="Điều hướng vũ trụ">
             {NAV_ITEMS.map((item) => {
-              const isActive =
-                (item.id === 'map' && activeView === null) ||
-                item.id === activeView
+              const isActive = (item.id === 'map' && activeView === null) || item.id === activeView
               return (
                 <button
                   key={item.id}
@@ -155,7 +184,6 @@ export default function SpaceExperience({ onBack, handControlStore }) {
                   className={`nav-pill ${isActive ? 'is-active' : ''}`}
                   onClick={() => handleNav(item.id)}
                 >
-                  <span aria-hidden="true">{item.icon}</span>
                   {item.label}
                 </button>
               )
@@ -164,17 +192,12 @@ export default function SpaceExperience({ onBack, handControlStore }) {
         </>
       )}
 
-      {/* The 3D map stays mounted but hidden while a content page is open, so
-          returning to it doesn't pay to rebuild the whole Three.js scene. */}
       <div className="space-experience" hidden={Boolean(activeView)}>
         <Canvas
           camera={{ position: [0, 14, 23], fov: 48, near: 0.1, far: 120 }}
           dpr={[1, 1.5]}
           gl={{ powerPreference: 'high-performance' }}
           performance={{ min: 0.5 }}
-          // Park the render loop whenever a 2D overlay covers the scene — the
-          // heavy Three.js + bloom pass shouldn't keep running behind the scrim.
-          // This frees the main thread so overlay scrolling/interaction is smooth.
           frameloop={activeView ? 'never' : 'always'}
         >
           <Suspense fallback={null}>
@@ -197,7 +220,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
             className={`game-toggle ${gameMode ? 'is-active' : ''}`}
             onClick={() => setGameMode((on) => !on)}
           >
-            {gameMode ? '🚀 Đang bắn phá' : '🎮 Chế độ bắn phá'}
+            {gameMode ? 'Đang bắn phá' : 'Chế độ bắn phá'}
           </button>
           {gameMode && (
             <>
@@ -205,15 +228,13 @@ export default function SpaceExperience({ onBack, handControlStore }) {
                 Đã phá {destroyed.length}/{totalTargets}
               </span>
               <button type="button" className="game-reset" onClick={resetGame}>
-                ↺ Khôi phục
+                Khôi phục
               </button>
             </>
           )}
         </div>
 
-        {gameMode && (
-          <p className="game-hint">Nhắm vào một hành tinh rồi bấm để bắn đá — hành tinh sẽ vỡ tan 💥</p>
-        )}
+        {gameMode && <p className="game-hint">Nhắm vào một hành tinh rồi bấm để bắn đá.</p>}
 
         <div className="hud-bar">
           <div>
@@ -223,16 +244,13 @@ export default function SpaceExperience({ onBack, handControlStore }) {
             <span>Scroll</span> zoom
           </div>
           <div>
-            <span>☝️ Ngón trỏ</span> di để chọn hành tinh
+            <span>Ngón trỏ</span> chọn hành tinh
           </div>
           <div>
-            <span>🖐️ Xòe tay</span> di để xoay camera
+            <span>Xòe tay</span> xoay camera
           </div>
           <div>
-            <span>🤏 Chụm ngón</span> kéo lên/xuống để zoom
-          </div>
-          <div>
-            <span>✊ Nắm tay</span> tạm dừng
+            <span>Chụm ngón</span> zoom
           </div>
         </div>
 
@@ -240,13 +258,17 @@ export default function SpaceExperience({ onBack, handControlStore }) {
           <InfoPanel
             planet={selectedPlanet}
             onClose={() => setPanelVisible(false)}
-            onOpenDetail={openDetail}
-            visited={progress.visited.includes(selectedPlanet.id)}
           />
         )}
         {!gameMode && !panelVisible && (
-          <button className="reopen-panel" type="button" onClick={() => setPanelVisible(true)}>
-            Mở bảng tri thức
+          <button
+            className="reopen-panel"
+            type="button"
+            onClick={() => setPanelVisible(true)}
+            aria-label="Mở bảng tri thức"
+            title="Mở bảng tri thức"
+          >
+            <PanelIcon />
           </button>
         )}
       </div>
@@ -255,22 +277,29 @@ export default function SpaceExperience({ onBack, handControlStore }) {
         <PlanetDetail
           planet={selectedPlanet}
           onClose={() => navigateView(null)}
-          onNavigate={openDetail}
+          onNavigate={openExperience}
           onQuizPass={markQuizPass}
         />
       )}
       {activeView === 'quiz' && (
         <QuizChallenge
-          onClose={() => navigateView(null)}
+          onClose={() => navigateView('life')}
           onComplete={recordChallenge}
           onGoBadge={() => navigateView('badge')}
         />
       )}
-      {activeView === 'life' && <LifeApplication onClose={() => navigateView(null)} />}
+      {activeView === 'life' && (
+        <LifeApplication
+          progress={progress}
+          onClose={() => navigateView(null)}
+          onGoQuiz={() => navigateView('quiz')}
+          onGoBadge={() => navigateView('badge')}
+        />
+      )}
       {activeView === 'badge' && (
         <BadgeResult
           progress={progress}
-          onClose={() => navigateView(null)}
+          onClose={() => navigateView('life')}
           onReplay={() => navigateView(null)}
           onGoQuiz={() => navigateView('quiz')}
         />

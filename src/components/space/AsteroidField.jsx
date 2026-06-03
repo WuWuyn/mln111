@@ -15,7 +15,7 @@ import { seededRandom } from './random'
  * live world position into `store.current.live` so GameShooter can test
  * collisions, and we hide (scale → 0) any index in `store.current.destroyed`.
  */
-const COUNT = 320
+const COUNT = 120
 const INNER_RADIUS = 14
 const OUTER_RADIUS = 52
 const TWO_PI = Math.PI * 2
@@ -24,6 +24,7 @@ const dummy = new THREE.Object3D()
 
 export default function AsteroidField({ store, resetKey = 0, active = false }) {
   const mesh = useRef()
+  const asteroidStore = store?.current
 
   // Per-asteroid orbital parameters, computed once.
   const rocks = useMemo(() => {
@@ -61,13 +62,15 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
   )
 
   useLayoutEffect(() => {
-    if (store) store.current.live = live
-  }, [store, live])
+    // External collision store for GameShooter, intentionally outside React state.
+    // eslint-disable-next-line react-hooks/immutability
+    if (asteroidStore) asteroidStore.live = live
+  }, [asteroidStore, live])
 
   // Restore every asteroid when the game resets or game mode turns off.
   useEffect(() => {
-    if (store) store.current.destroyed.clear()
-  }, [store, resetKey, active])
+    if (asteroidStore) asteroidStore.destroyed.clear()
+  }, [asteroidStore, resetKey, active])
 
   // Slightly varied per-instance colour so the belt isn't a flat grey mass.
   useLayoutEffect(() => {
@@ -82,7 +85,7 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
 
   useFrame((state) => {
     const elapsed = state.clock.elapsedTime
-    const destroyed = store?.current.destroyed
+    const destroyed = asteroidStore?.destroyed
 
     for (let i = 0; i < COUNT; i += 1) {
       const rock = rocks[i]
@@ -93,7 +96,7 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
       const z = Math.sin(angle) * rock.radius
 
       // Publish the live position for collision tests.
-      if (store) live[i].pos.set(x, y, z)
+      if (asteroidStore) live[i].pos.set(x, y, z)
 
       // A shot-down rock is hidden by collapsing its instance to zero scale.
       if (destroyed && destroyed.has(i)) {
