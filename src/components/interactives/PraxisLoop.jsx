@@ -9,7 +9,15 @@ const DATA_POINTS = [
   { id: 'atmosphere', label: 'Khí quyển dày', value: 'dày', risk: false },
 ]
 
-const SAFE_ZONE = { x: 32, y: 58, radius: 11 }
+const SAFE_ZONE = { x: 32, y: 58, radius: 12 }
+
+// Ba điểm đáp định sẵn — bấm là chọn ngay, không cần rê chuột trúng quả cầu.
+// Chỉ "An toàn" nằm trong vùng xanh; hai điểm còn lại để thực tiễn bác bỏ.
+const LANDING_ZONES = [
+  { id: 'safe', label: 'Vùng an toàn', x: 32, y: 58 },
+  { id: 'storm', label: 'Cạnh bão từ', x: 70, y: 30 },
+  { id: 'unknown', label: 'Vùng chưa rõ', x: 56, y: 74 },
+]
 
 const FLOW = ['Hiện thực', 'Nhận thức', 'Giả thuyết', 'Kiểm nghiệm', 'Điều chỉnh', 'Nhận thức mới']
 
@@ -38,6 +46,7 @@ export default function PraxisLoop() {
   const planetRef = useRef(null)
   const [selectedData, setSelectedData] = useState(['water'])
   const [landingPoint, setLandingPoint] = useState({ x: SAFE_ZONE.x, y: SAFE_ZONE.y })
+  const [landingZone, setLandingZone] = useState('safe')
   const [placingLanding, setPlacingLanding] = useState(false)
   const [run, setRun] = useState(0)
   const [tested, setTested] = useState(false)
@@ -52,9 +61,10 @@ export default function PraxisLoop() {
   const message = useMemo(() => {
     if (built) return 'Nhận thức đúng quay lại cải biến hiện thực: trạm nghiên cứu đã được dựng trên vùng an toàn.'
     if (succeeded) return 'Giả thuyết được xác nhận qua thực tiễn. Dữ liệu thật làm bản đồ rõ hơn.'
-    if (failed) return 'Thực tiễn bác bỏ giả thuyết thiếu dữ liệu. Hãy điều chỉnh rồi phóng lại.'
-    if (!enoughData) return 'Nhận thức ban đầu chưa đầy đủ. Cần kéo thêm dữ liệu vào bảng giả thuyết.'
-    return 'Ý thức đã dự kiến được một kế hoạch. Hãy đưa nó vào thực tiễn để kiểm nghiệm.'
+    if (failed && !enoughData) return 'Thực tiễn bác bỏ: giả thuyết còn thiếu dữ liệu cốt lõi. Bổ sung rồi phóng lại.'
+    if (failed) return 'Thực tiễn bác bỏ: điểm đáp rơi vào vùng nguy hiểm. Chọn lại vùng an toàn rồi phóng lại.'
+    if (!enoughData) return 'Nhận thức ban đầu chưa đầy đủ. Bấm thêm dữ liệu (nước, nhiệt độ, bão từ) vào giả thuyết.'
+    return 'Ý thức đã dự kiến được một kế hoạch. Chọn điểm đáp rồi phóng robot để kiểm nghiệm.'
   }, [built, enoughData, failed, succeeded])
 
   const toggleData = (id) => {
@@ -73,6 +83,13 @@ export default function PraxisLoop() {
     }
   }
 
+  const pickZone = (zone) => {
+    setLandingZone(zone.id)
+    setLandingPoint({ x: zone.x, y: zone.y })
+    setTested(false)
+    setBuilt(false)
+  }
+
   const launchProbe = () => {
     setRun((value) => value + 1)
     setTested(true)
@@ -81,15 +98,19 @@ export default function PraxisLoop() {
 
   const adjust = () => {
     setSelectedData(['water', 'temperature', 'storm'])
+    setLandingZone('safe')
     setLandingPoint({ x: SAFE_ZONE.x, y: SAFE_ZONE.y })
     setTested(false)
     setBuilt(false)
   }
 
+  // Vẫn cho phép tự rê điểm đáp trực tiếp trên hành tinh (nâng cao), nhưng các
+  // nút "chọn vùng" mới là đường đi chắc chắn.
   const updateLandingPoint = (event) => {
     const point = pointOnElement(event, planetRef.current)
     if (!point) return
     setLandingPoint(point)
+    setLandingZone(isInsideSafeZone(point) ? 'safe' : 'custom')
     setTested(false)
     setBuilt(false)
   }
@@ -148,7 +169,7 @@ export default function PraxisLoop() {
 
         <button type="button" className="probe-launch-pad" onClick={launchProbe} aria-label="Phóng robot thăm dò">
           <span className="probe-mini" />
-          <strong>Robot</strong>
+          <strong>Phóng robot</strong>
         </button>
 
         <div key={run} className="probe-flight" aria-hidden="true">
@@ -166,14 +187,8 @@ export default function PraxisLoop() {
       </div>
 
       <div className="praxis-lab-controls">
-        <section className="praxis-panel observation-panel">
-          <span className="panel-kicker">Quan sát hiện thực</span>
-          <strong>Kéo vòng đáp trực tiếp trên bản đồ.</strong>
-          <p>Nhận thức bắt đầu từ hiện thực: vùng nước, bão từ và địa hình chưa rõ phải được đưa vào giả thuyết trước khi kiểm nghiệm.</p>
-        </section>
-
         <section className="praxis-panel data-panel">
-          <span className="panel-kicker">Kéo dữ liệu</span>
+          <span className="panel-kicker">1 · Dữ liệu hiện thực</span>
           <div className="data-bank">
             {DATA_POINTS.map((item) => (
               <button
@@ -192,7 +207,7 @@ export default function PraxisLoop() {
         </section>
 
         <section className="praxis-panel hypothesis-panel" onDragOver={(event) => event.preventDefault()} onDrop={dropData}>
-          <span className="panel-kicker">Bảng giả thuyết</span>
+          <span className="panel-kicker">2 · Giả thuyết</span>
           <div className="hypothesis-dock">
             {selectedData.map((id) => {
               const item = DATA_POINTS.find((data) => data.id === id)
@@ -205,14 +220,29 @@ export default function PraxisLoop() {
           </div>
         </section>
 
+        <section className="praxis-panel zone-panel">
+          <span className="panel-kicker">3 · Điểm đáp</span>
+          <div className="zone-picker">
+            {LANDING_ZONES.map((zone) => (
+              <button
+                key={zone.id}
+                type="button"
+                className={`${landingZone === zone.id ? 'is-active' : ''} ${zone.id === 'safe' ? 'is-safe' : 'is-risk'}`}
+                onClick={() => pickZone(zone)}
+              >
+                {zone.label}
+              </button>
+            ))}
+          </div>
+          <p>Bấm chọn vùng đáp, hoặc tự kéo điểm đáp trên hành tinh. Chỉ vùng an toàn mới qua được thực tiễn.</p>
+        </section>
+
         <section className="praxis-panel action-panel">
+          <span className="panel-kicker">4 · Kết quả</span>
           <div className="action-result" role="status">
-            <span className="panel-kicker">Kết quả</span>
             <strong>{built ? 'Đã cải biến' : succeeded ? 'Hạ cánh thành công' : failed ? 'Cần điều chỉnh' : 'Chưa kiểm nghiệm'}</strong>
             <p>{message}</p>
           </div>
-          <span className="panel-kicker">Thực tiễn kiểm nghiệm</span>
-          <p>Kéo điểm đáp trên hành tinh, rồi phóng robot từ trạm để kiểm nghiệm giả thuyết.</p>
           {failed && (
             <button type="button" className="adjust-plan" onClick={adjust}>
               Điều chỉnh theo dữ liệu thật

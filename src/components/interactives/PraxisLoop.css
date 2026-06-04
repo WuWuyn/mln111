@@ -513,6 +513,25 @@
   background: rgba(232, 195, 84, 0.11);
 }
 
+.zone-picker button {
+  flex: 1 1 5rem;
+  min-height: 2.2rem;
+  padding: 0 0.6rem;
+  cursor: pointer;
+}
+
+.zone-picker button.is-safe.is-active {
+  border-color: rgba(139, 214, 165, 0.65);
+  color: #d8ffe2;
+  background: rgba(139, 214, 165, 0.14);
+}
+
+.zone-picker button.is-risk.is-active {
+  border-color: rgba(228, 107, 86, 0.6);
+  color: #ffd8cf;
+  background: rgba(228, 107, 86, 0.13);
+}
+
 .data-bank {
   align-content: start;
   display: grid;

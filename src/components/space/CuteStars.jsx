@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { seededRandom } from './random'
 
 /**
  * Vài "con sao" có mặt cute đang lơ lửng trong vũ trụ. Mỗi sao là một ngôi sao
@@ -196,6 +197,12 @@ function buildFaceTextures() {
 // Vòng lặp biểu cảm chính của mỗi con sao (xen kẽ "normal" cho đỡ loạn).
 const EXPRESSION_CYCLE = ['normal', 'happy', 'normal', 'wink', 'surprised', 'normal', 'love', 'sleepy']
 
+// ---- Hiệu ứng nổ ----
+const PARTICLES = 70 // số mảnh vỡ
+const SPREAD = 3.2 // bán kính văng tối đa
+const EXPLODE_DUR = 1.0 // thời gian mảnh vỡ bay + tan (giây)
+const RESET_AT = 2.0 // sau bao lâu thì sao hồi sinh (giây)
+
 // 3 con sao: vị trí, kích thước, màu, nhịp khác nhau.
 const STARS = [
   { id: 0, position: [-7.5, 4.2, 3.5], scale: 1.0, color: '#ffe07a', bob: 0.55, phase: 0.0, spin: 0.35 },
@@ -203,68 +210,157 @@ const STARS = [
   { id: 2, position: [2.6, 6.6, 6.4], scale: 0.85, color: '#ffe9a8', bob: 0.45, phase: 3.5, spin: 0.28 },
 ]
 
-function CuteStar({ position, scale, color, bob, phase, spin, faceTextures }) {
+function CuteStar({ id, position, scale, color, bob, phase, spin, faceTextures }) {
   const group = useRef()
   const faceMaterial = useRef()
   const currentType = useRef('')
+  const points = useRef()
+  const pointsMaterial = useRef()
+  const flashLight = useRef()
   const baseY = position[1]
+
+  const [alive, setAlive] = useState(true)
+  // { active, start } — start = -1 nghĩa là chờ frame kế để lấy mốc thời gian.
+  const explosion = useRef({ active: false, start: -1 })
+
+  // Hướng văng + tốc độ của từng mảnh vỡ (cố định), và mảng vị trí cập nhật mỗi frame.
+  const { dirs, speeds, positions } = useMemo(() => {
+    const dirsArray = new Float32Array(PARTICLES * 3)
+    const speedsArray = new Float32Array(PARTICLES)
+    const positionsArray = new Float32Array(PARTICLES * 3)
+    const base = (id + 1) * 911
+    for (let i = 0; i < PARTICLES; i += 1) {
+      const i3 = i * 3
+      // Hướng ngẫu nhiên đều trên mặt cầu (seeded — thuần tuý khi render).
+      const u = seededRandom(base + i * 3 + 1) * 2 - 1
+      const a = seededRandom(base + i * 3 + 2) * Math.PI * 2
+      const r = Math.sqrt(1 - u * u)
+      dirsArray[i3] = r * Math.cos(a)
+      dirsArray[i3 + 1] = u
+      dirsArray[i3 + 2] = r * Math.sin(a)
+      speedsArray[i] = 0.6 + seededRandom(base + i * 3 + 3) * 0.7
+    }
+    return { dirs: dirsArray, speeds: speedsArray, positions: positionsArray }
+  }, [id])
+
+  const handleClick = (event) => {
+    event.stopPropagation()
+    if (!alive || explosion.current.active) return
+    setAlive(false)
+    explosion.current = { active: true, start: -1 }
+  }
 
   useFrame((state) => {
     const t = state.clock.elapsedTime
     const node = group.current
     if (!node) return
 
-    // --- chuyển động bồng bềnh + billboard + lắc lư ---
+    // --- chuyển động bồng bềnh + billboard + lắc lư (luôn chạy) ---
     node.position.y = baseY + Math.sin(t * 0.7 + phase) * bob
     node.position.x = position[0] + Math.cos(t * 0.4 + phase) * 0.25
     node.quaternion.copy(state.camera.quaternion)
     node.rotateZ(Math.sin(t * spin + phase) * 0.18)
 
-    // --- chọn biểu cảm ---
-    const local = t + phase * 2.0
-    const idx = Math.floor(local / 2.4) % EXPRESSION_CYCLE.length
-    let type = EXPRESSION_CYCLE[idx]
-    // chớp mắt nhanh (~0.13s mỗi ~3.3s), chỉ khi đang ở mặt "thường"
-    const blink = (local % 3.3) < 0.13
-    if (blink && (type === 'normal' || type === 'happy' || type === 'wink')) {
-      type = 'blink'
+    if (alive) {
+      // --- chọn biểu cảm ---
+      const local = t + phase * 2.0
+      const idx = Math.floor(local / 2.4) % EXPRESSION_CYCLE.length
+      let type = EXPRESSION_CYCLE[idx]
+      const blink = (local % 3.3) < 0.13
+      if (blink && (type === 'normal' || type === 'happy' || type === 'wink')) {
+        type = 'blink'
+      }
+      if (type !== currentType.current && faceMaterial.current) {
+        currentType.current = type
+        faceMaterial.current.map = faceTextures[type]
+        faceMaterial.current.needsUpdate = true
+      }
+      return
     }
 
-    if (type !== currentType.current && faceMaterial.current) {
-      currentType.current = type
-      faceMaterial.current.map = faceTextures[type]
-      faceMaterial.current.needsUpdate = true
+    // --- hiệu ứng nổ (khi !alive) ---
+    const exp = explosion.current
+    if (!exp.active) return
+    if (exp.start < 0) exp.start = t
+    const e = t - exp.start
+    const k = Math.min(e / EXPLODE_DUR, 1)
+    const eased = 1 - Math.pow(1 - k, 3) // bung nhanh rồi chậm dần
+
+    const arr = points.current.geometry.attributes.position.array
+    for (let i = 0; i < PARTICLES; i += 1) {
+      const i3 = i * 3
+      const d = eased * SPREAD * speeds[i]
+      arr[i3] = dirs[i3] * d
+      arr[i3 + 1] = dirs[i3 + 1] * d - 0.5 * k * k // chút trọng lực
+      arr[i3 + 2] = dirs[i3 + 2] * d
+    }
+    points.current.geometry.attributes.position.needsUpdate = true
+
+    pointsMaterial.current.opacity = Math.max(0, 1 - k)
+    pointsMaterial.current.size = 0.05 + 0.18 * (1 - k)
+    flashLight.current.intensity = Math.max(0, 9 * (1 - e / 0.35)) // lóe sáng lúc đầu
+
+    if (e >= RESET_AT) {
+      // hồi sinh: dọn mảnh vỡ, reset biểu cảm, hiện lại con sao.
+      exp.active = false
+      currentType.current = ''
+      setAlive(true)
     }
   })
 
   return (
     <group ref={group} position={position} scale={scale}>
-      {/* Thân ngôi sao phát sáng */}
-      <mesh geometry={STAR_GEOMETRY}>
-        <meshStandardMaterial
+      {/* Thân + mặt: chỉ hiện khi còn sống, click để nổ */}
+      {alive && (
+        <group onClick={handleClick} onPointerDown={handleClick}>
+          <mesh geometry={STAR_GEOMETRY}>
+            <meshStandardMaterial
+              color={color}
+              emissive={color}
+              emissiveIntensity={0.9}
+              roughness={0.35}
+              metalness={0.1}
+              toneMapped={false}
+            />
+          </mesh>
+          <mesh position={[0, 0.02, FACE_Z]}>
+            <planeGeometry args={[0.98, 0.98]} />
+            <meshBasicMaterial
+              ref={faceMaterial}
+              map={faceTextures.normal}
+              transparent
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+          <pointLight color={color} intensity={2.2} distance={6} />
+        </group>
+      )}
+
+      {/* Mảnh vỡ khi nổ */}
+      <points ref={points} visible={!alive}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={PARTICLES}
+            array={positions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          ref={pointsMaterial}
           color={color}
-          emissive={color}
-          emissiveIntensity={0.9}
-          roughness={0.35}
-          metalness={0.1}
-          toneMapped={false}
-        />
-      </mesh>
-
-      {/* Mặt: một tấm phẳng đổi texture biểu cảm */}
-      <mesh position={[0, 0.02, FACE_Z]}>
-        <planeGeometry args={[0.98, 0.98]} />
-        <meshBasicMaterial
-          ref={faceMaterial}
-          map={faceTextures.normal}
+          size={0.18}
+          sizeAttenuation
           transparent
+          opacity={0}
           depthWrite={false}
+          blending={THREE.AdditiveBlending}
           toneMapped={false}
         />
-      </mesh>
-
-      {/* Hào quang ấm quanh sao */}
-      <pointLight color={color} intensity={2.2} distance={6} />
+      </points>
+      {/* Ánh lóe lúc nổ */}
+      <pointLight ref={flashLight} color={color} intensity={0} distance={10} />
     </group>
   )
 }

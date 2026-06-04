@@ -1,23 +1,29 @@
 import { useMemo, useRef, useState } from 'react'
 import './ConsciousnessMirror.css'
 
+// Ba vùng cần phản ánh trong "vũ trụ thật". Bán kính đủ rộng để dễ trúng khi
+// rê kính lúp — quét là để hiểu ý nghĩa, không phải thử thách nhắm bắn.
 const HOTSPOTS = [
-  { id: 'planet', label: 'Hành tinh', x: 46, y: 55, radius: 22 },
-  { id: 'orbit', label: 'Quỹ đạo', x: 50, y: 58, radius: 31 },
-  { id: 'storm', label: 'Bão từ', x: 80, y: 80, radius: 18 },
+  { id: 'planet', label: 'Hành tinh', x: 42, y: 54, radius: 26 },
+  { id: 'orbit', label: 'Quỹ đạo', x: 52, y: 60, radius: 30 },
+  { id: 'storm', label: 'Bão từ', x: 78, y: 30, radius: 24 },
 ]
 
-const PLAN_ITEMS = [
-  { id: 'probe', label: 'Robot' },
-  { id: 'station', label: 'Trạm đo' },
+// Công cụ trong "kế hoạch ý thức". Bấm để chọn (arm), rồi bấm vào vũ trụ ý
+// thức để đặt — thay cho kéo-thả pointer-capture vốn rất kén con trỏ.
+const PLAN_TOOLS = [
+  { id: 'probe', label: 'Robot', glyph: 'R' },
+  { id: 'station', label: 'Trạm đo', glyph: 'T' },
 ]
 
 const REFLECTION_MESSAGES = {
-  reflect: 'Ý thức bắt đầu từ sự phản ánh thế giới vật chất.',
+  reflect: 'Ý thức bắt đầu từ sự phản ánh thế giới vật chất. Rê kính lúp để soi từng vùng của vũ trụ thật.',
   verify:
-    'Ý thức không phải bản sao hoàn hảo ngay lập tức. Nhận thức là quá trình phản ánh hiện thực ngày càng sâu sắc hơn.',
+    'Phản ánh chưa đủ. Nhận thức là quá trình soi đi soi lại hiện thực ngày càng sâu — hãy soi nốt vùng còn tối.',
+  ready:
+    'Vũ trụ trong ý thức đã phản ánh đủ. Giờ dùng ý thức để lập kế hoạch: đặt Robot, Trạm đo và vẽ đường bay.',
   create:
-    'Ý thức phản ánh thế giới vật chất, nhưng thông qua thực tiễn, ý thức có thể định hướng hoạt động của con người để cải biến thế giới.',
+    'Ý thức phản ánh thế giới, nhưng qua thực tiễn nó định hướng con người cải biến chính thế giới ấy.',
 }
 
 function clamp(value, min, max) {
@@ -37,161 +43,124 @@ function findScannedParts(point) {
   return HOTSPOTS.filter((spot) => Math.hypot(point.x - spot.x, point.y - spot.y) <= spot.radius).map((spot) => spot.id)
 }
 
-function statusFor({ mode, reflected, corrected, orbitPath, planItems, executed }) {
+function statusFor({ corrected, scannedCount, planItems, orbitOn, executed }) {
   if (executed) {
     return { mark: '!', title: 'Cải biến hiện thực', body: REFLECTION_MESSAGES.create }
   }
 
-  if (mode === 'create') {
-    const readyCount = Number(Boolean(orbitPath)) + Object.values(planItems).filter(Boolean).length
+  if (corrected) {
+    const placed = Number(Boolean(planItems.probe)) + Number(Boolean(planItems.station)) + Number(Boolean(orbitOn))
     return {
-      mark: readyCount >= 3 ? '!' : '?',
-      title: readyCount >= 3 ? 'Kế hoạch đã đủ' : 'Lập kế hoạch trong ý thức',
-      body: REFLECTION_MESSAGES.create,
+      mark: placed >= 3 ? '!' : '→',
+      title: placed >= 3 ? 'Kế hoạch đã đủ — thực hiện' : `Điều khiển kế hoạch (${placed}/3)`,
+      body: REFLECTION_MESSAGES.ready,
     }
   }
 
-  if (mode === 'verify') {
+  if (scannedCount > 0) {
     return {
-      mark: corrected ? '!' : '?',
-      title: corrected ? 'Vũ trụ trong ý thức đã sáng đủ' : 'Phản ánh chưa đầy đủ',
+      mark: '?',
+      title: `Đang phản ánh (${scannedCount}/${HOTSPOTS.length})`,
       body: REFLECTION_MESSAGES.verify,
     }
   }
 
-  return {
-    mark: reflected >= 1 ? '!' : '?',
-    title: reflected >= 1 ? 'Hiện thực đã được phản ánh' : 'Soi vũ trụ thật',
-    body: REFLECTION_MESSAGES.reflect,
-  }
+  return { mark: '?', title: 'Soi vũ trụ thật', body: REFLECTION_MESSAGES.reflect }
 }
 
 export default function ConsciousnessMirror() {
   const realRef = useRef(null)
   const mindRef = useRef(null)
-  const [mode, setMode] = useState('reflect')
   const [lens, setLens] = useState({ x: 30, y: 56 })
   const [scanned, setScanned] = useState([])
   const [draggingLens, setDraggingLens] = useState(false)
-  const [corrected, setCorrected] = useState(false)
+  const [tool, setTool] = useState(null)
   const [planItems, setPlanItems] = useState({ probe: null, station: null })
-  const [draggingItem, setDraggingItem] = useState(null)
-  const [itemGhost, setItemGhost] = useState(null)
-  const [drawingOrbit, setDrawingOrbit] = useState(false)
-  const [orbitDraft, setOrbitDraft] = useState(null)
-  const [orbitPath, setOrbitPath] = useState(null)
+  const [orbitOn, setOrbitOn] = useState(false)
   const [executed, setExecuted] = useState(false)
 
-  const reflected = scanned.length / HOTSPOTS.length
-  const readyToExecute = corrected && orbitPath && planItems.probe && planItems.station
+  const corrected = scanned.length === HOTSPOTS.length
+  const clarity = scanned.length / HOTSPOTS.length
+  const readyToExecute = corrected && orbitOn && planItems.probe && planItems.station
+
   const status = useMemo(
-    () => statusFor({ mode, reflected, corrected, orbitPath, planItems, executed }),
-    [mode, reflected, corrected, orbitPath, planItems, executed],
+    () => statusFor({ corrected, scannedCount: scanned.length, planItems, orbitOn, executed }),
+    [corrected, scanned.length, planItems, orbitOn, executed],
   )
 
-  const updateLens = (event) => {
+  // ── Kính lúp: rê để phản ánh hiện thực (pointer-capture trên một núm to,
+  //    đáng tin với mọi con trỏ). ────────────────────────────────────────────
+  const scanAt = (event) => {
     const point = pointPercent(event, realRef.current)
     if (!point) return
-    const newParts = findScannedParts(point)
-
-    setMode('reflect')
-    setExecuted(false)
     setLens(point)
-    setScanned((parts) => Array.from(new Set([...parts, ...newParts])))
+    setExecuted(false)
+    setScanned((parts) => Array.from(new Set([...parts, ...findScannedParts(point)])))
   }
 
   const startLens = (event) => {
     event.preventDefault()
     setDraggingLens(true)
     event.currentTarget.setPointerCapture(event.pointerId)
-    updateLens(event)
+    scanAt(event)
   }
 
   const moveLens = (event) => {
-    if (draggingLens) updateLens(event)
+    if (draggingLens) scanAt(event)
   }
 
   const stopLens = (event) => {
-    const point = pointPercent(event, realRef.current)
-    const finalParts = point ? Array.from(new Set([...scanned, ...findScannedParts(point)])) : scanned
-    const isComplete = finalParts.length === HOTSPOTS.length
-
     setDraggingLens(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
-    setScanned(finalParts)
-    setMode(isComplete ? 'create' : 'verify')
-    setCorrected(isComplete)
   }
 
-  const startPlanDrag = (event, itemId) => {
+  // ── Kế hoạch trong ý thức: bấm công cụ để chọn, bấm vào vũ trụ ý thức để
+  //    đặt. Không kéo-thả → không lệ thuộc con trỏ tuỳ biến. ─────────────────
+  const armTool = (id) => {
     if (!corrected) return
-    event.preventDefault()
-    setMode('create')
     setExecuted(false)
-    setDraggingItem(itemId)
-    setItemGhost({ id: itemId, x: event.clientX, y: event.clientY })
-    event.currentTarget.setPointerCapture(event.pointerId)
+    setTool((current) => (current === id ? null : id))
   }
 
-  const movePlanDrag = (event) => {
-    if (!draggingItem) return
-    setItemGhost({ id: draggingItem, x: event.clientX, y: event.clientY })
+  const toggleOrbit = () => {
+    if (!corrected) return
+    setExecuted(false)
+    setOrbitOn((on) => !on)
+    setTool(null)
   }
 
-  const stopPlanDrag = (event) => {
-    if (!draggingItem) return
-    const point = pointPercent(event, mindRef.current)
-    if (point) setPlanItems((items) => ({ ...items, [draggingItem]: point }))
-    setDraggingItem(null)
-    setItemGhost(null)
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-  }
-
-  const startOrbit = (event) => {
-    if (!corrected || event.target.closest('.mirror-plan-palette') || event.target.closest('.mirror-execute')) return
+  const placeOnMind = (event) => {
+    if (!corrected || !tool) return
+    // Bỏ qua khi bấm trúng chính thanh công cụ / nút thực hiện.
+    if (event.target.closest('.mirror-plan-palette') || event.target.closest('.mirror-execute')) return
     const point = pointPercent(event, mindRef.current)
     if (!point) return
-    setMode('create')
+    setPlanItems((items) => ({ ...items, [tool]: point }))
+    setTool(null)
     setExecuted(false)
-    setDrawingOrbit(true)
-    setOrbitDraft({ start: point, end: point })
-  }
-
-  const moveOrbit = (event) => {
-    if (!drawingOrbit) return
-    const point = pointPercent(event, mindRef.current)
-    if (!point) return
-    setOrbitDraft((draft) => (draft ? { ...draft, end: point } : null))
-  }
-
-  const stopOrbit = () => {
-    if (orbitDraft) setOrbitPath(orbitDraft)
-    setDrawingOrbit(false)
-    setOrbitDraft(null)
   }
 
   const execute = () => {
     if (!readyToExecute) return
-    setMode('create')
     setExecuted(true)
   }
 
-  const activeOrbit = orbitDraft ?? orbitPath
+  const reset = () => {
+    setScanned([])
+    setTool(null)
+    setPlanItems({ probe: null, station: null })
+    setOrbitOn(false)
+    setExecuted(false)
+  }
 
   return (
     <div
-      className={`widget consciousness-mirror mirror-redesign is-${mode} ${corrected ? 'is-corrected' : ''} ${
+      className={`widget consciousness-mirror mirror-redesign ${corrected ? 'is-corrected' : ''} ${
         executed ? 'is-executed' : ''
-      } ${draggingLens ? 'is-dragging-lens' : ''}`}
-      style={{
-        '--clarity': reflected,
-        '--lens-x': `${lens.x}%`,
-        '--lens-y': `${lens.y}%`,
-      }}
+      } ${draggingLens ? 'is-dragging-lens' : ''} ${tool ? 'is-arming' : ''}`}
+      style={{ '--clarity': clarity, '--lens-x': `${lens.x}%`, '--lens-y': `${lens.y}%` }}
     >
       <div className="mirror-stage mirror-stage--lens">
         <section ref={realRef} className="mirror-world mirror-world--real" aria-label="Vũ trụ thật">
@@ -207,8 +176,10 @@ export default function ConsciousnessMirror() {
             <span
               key={spot.id}
               className={`mirror-hotspot mirror-hotspot--${spot.id} ${scanned.includes(spot.id) ? 'is-scanned' : ''}`}
-              aria-hidden="true"
-            />
+              style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+            >
+              <i>{spot.label}</i>
+            </span>
           ))}
           {executed && (
             <>
@@ -232,35 +203,22 @@ export default function ConsciousnessMirror() {
 
         <section
           ref={mindRef}
-          className="mirror-world mirror-world--mind"
+          className={`mirror-world mirror-world--mind ${corrected ? 'is-unlocked' : ''} ${tool ? 'is-placing' : ''}`}
           aria-label="Vũ trụ trong ý thức"
-          onPointerDown={startOrbit}
-          onPointerMove={moveOrbit}
-          onPointerUp={stopOrbit}
-          onPointerCancel={stopOrbit}
+          onClick={placeOnMind}
         >
           <span className="mirror-panel-label">Vũ trụ trong ý thức</span>
           <div className="mind-grid" aria-hidden="true" />
-          <div className="mirror-orbit mirror-orbit--mind" aria-hidden="true" />
+          <div className={`mirror-orbit mirror-orbit--mind ${orbitOn ? 'is-planned' : ''}`} aria-hidden="true" />
           <div className="mirror-planet mirror-planet--mind" aria-hidden="true">
             <span className="mirror-core" />
           </div>
           <div className={`mind-part mind-part--planet ${scanned.includes('planet') ? 'is-lit' : ''}`} aria-hidden="true" />
           <div className={`mind-part mind-part--orbit ${scanned.includes('orbit') ? 'is-lit' : ''}`} aria-hidden="true" />
           <div className={`mind-part mind-part--storm ${scanned.includes('storm') ? 'is-lit' : ''}`} aria-hidden="true" />
-          <div className="mirror-error mirror-error--orbit" aria-hidden="true" />
-          <div className="mirror-error mirror-error--storm" aria-hidden="true" />
-          {activeOrbit && (
-            <svg className="drawn-orbit" viewBox="0 0 100 100" aria-hidden="true">
-              <path
-                d={`M ${activeOrbit.start.x} ${activeOrbit.start.y} C ${(activeOrbit.start.x + activeOrbit.end.x) / 2} ${
-                  Math.min(activeOrbit.start.y, activeOrbit.end.y) - 24
-                }, ${(activeOrbit.start.x + activeOrbit.end.x) / 2} ${Math.max(activeOrbit.start.y, activeOrbit.end.y) + 18}, ${
-                  activeOrbit.end.x
-                } ${activeOrbit.end.y}`}
-              />
-            </svg>
-          )}
+
+          {!corrected && <div className="mind-locked" aria-hidden="true">Soi đủ vũ trụ thật để mở khóa</div>}
+
           {Object.entries(planItems).map(([id, point]) =>
             point ? (
               <div
@@ -276,20 +234,23 @@ export default function ConsciousnessMirror() {
 
           {corrected && (
             <div className="mirror-plan-palette">
-              {PLAN_ITEMS.map((item) => (
+              {PLAN_TOOLS.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  className={`mirror-tool ${planItems[item.id] ? 'is-active' : ''}`}
-                  onPointerDown={(event) => startPlanDrag(event, item.id)}
-                  onPointerMove={movePlanDrag}
-                  onPointerUp={stopPlanDrag}
-                  onPointerCancel={stopPlanDrag}
+                  className={`mirror-tool ${tool === item.id ? 'is-arming' : ''} ${planItems[item.id] ? 'is-active' : ''}`}
+                  onClick={() => armTool(item.id)}
                 >
-                  {item.label}
+                  {planItems[item.id] ? `${item.label} ✓` : tool === item.id ? `Bấm để đặt ${item.label}` : item.label}
                 </button>
               ))}
-              <span className={`mirror-tool mirror-tool--draw ${orbitPath ? 'is-active' : ''}`}>Vẽ đường bay</span>
+              <button
+                type="button"
+                className={`mirror-tool mirror-tool--draw ${orbitOn ? 'is-active' : ''}`}
+                onClick={toggleOrbit}
+              >
+                {orbitOn ? 'Đường bay ✓' : 'Vẽ đường bay'}
+              </button>
             </div>
           )}
 
@@ -304,18 +265,13 @@ export default function ConsciousnessMirror() {
           <span>{status.mark}</span>
           <strong>{status.title}</strong>
           <p>{status.body}</p>
+          {(corrected || scanned.length > 0) && (
+            <button type="button" className="mirror-reset" onClick={reset}>
+              Soi lại từ đầu
+            </button>
+          )}
         </div>
       </div>
-
-      {itemGhost && (
-        <div
-          className={`drag-ghost drag-ghost--${itemGhost.id}`}
-          style={{ left: `${itemGhost.x}px`, top: `${itemGhost.y}px` }}
-          aria-hidden="true"
-        >
-          {itemGhost.id === 'probe' ? 'Robot' : 'Trạm'}
-        </div>
-      )}
     </div>
   )
 }

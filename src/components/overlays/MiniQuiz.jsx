@@ -113,7 +113,7 @@ export default function MiniQuiz({ quizzes, quiz, onPass }) {
     <div className={`mini-quiz ${open ? 'is-open' : ''}`}>
       <button type="button" className="mini-quiz-toggle" onClick={open ? () => setOpen(false) : openQuiz} aria-expanded={open}>
         <span className="mini-quiz-kicker">Quiz nhanh</span>
-        <span className="mini-quiz-toggle-hint">{open ? 'Đóng' : 'Random câu hỏi'}</span>
+        <span className="mini-quiz-toggle-hint">{open ? 'Đóng' : 'câu hỏi'}</span>
       </button>
       {quizModal}
     </div>

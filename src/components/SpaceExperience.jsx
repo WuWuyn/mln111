@@ -299,11 +299,12 @@ export default function SpaceExperience({ onBack, handControlStore, latchStore }
     })
   }, [nextQuestionIndex])
 
-  const detailOpen = activeView === 'detail'
-  const fullPageViewOpen = Boolean(activeView) && !detailOpen
+  // Mọi view con (thực nghiệm + hồ sơ) giờ là trang riêng toàn màn hình: ẩn scene
+  // 3D phía sau thay vì lồng trạm thực nghiệm thành popup nổi trên bản đồ.
+  const fullPageViewOpen = Boolean(activeView)
 
   return (
-    <section className={`experience-page ${detailOpen ? 'has-3d-modal' : ''}`}>
+    <section className="experience-page">
       {activeView === null && introReady && (
         <>
           <div className="experience-topbar">
@@ -340,7 +341,7 @@ export default function SpaceExperience({ onBack, handControlStore, latchStore }
         </>
       )}
 
-      <div className={`space-experience ${detailOpen ? 'is-detail-backdrop' : ''}`} hidden={fullPageViewOpen}>
+      <div className="space-experience" hidden={fullPageViewOpen}>
         <Canvas
           camera={{ position: [0, 14, 23], fov: 48, near: 0.1, far: 120 }}
           dpr={[1, 1.5]}

@@ -18,7 +18,7 @@ const EXPERIENCE_COPY = {
     title: 'Cosmic Mirror',
     kicker: 'Tấm gương vũ trụ trong ý thức.',
     prompt:
-      'Soi vũ trụ thật, kiểm tra xem mô hình trong ý thức đã phản ánh đủ chưa, rồi biến mô hình đó thành kế hoạch thực tiễn.',
+      'Rê kính lúp soi đủ ba vùng của vũ trụ thật để vũ trụ trong ý thức sáng lên. Sau đó điều khiển kế hoạch: bấm chọn Robot / Trạm đo rồi bấm vào vũ trụ ý thức để đặt, bật đường bay, và thực hiện trong thực tiễn.',
   },
   relation: {
     title: 'Hệ Quỹ Đạo Biện Chứng',
@@ -36,7 +36,7 @@ const EXPERIENCE_COPY = {
     title: 'Trạm Kiểm Nghiệm Thực Tiễn',
     kicker: 'Nghĩ đúng chưa đủ, phải kiểm chứng trong hiện thực.',
     prompt:
-      'Quan sát hành tinh, kéo dữ liệu vào giả thuyết, phóng robot kiểm nghiệm rồi điều chỉnh nhận thức. Khi giả thuyết đi qua thực tiễn thành công, hãy dùng nó để xây trạm trên hiện thực.',
+      'Bấm dữ liệu (nước, nhiệt độ, bão từ) vào giả thuyết, chọn vùng đáp an toàn rồi phóng robot kiểm nghiệm. Sai thì điều chỉnh theo dữ liệu thật, đúng thì xây trạm để cải biến hiện thực.',
   },
 }
 
@@ -58,7 +58,7 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
   }
 
   return (
-    <OverlayShell variant="overlay-panel--detail" modal onClose={onClose}>
+    <OverlayShell variant="overlay-panel--detail" onClose={onClose}>
       <header className="detail-head" style={{ '--accent': colors[1], '--accent-soft': colors[0] }}>
         <div className="detail-title-stack">
           <p className="overlay-eyebrow">Trạm tương tác</p>
