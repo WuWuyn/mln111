@@ -1040,3 +1040,276 @@
     display: none;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GLOW-UP — lớp hiệu ứng điện ảnh phủ lên skin hextech: tia sáng xoay sau huy
+   hiệu, sheen kim loại quét qua khung, điểm số gradient phát sáng, các khối
+   "thở" nhẹ. Đặt cuối file → thắng mọi quy tắc cùng độ ưu tiên phía trên.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Aurora chậm xoay sau toàn trang, tạo chiều sâu sống động. */
+.content-page.overlay-panel--badge::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  translate: -50% -50%;
+  pointer-events: none;
+  opacity: 0.5;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(10, 200, 185, 0.07) 60deg,
+    transparent 130deg,
+    rgba(200, 170, 110, 0.08) 210deg,
+    transparent 300deg,
+    rgba(10, 200, 185, 0.07) 360deg
+  );
+  -webkit-mask: radial-gradient(circle, #000 8%, rgba(0, 0, 0, 0.55) 38%, transparent 70%);
+  mask: radial-gradient(circle, #000 8%, rgba(0, 0, 0, 0.55) 38%, transparent 70%);
+  animation: badgeAurora 40s linear infinite;
+}
+
+@keyframes badgeAurora {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ── Tia sáng (god-rays) xoay phía sau huy hiệu ──────────────────────────────── */
+.content-page.overlay-panel--badge .badge-crest::before {
+  content: '';
+  position: absolute;
+  inset: -52%;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    color-mix(in srgb, var(--hex-gold-bright) 55%, transparent) 0deg 2.4deg,
+    transparent 2.4deg 18deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 26%, #000 40%, transparent 66%);
+  mask: radial-gradient(circle, transparent 26%, #000 40%, transparent 66%);
+  opacity: 0.32;
+  animation: badgeRays 26s linear infinite;
+}
+
+@keyframes badgeRays {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* Quầng halo mạnh hơn + lam ngọc xen kẽ. */
+.content-page.overlay-panel--badge .badge-crest-halo {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--hex-gold-bright) 75%, transparent) 36deg,
+    transparent 84deg,
+    transparent 170deg,
+    color-mix(in srgb, var(--hex-cyan) 70%, transparent) 214deg,
+    transparent 280deg
+  );
+  opacity: 0.6;
+  animation: badgeHaloSpin 14s linear infinite;
+}
+
+/* Ngôi sao kim loại lơ lửng nhẹ + ánh kim mạnh hơn. */
+.content-page.overlay-panel--badge .badge-hero .rank-crest {
+  filter: drop-shadow(0 10px 30px var(--tier-glow))
+    drop-shadow(0 0 8px rgba(200, 170, 110, 0.45));
+  animation: badgeCrestFloat 6s ease-in-out 0.8s infinite;
+}
+
+@keyframes badgeCrestFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* ── Sheen kim loại quét chéo qua khung huy hiệu ─────────────────────────────── */
+.content-page.overlay-panel--badge .badge-hero::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  z-index: 0;
+  pointer-events: none;
+  clip-path: polygon(
+    19px 0,
+    calc(100% - 19px) 0,
+    100% 19px,
+    100% calc(100% - 19px),
+    calc(100% - 19px) 100%,
+    19px 100%,
+    0 calc(100% - 19px),
+    0 19px
+  );
+  background: linear-gradient(
+    115deg,
+    transparent 34%,
+    rgba(240, 230, 210, 0.08) 46%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(240, 230, 210, 0.08) 54%,
+    transparent 66%
+  );
+  background-size: 260% 100%;
+  background-position: 200% 0;
+  animation: badgeSheen 7s ease-in-out 1.4s infinite;
+}
+
+@keyframes badgeSheen {
+  0% {
+    background-position: 200% 0;
+  }
+  55%,
+  100% {
+    background-position: -70% 0;
+  }
+}
+
+/* ── Điểm số: số đúc gradient vàng kim loại, phát sáng đập nhẹ ────────────────── */
+.content-page.overlay-panel--badge .badge-score {
+  overflow: hidden;
+}
+
+.content-page.overlay-panel--badge .badge-score-num {
+  background: linear-gradient(
+    180deg,
+    var(--hex-gold-bright) 0%,
+    var(--hex-gold) 52%,
+    var(--hex-gold-deep) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgba(200, 170, 110, 0.5));
+  animation: badgeScorePulse 3.4s ease-in-out infinite;
+}
+
+@keyframes badgeScorePulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 12px rgba(200, 170, 110, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 22px rgba(200, 170, 110, 0.7));
+  }
+}
+
+/* Tiêu đề hạng: chữ đúc gradient kim loại cho "đắt" hơn. */
+.content-page.overlay-panel--badge .badge-title {
+  background: linear-gradient(180deg, #fff7e6 0%, var(--hex-gold-bright) 48%, var(--hex-gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Thẻ chỉ số: nâng nhẹ + viền sáng khi rê chuột ───────────────────────────── */
+.content-page.overlay-panel--badge .badge-stat {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-top-color 0.25s ease;
+}
+
+.content-page.overlay-panel--badge .badge-stat:hover {
+  transform: translateY(-3px);
+  border-top-color: var(--hex-gold-bright);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.42),
+    0 0 18px rgba(200, 170, 110, 0.2);
+}
+
+/* ── Hàng ladder hạng hiện tại: viền sáng "thở" ──────────────────────────────── */
+.content-page.overlay-panel--badge .badge-ladder-item {
+  transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-item.is-reached:hover {
+  transform: translateX(3px);
+}
+
+.content-page.overlay-panel--badge .badge-ladder-item.is-current {
+  animation: badgeLadderBreath 3.4s ease-in-out infinite;
+}
+
+@keyframes badgeLadderBreath {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--hex-gold) 50%, transparent),
+      0 0 14px rgba(200, 170, 110, 0.22),
+      inset 0 0 22px rgba(10, 200, 185, 0.1);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--hex-gold) 70%, transparent),
+      0 0 26px rgba(200, 170, 110, 0.42),
+      inset 0 0 26px rgba(10, 200, 185, 0.16);
+  }
+}
+
+/* Thanh tiến trình: ánh sáng chạy dọc để có cảm giác "đang nạp năng lượng". */
+.content-page.overlay-panel--badge .badge-progress-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.content-page.overlay-panel--badge .badge-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: translateX(-100%);
+  animation: badgeProgressShine 2.8s ease-in-out 1s infinite;
+}
+
+@keyframes badgeProgressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Nút chính: ánh sáng quét qua khi rê chuột, cảm giác kim loại bóng. */
+.content-page.overlay-panel--badge .badge-actions .primary-action {
+  position: relative;
+  overflow: hidden;
+}
+
+.content-page.overlay-panel--badge .badge-actions .primary-action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  transition: background-position 0.7s ease;
+}
+
+.content-page.overlay-panel--badge .badge-actions .primary-action:hover::after {
+  background-position: -60% 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-page.overlay-panel--badge::after,
+  .content-page.overlay-panel--badge .badge-crest::before,
+  .content-page.overlay-panel--badge .badge-crest-halo,
+  .content-page.overlay-panel--badge .badge-hero .rank-crest,
+  .content-page.overlay-panel--badge .badge-hero::after,
+  .content-page.overlay-panel--badge .badge-score-num,
+  .content-page.overlay-panel--badge .badge-ladder-item.is-current,
+  .content-page.overlay-panel--badge .badge-progress-fill::after {
+    animation: none;
+  }
+}

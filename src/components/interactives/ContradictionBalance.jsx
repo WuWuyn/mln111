@@ -11,14 +11,17 @@ import './ContradictionBalance.css'
 const TAP_GAIN = 8 // mỗi cú gõ thêm bao nhiêu lượng
 const RIPPLE_MS = 600 // vòng sáng sống bao lâu trước khi gỡ khỏi DOM
 
+// Giá trị khởi tạo — dùng chung cho state ban đầu và nút "Tái tạo".
+const INITIAL = { oldForce: 58, newForce: 56, quantity: 24 }
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
 
 export default function ContradictionBalance({ handStore }) {
-  const [oldForce, setOldForce] = useState(58)
-  const [newForce, setNewForce] = useState(56)
-  const [quantity, setQuantity] = useState(24)
+  const [oldForce, setOldForce] = useState(INITIAL.oldForce)
+  const [newForce, setNewForce] = useState(INITIAL.newForce)
+  const [quantity, setQuantity] = useState(INITIAL.quantity)
   const [insideCore, setInsideCore] = useState(false)
   const [ripples, setRipples] = useState([])
 
@@ -69,6 +72,16 @@ export default function ContradictionBalance({ handStore }) {
     setQuantity((value) => clamp(value + TAP_GAIN, 0, 100))
   }
 
+  // Tái tạo: đưa lõi sao về trạng thái ban đầu để chơi lại từ đầu — nhất là sau
+  // khi bước nhảy (leapt) đã xảy ra và không còn gõ được nữa.
+  const reset = () => {
+    setOldForce(INITIAL.oldForce)
+    setNewForce(INITIAL.newForce)
+    setQuantity(INITIAL.quantity)
+    setRipples([])
+    setInsideCore(false)
+  }
+
   const tapHint = leapt
     ? 'Bước nhảy đã xảy ra — chất mới đã hình thành.'
     : !balanced
@@ -84,6 +97,13 @@ export default function ContradictionBalance({ handStore }) {
     { key: 'new', kind: 'slider', label: 'Cái mới', get: () => newForce, set: setNewForce, min: 0, max: 100, step: 1 },
   ]
   const hand = useHandTargets(handStore, handTargets)
+
+  // Nút "Tái tạo" nay nằm cạnh hàng chọn Cái cũ / Cái mới ở đầu bảng điều khiển.
+  const resetButton = (
+    <button type="button" className="core-reset" data-hand-click onClick={reset}>
+      Tái tạo
+    </button>
+  )
 
   return (
     <div
@@ -152,7 +172,11 @@ export default function ContradictionBalance({ handStore }) {
       </div>
 
       <div className="core-controls">
-        {handStore && <HandControlBar targets={handTargets} {...hand} />}
+        {handStore ? (
+          <HandControlBar targets={handTargets} {...hand} action={resetButton} />
+        ) : (
+          <div className="core-actions">{resetButton}</div>
+        )}
 
         <div className="opposition-panel">
           <label className={`core-slider core-slider--old ${hand.activeKey === 'old' ? 'is-hand-locked' : ''}`}>

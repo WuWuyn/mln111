@@ -269,26 +269,13 @@
   line-height: 1.38;
 }
 
+/* Một cột: thanh điều khiển tay · gợi ý chụm tay · thanh thời gian. Bộ chuyển
+   cách nhìn đã dời lên sân khấu nên hàng điều khiển dưới đây gọn lại. */
 .dialectic-controls {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
-/* Thanh điều khiển tay + gợi ý chụm tay nằm trọn một hàng; hàng dưới là
-   "cách nhìn" + "thời gian" cạnh nhau — bớt chữ, gọn như trang Cosmic Mirror. */
-.dialectic-controls > .hand-ctl,
-.dialectic-controls > .grab-hint {
-  grid-column: 1 / -1;
-}
-
-.mode-switch {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.mode-switch button,
 .time-control,
 .dialectic-message {
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -296,33 +283,85 @@
   background: rgba(255, 255, 255, 0.045);
 }
 
-.mode-switch button {
-  min-height: var(--btn-h-sm);
-  padding: 0 var(--btn-pad-x-sm);
-  border-radius: var(--btn-radius);
-  color: #eaf2ff;
+/* ── Bộ chuyển cách nhìn (Siêu hình ↔ Biện chứng) ──────────────────────────
+   Segmented toggle liền khối, nổi góc trên-trái sân khấu — hết cảnh hai nút rời
+   rạc, và đặt ngay trên sân khấu cho dễ với, gọn gàng. */
+.view-toggle {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 11;
+  display: inline-flex;
+  gap: 0.15rem;
+  padding: 0.16rem;
+  border: 1px solid rgba(232, 195, 84, 0.3);
+  border-radius: 999px;
+  background: rgba(8, 12, 24, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.view-toggle button {
+  min-height: 1.5rem;
+  padding: 0 0.66rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(243, 234, 210, 0.78);
   font: inherit;
-  font-size: var(--btn-font-sm);
+  font-size: 0.68rem;
   font-weight: var(--btn-weight);
   cursor: pointer;
-  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+  transition: background 140ms ease, color 140ms ease;
 }
 
-.mode-switch button:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255, 209, 122, 0.34);
+.view-toggle button:hover {
+  color: #fff6cf;
 }
 
-.mode-switch button.is-active {
-  border-color: rgba(255, 209, 122, 0.48);
-  color: #fff8dc;
-  background: rgba(255, 209, 122, 0.11);
+.view-toggle button.is-active {
+  color: #1a1206;
+  background: linear-gradient(135deg, #ffe9a8, #f0c050);
+}
+
+/* Nút "Tái tạo sao" — icon tròn nhỏ gọn, nổi góc trên-phải sân khấu. */
+.star-reset {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 11;
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: 1px solid rgba(232, 195, 84, 0.4);
+  border-radius: 50%;
+  color: #fff6cf;
+  background: rgba(8, 12, 24, 0.62);
+  backdrop-filter: blur(8px);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 200ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.star-reset:hover {
+  transform: rotate(-90deg);
+  border-color: rgba(232, 195, 84, 0.75);
+  background: rgba(232, 195, 84, 0.16);
+}
+
+.star-reset:active {
+  transform: scale(0.92);
 }
 
 .time-control {
   display: grid;
   gap: 0.44rem;
   padding: 0.5rem 0.7rem;
+  /* Thanh thời gian dài vừa phải và canh giữa cho cân đối, giống thanh trượt
+     trang The Silent Universe — không kéo trọn chiều ngang. */
+  width: min(100%, 26rem);
+  justify-self: center;
 }
 
 .time-control span {

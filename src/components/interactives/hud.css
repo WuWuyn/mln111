@@ -346,7 +346,6 @@
 /* ═══ Angular controls ═══════════════════════════════════════════════════════
    Square the small toggles/buttons and give them a focus/hover instrument glow,
    without overriding their semantic colours. */
-.hud-shell .observer-toggle,
 .hud-shell .mode-switch,
 .hud-shell .mode-switch button,
 .hud-shell .core-zoom,
@@ -359,7 +358,6 @@
   border-radius: 999px;
 }
 
-.hud-shell .observer-toggle:hover,
 .hud-shell .mode-switch button:hover,
 .hud-shell .core-zoom:hover,
 .hud-shell .core-reset:hover,

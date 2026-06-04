@@ -330,9 +330,16 @@
 
 .core-controls {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr;
   gap: 0.62rem;
   align-items: stretch;
+}
+
+/* Khi không có điều khiển tay: hàng riêng chứa nút "Tái tạo", canh phải. */
+.core-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .opposition-panel,
@@ -461,6 +468,21 @@
   align-self: stretch;
   min-width: 6.8rem;
   padding: 0 var(--btn-pad-x);
+}
+
+/* Trong thanh điều khiển tay: nút "Tái tạo" thu gọn thành viên thuốc cạnh
+   hàng chọn Cái cũ / Cái mới. */
+.hand-ctl-action {
+  flex: none;
+}
+
+.hand-ctl .core-reset {
+  align-self: center;
+  min-width: 0;
+  min-height: 1.9rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
 }
 
 .new-quality-system {

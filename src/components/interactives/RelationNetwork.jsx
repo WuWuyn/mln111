@@ -242,15 +242,29 @@ export default function RelationNetwork({ handStore }) {
         <div className="life-band" aria-hidden="true" />
         <div className="observer-station" aria-hidden="true" />
 
+        <div className="view-toggle" role="group" aria-label="Chọn cách nhìn">
+          {Object.entries(MODES).map(([id, item]) => (
+            <button
+              key={id}
+              type="button"
+              className={mode === id ? 'is-active' : ''}
+              onClick={() => setMode(id)}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
         <button
           type="button"
           className="star-reset"
           onClick={recreateStar}
           onPointerDown={(event) => event.stopPropagation()}
-          title="Đưa hệ sao về trạng thái ban đầu"
+          title="Tái tạo sao — đưa hệ về ban đầu"
+          aria-label="Tái tạo sao"
         >
-          <span className="star-reset-ico" aria-hidden="true">⟳</span>
-          Tái tạo sao
+          ⟳
         </button>
 
         <div className="system-readout" role="status">
@@ -264,14 +278,6 @@ export default function RelationNetwork({ handStore }) {
         {handStore && (
           <p className="grab-hint">🤏 Chụm tay để cầm quả cầu · mở tay để thả.</p>
         )}
-
-        <div className="mode-switch" aria-label="Chọn cách nhìn">
-          {Object.entries(MODES).map(([id, item]) => (
-            <button key={id} type="button" className={mode === id ? 'is-active' : ''} onClick={() => setMode(id)}>
-              {item.label}
-            </button>
-          ))}
-        </div>
 
         <label className={`time-control ${hand.lockedKey === 'time' ? 'is-hand-locked' : ''}`}>
           <span>

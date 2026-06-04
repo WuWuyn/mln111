@@ -129,16 +129,6 @@ export default function MatterConsciousnessSlider({ handStore }) {
       <div className="matter-controls matter-controls--minimal">
         {handStore && <HandControlBar targets={handTargets} {...hand} />}
 
-        <button
-          type="button"
-          className={`observer-toggle ${observerOn ? 'is-on' : ''}`}
-          onClick={toggleObserver}
-          aria-pressed={observerOn}
-        >
-          <span className="observer-toggle-light" />
-          {observerOn ? 'Tắt soi' : 'Bật soi'}
-        </button>
-
         <label className={`widget-control cognition-control ${hand.lockedKey === 'cognition' ? 'is-hand-locked' : ''}`}>
           <span className="widget-control-label">
             Mức độ nhận thức

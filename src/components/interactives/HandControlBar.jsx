@@ -1,6 +1,6 @@
 // Thanh điều khiển bằng tay dùng chung (không con trỏ): đổi mục bằng cử chỉ,
 // kéo nhẹ để chỉnh. Nhận state từ hook useHandTargets.
-export default function HandControlBar({ targets, handActive, activeIndex, rateDir, selectTarget }) {
+export default function HandControlBar({ targets, handActive, activeIndex, rateDir, selectTarget, action }) {
   const activeTarget = targets[activeIndex] ?? null
   const isSlider = activeTarget?.kind === 'slider'
   // Gợi ý cho cử chỉ ☝ theo loại mục đang chọn.
@@ -37,6 +37,8 @@ export default function HandControlBar({ targets, handActive, activeIndex, rateD
           </button>
         ))}
       </div>
+
+      {action ? <div className="hand-ctl-action">{action}</div> : null}
 
       {handActive && isSlider && (
         <div className={`hand-ctl-rate dir-${rateDir}`} aria-hidden="true">

@@ -1117,6 +1117,17 @@
   align-items: stretch;
 }
 
+/* Sau khi bỏ nút Bật/Tắt soi, khu điều khiển chỉ còn hand bar + thanh trượt:
+   một cột, thanh trượt dài vừa phải và canh giữa cho cân đối. */
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-universe .matter-controls--minimal {
+  grid-template-columns: 1fr;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-universe .matter-controls--minimal .cognition-control {
+  width: min(100%, 26rem);
+  justify-self: center;
+}
+
 .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
   position: relative;
   right: auto;

@@ -38,6 +38,8 @@ const SWIPE_MIN_MS = 70
 const SWIPE_COOLDOWN_MS = 1100
 // Để người chơi kịp thấy vụ nổ trước khi quiz hiện lên ("nổ rồi mới mở quiz").
 const SHOT_QUIZ_DELAY_MS = 650
+// Xác suất một câu hỏi đã xuất hiện được hỏi lại (thay vì rút câu mới) — 5%.
+const QUESTION_REPEAT_CHANCE = 0.05
 
 function BackIcon() {
   return (
@@ -236,7 +238,7 @@ export default function SpaceExperience({ onBack, handControlStore, latchStore }
   const [intro, setIntro] = useState(initialIntro)
   const [swipeFlash, setSwipeFlash] = useState(null)
   const [showGuide, setShowGuide] = useState(false)
-  const questionBag = useRef({ remaining: [], last: null })
+  const questionBag = useRef({ remaining: [], last: null, seen: [] })
   // Hẹn giờ mở quiz sau khi nổ — giữ lại để dọn khi khôi phục / tắt game / unmount.
   const quizTimers = useRef([])
 
@@ -277,12 +279,24 @@ export default function SpaceExperience({ onBack, handControlStore, latchStore }
   const formState = intro === 'done' ? 'shown' : intro === 'forming' ? 'forming' : 'hidden'
 
   const nextQuestionIndex = useCallback(() => {
-    if (questionBag.current.remaining.length === 0) {
-      questionBag.current.remaining = shuffleQuestionIndexes(questionBag.current.last)
+    const bag = questionBag.current
+
+    // 5% cơ hội gặp lại một câu đã từng xuất hiện (tránh lặp ngay câu vừa hỏi).
+    if (bag.seen.length > 0 && Math.random() < QUESTION_REPEAT_CHANCE) {
+      const pool = bag.seen.filter((idx) => idx !== bag.last)
+      const choices = pool.length > 0 ? pool : bag.seen
+      const repeat = choices[Math.floor(Math.random() * choices.length)]
+      bag.last = repeat
+      return repeat
     }
 
-    const next = questionBag.current.remaining.shift() ?? 0
-    questionBag.current.last = next
+    if (bag.remaining.length === 0) {
+      bag.remaining = shuffleQuestionIndexes(bag.last)
+    }
+
+    const next = bag.remaining.shift() ?? 0
+    bag.last = next
+    if (!bag.seen.includes(next)) bag.seen.push(next)
     return next
   }, [])
 
