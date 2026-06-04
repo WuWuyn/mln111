@@ -73,7 +73,7 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
             aria-label="Quay lại bản đồ vũ trụ"
             title="Quay lại bản đồ"
           >
-            ← Bản đồ
+            <span aria-hidden="true">←</span>
           </button>
 
           {/* Chuyển trạm ngay trong trang thực nghiệm — nút bấm nên điều khiển
@@ -113,7 +113,7 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
             aria-label="Mở hướng dẫn tương tác"
             title="Hướng dẫn"
           >
-            Hướng dẫn
+            <span aria-hidden="true">ℹ</span>
           </button>
           <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng trang">
             ×

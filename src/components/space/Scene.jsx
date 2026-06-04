@@ -1,7 +1,7 @@
 import { AdaptiveDpr, OrbitControls, Stars } from '@react-three/drei'
 import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useRef } from 'react'
+import { Suspense, useRef } from 'react'
 import * as THREE from 'three'
 import { planets } from '../../data/cosmos'
 import AsteroidField from './AsteroidField'
@@ -10,6 +10,7 @@ import CosmicDust from './CosmicDust'
 import CuteStars from './CuteStars'
 import GalaxyParticles from './GalaxyParticles'
 import PlanetMesh from './PlanetMesh'
+import TimeMachine from './TimeMachine'
 import GameShooter from './game/GameShooter'
 
 const planetPosition = new THREE.Vector3()
@@ -220,6 +221,11 @@ export default function Scene({
       <CuteStars />
       <AsteroidField store={asteroidStore} resetKey={resetKey} active={gameMode} />
       <AppearDriver appearRef={appearRef} formState={formState} />
+      {/* Cỗ máy thời gian (đĩa bay 3D) — bọc Suspense riêng để model không chặn
+          render cả scene trong lúc tải. */}
+      <Suspense fallback={null}>
+        <TimeMachine appearRef={appearRef} />
+      </Suspense>
       {!destroyed.includes('central') && (
         <CentralPlanet
           onClick={() => setSelectedPlanet(planets[0])}

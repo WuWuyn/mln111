@@ -22,6 +22,18 @@
   display: block;
 }
 
+/* Lớp WebGL chứa cỗ máy thời gian 3D — phủ kín, trong suốt, đè lên canvas warp
+   2D nhưng nằm dưới caption/skip. Không nhận tương tác. */
+.warp-intro__model {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  pointer-events: none;
+  background: transparent !important;
+}
+
 .warp-intro__caption {
   position: absolute;
   left: 50%;

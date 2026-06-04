@@ -255,6 +255,52 @@
   word-break: break-word;
 }
 
+/* MiniQuiz trong header: ép thành pill gọn 1 dòng như các nút còn lại
+   (base style của nó vốn là một thanh to full-width). */
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz {
+  margin: 0;
+  border-radius: 999px;
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz-toggle {
+  width: auto;
+  gap: 0.45rem;
+  min-height: 2.3rem;
+  padding: 0 0.85rem;
+}
+
+/* Bỏ chữ phụ "câu hỏi/Đóng" cho gọn; nhãn chính về kiểu trung tính 1 dòng. */
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz-toggle-hint {
+  display: none;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz-kicker {
+  color: #e7eeff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz-toggle:hover .mini-quiz-kicker {
+  color: #fff;
+}
+
+/* Hàng nút header không tự xuống dòng giữa các nút (giữ trên một dải gọn). */
+.content-page.overlay-panel--detail .detail-head-actions {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 680px) {
+  .content-page.overlay-panel--detail .detail-head-actions {
+    flex-wrap: wrap;
+  }
+}
+
 /* ── Body: two-column on wide, stacked on narrow ─────────────────────────── */
 .content-page.overlay-panel--detail .detail-body {
   display: grid;
@@ -1746,8 +1792,21 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding-top: 0;
+}
+
+/* Mỗi điều khiển giữ nguyên kích thước theo nội dung, không bị co nhỏ
+   hơn chữ bên trong (nguyên nhân khiến các pill đè chồng lên nhau). */
+.experience-page.has-3d-modal .detail-head-actions > * {
+  flex: 0 0 auto;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .guide-icon-button,
+.experience-page.has-3d-modal .detail-head-actions .detail-back-map,
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz-toggle {
+  white-space: nowrap;
 }
 
 .experience-page.has-3d-modal .detail-head-actions .guide-icon-button,
@@ -1847,13 +1906,7 @@
   }
 
   .experience-page.has-3d-modal .detail-head-actions {
-    justify-content: flex-start;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .experience-page.has-3d-modal .detail-head-actions::-webkit-scrollbar {
-    display: none;
+    justify-content: center;
   }
 }
 
@@ -2063,6 +2116,38 @@
   }
 }
 
+/* ── Nút header dạng icon ────────────────────────────────────────────────────
+   Bản đồ (←), Quiz nhanh (?) và Hướng dẫn (ℹ) rút gọn thành nút tròn cùng cỡ,
+   để hàng điều khiển không còn chật và chồng chéo. Đặt cuối file để thắng các
+   rule pill trùng tên ở trên (cùng độ đặc hiệu → thứ tự nguồn quyết định).
+   Áp dụng cho cả biến thể thường lẫn chế độ 3D (.has-3d-modal).            */
+.content-page.overlay-panel--detail .detail-head-actions .detail-back-map,
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz-toggle,
+.experience-page.has-3d-modal .detail-head-actions .detail-back-map,
+.experience-page.has-3d-modal .detail-head-actions .guide-icon-button,
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 2.3rem;
+  min-width: 2.3rem;
+  height: 2.3rem;
+  min-height: 2.3rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .mini-quiz-icon {
+  font-weight: 800;
+}
+
 /* ── Con trỏ điều khiển bằng tay trong trang thực nghiệm ──────────────────── */
 .hand-widget-cursor {
   position: fixed;
@@ -2126,3 +2211,4 @@
     box-shadow: 0 0 0 1.1rem rgba(255, 241, 168, 0);
   }
 }
+

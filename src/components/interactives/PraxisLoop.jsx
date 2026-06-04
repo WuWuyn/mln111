@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useHandTargets } from '../../hand/useHandTargets'
 import { seededRandom } from '../space/random'
 import HandControlBar from './HandControlBar'
+import RocketStage from './RocketStage'
 import './PraxisLoop.css'
 
 // "Trạm Thực tiễn" — THỰC TIỄN LÀ TIÊU CHUẨN CỦA CHÂN LÝ.
@@ -112,28 +113,7 @@ export default function PraxisLoop({ handStore }) {
   return (
     <div className={rootClass} style={{ '--thrust': thrust / 100, '--gauge': `${thrust}%` }}>
       <div className="lab-stage">
-        <div className="lab-stars" aria-hidden="true" />
-        <div className="lab-comet" aria-hidden="true" />
-
-        {/* Mặt đất hành tinh + bệ đáp + cờ + xanh hoá khi cải biến */}
-        <div className="lab-ground" aria-hidden="true">
-          <span className="green-wash" />
-          <span className="land-pad" />
-          <span className="pad-ring" />
-          <span className="flag" />
-        </div>
-
-        {/* Tàu đổ bộ — re-mount mỗi lần đốt để chạy lại animation */}
-        <div key={run} className="lander" aria-hidden="true">
-          <span className="lander-rig">
-            <span className="lander-body" />
-            <span className="lander-leg lander-leg--l" />
-            <span className="lander-leg lander-leg--r" />
-            <span className="flame" />
-            <span className="dust" />
-            <span className="crash-burst" />
-          </span>
-        </div>
+        <RocketStage thrust={thrust} run={run} outcome={result} built={built} />
 
         <div className="lab-readout">
           <span>Trọng lực</span>

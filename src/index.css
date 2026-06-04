@@ -24,6 +24,38 @@
   cursor: none !important;
 }
 
+/* ── Trang nội dung 2D (thực nghiệm / quiz / hồ sơ): hiện lại con trỏ ──────────
+   Vệt sao băng hợp cho bản đồ 3D, nhưng các trạm thực nghiệm có nút + thanh
+   trượt nhỏ cần con trỏ CHÍNH XÁC để thao tác bằng chuột. Vệt sao băng vẫn chạy
+   trang trí đè bên trên (pointer-events:none) nên không vướng gì. Đặc hiệu cao
+   hơn (.cosmos .content-page *) nên thắng quy tắc cursor:none ở trên. */
+.cosmos .content-page,
+.cosmos .content-page * {
+  cursor: auto !important;
+}
+
+.cosmos .content-page a,
+.cosmos .content-page label,
+.cosmos .content-page summary,
+.cosmos .content-page button:not(:disabled),
+.cosmos .content-page [role='button'],
+.cosmos .content-page [data-hand-click],
+.cosmos .content-page input[type='range'],
+.cosmos .content-page .mirror-world--mind {
+  cursor: pointer !important;
+}
+
+.cosmos .content-page input[type='text'],
+.cosmos .content-page input[type='search'],
+.cosmos .content-page textarea {
+  cursor: text !important;
+}
+
+.cosmos .content-page button:disabled,
+.cosmos .content-page input:disabled {
+  cursor: not-allowed !important;
+}
+
 html {
   background: #03040a;
   overflow: hidden;

@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { Suspense, useEffect, useRef } from 'react'
+import IntroTimeMachine from './IntroTimeMachine'
 import './WarpIntro.css'
 
 // Cinematic mở màn (~6s): tàu bay trong không gian -> tăng tốc vận tốc ánh sáng
@@ -43,6 +45,9 @@ export default function WarpIntro({ onReveal, onDone, onSkip }) {
   const canvasRef = useRef(null)
   const captionRef = useRef(null)
   const rootRef = useRef(null)
+  // Thời gian intro (ms) dùng chung: vòng lặp 2D ghi vào, lớp 3D đọc ra để cỗ
+  // máy thời gian (model) bay đồng bộ tuyệt đối với hiệu ứng warp 2D.
+  const shipTRef = useRef(0)
   // onReveal/onDone đọc qua ref để vòng lặp rAF không phải resubscribe.
   const cb = useRef({ onReveal, onDone })
   useEffect(() => {
@@ -94,266 +99,9 @@ export default function WarpIntro({ onReveal, onDone, onSkip }) {
       })
     }
 
-    // --- Cỗ máy thời gian của Doraemon (Nobita + Doraemon ngồi trên) ---
-    // Vẽ hoàn toàn bằng canvas 2D, đơn vị toạ độ ~[-1, 1]. Mũi/đuôi thời gian
-    // hướng xuống (+y) như luồng đẩy, hai nhân vật quay mặt ra ngoài để nhận diện.
-    const drawShip = (t) => {
-      const cruiseT = clamp01(t / PHASE.cruiseEnd)
-      let px = cx
-      let py = cy + h * 0.2
-      let scale = 1
-      let flame = 1
-
-      if (t > PHASE.cruiseEnd) {
-        const wt = clamp01((t - PHASE.cruiseEnd) / (PHASE.warpEnd - PHASE.cruiseEnd))
-        const e = smoothstep(wt)
-        py = cy + h * 0.2 * (1 - e) // lao về tâm
-        scale = 1 - 0.86 * e // thu nhỏ như vọt ra xa
-        flame = 1 + e * 5
-      } else {
-        py += Math.sin(t * 0.005) * 6 * cruiseT // bồng bềnh nhẹ
-      }
-
-      const s = scale * Math.min(w, h) * 0.06
-      // nhấp nháy năng lượng cho vệt thời gian sống động
-      const flick = 0.82 + Math.sin(t * 0.04) * 0.12 + Math.sin(t * 0.11) * 0.06
-
-      ctx.save()
-      ctx.translate(px, py)
-      ctx.scale(s, s)
-
-      // --- Hào quang quanh cỗ máy ---
-      ctx.globalCompositeOperation = 'lighter'
-      const aura = ctx.createRadialGradient(0, -0.1, 0, 0, -0.1, 1.3)
-      aura.addColorStop(0, 'rgba(180,150,255,0.22)')
-      aura.addColorStop(1, 'rgba(150,120,255,0)')
-      ctx.fillStyle = aura
-      ctx.beginPath()
-      ctx.arc(0, -0.1, 1.3, 0, Math.PI * 2)
-      ctx.fill()
-
-      // --- Vệt xoáy thời gian (thay cho luồng phản lực) ---
-      const trailLen = (0.95 + flame * 0.95) * flick
-      const trail = ctx.createLinearGradient(0, 0.35, 0, 0.35 + trailLen)
-      trail.addColorStop(0, 'rgba(255,255,255,0.95)')
-      trail.addColorStop(0.28, 'rgba(190,150,255,0.8)')
-      trail.addColorStop(0.6, 'rgba(120,190,255,0.42)')
-      trail.addColorStop(1, 'rgba(120,90,255,0)')
-      ctx.fillStyle = trail
-      ctx.beginPath()
-      ctx.moveTo(-0.42, 0.35)
-      ctx.quadraticCurveTo(-0.18, 0.35 + trailLen * 0.5, 0, 0.35 + trailLen)
-      ctx.quadraticCurveTo(0.18, 0.35 + trailLen * 0.5, 0.42, 0.35)
-      ctx.closePath()
-      ctx.fill()
-      // vài vòng xoáy thời gian rời rạc
-      for (let i = 0; i < 4; i += 1) {
-        const ph = (t * 0.004 + i * 0.7) % 1
-        const ry = 0.4 + ph * trailLen
-        const rr = (0.34 - ph * 0.26) * flick
-        if (rr <= 0.02) continue
-        ctx.strokeStyle = `rgba(200,180,255,${(1 - ph) * 0.5})`
-        ctx.lineWidth = 0.035
-        ctx.beginPath()
-        ctx.ellipse(0, ry, rr, rr * 0.32, 0, 0, Math.PI * 2)
-        ctx.stroke()
-      }
-      ctx.globalCompositeOperation = 'source-over'
-
-      // --- Bệ đĩa cỗ máy thời gian (vàng kim) ---
-      // mặt hông đĩa
-      const rim = ctx.createLinearGradient(0, 0.12, 0, 0.42)
-      rim.addColorStop(0, '#f4b938')
-      rim.addColorStop(1, '#a96f12')
-      ctx.fillStyle = rim
-      ctx.beginPath()
-      ctx.moveTo(-0.66, 0.16)
-      ctx.lineTo(-0.66, 0.28)
-      ctx.quadraticCurveTo(0, 0.5, 0.66, 0.28)
-      ctx.lineTo(0.66, 0.16)
-      ctx.closePath()
-      ctx.fill()
-      // mặt trên đĩa
-      const top = ctx.createLinearGradient(0, -0.04, 0, 0.32)
-      top.addColorStop(0, '#ffe79a')
-      top.addColorStop(1, '#f0b53a')
-      ctx.fillStyle = top
-      ctx.beginPath()
-      ctx.ellipse(0, 0.16, 0.66, 0.2, 0, 0, Math.PI * 2)
-      ctx.fill()
-      // viền sáng quanh mép đĩa
-      ctx.strokeStyle = 'rgba(255,247,210,0.85)'
-      ctx.lineWidth = 0.03
-      ctx.beginPath()
-      ctx.ellipse(0, 0.16, 0.66, 0.2, 0, 0, Math.PI * 2)
-      ctx.stroke()
-
-      // --- Mặt đồng hồ thời gian phía trước đĩa ---
-      ctx.fillStyle = '#fff8e6'
-      ctx.beginPath()
-      ctx.ellipse(0, 0.27, 0.2, 0.1, 0, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.strokeStyle = '#b9801f'
-      ctx.lineWidth = 0.022
-      ctx.stroke()
-      // kim đồng hồ quay theo thời gian
-      ctx.strokeStyle = '#7a4a0c'
-      ctx.lineWidth = 0.024
-      ctx.beginPath()
-      ctx.moveTo(0, 0.27)
-      ctx.lineTo(Math.cos(t * 0.012) * 0.12, 0.27 + Math.sin(t * 0.012) * 0.06)
-      ctx.moveTo(0, 0.27)
-      ctx.lineTo(Math.cos(t * 0.004) * 0.08, 0.27 + Math.sin(t * 0.004) * 0.04)
-      ctx.stroke()
-
-      // ====== Doraemon (ngồi bên trái) ======
-      ctx.save()
-      ctx.translate(-0.3, -0.16)
-      // thân/đầu tròn xanh
-      const dBlue = ctx.createRadialGradient(-0.08, -0.1, 0.03, 0, 0, 0.34)
-      dBlue.addColorStop(0, '#63d2f6')
-      dBlue.addColorStop(1, '#0a93da')
-      ctx.fillStyle = dBlue
-      ctx.beginPath()
-      ctx.arc(0, 0, 0.32, 0, Math.PI * 2)
-      ctx.fill()
-      // mặt trắng
-      ctx.fillStyle = '#f6fdff'
-      ctx.beginPath()
-      ctx.arc(0, 0.04, 0.24, 0, Math.PI * 2)
-      ctx.fill()
-      // hai mắt
-      ctx.fillStyle = '#fff'
-      ctx.strokeStyle = '#222'
-      ctx.lineWidth = 0.012
-      for (const ex of [-0.075, 0.075]) {
-        ctx.beginPath()
-        ctx.ellipse(ex, -0.13, 0.05, 0.07, 0, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.stroke()
-      }
-      ctx.fillStyle = '#1a1a1a'
-      ctx.beginPath()
-      ctx.arc(-0.045, -0.12, 0.018, 0, Math.PI * 2)
-      ctx.arc(0.045, -0.12, 0.018, 0, Math.PI * 2)
-      ctx.fill()
-      // mũi đỏ
-      ctx.fillStyle = '#e23b2e'
-      ctx.beginPath()
-      ctx.arc(0, -0.05, 0.032, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = 'rgba(255,255,255,0.8)'
-      ctx.beginPath()
-      ctx.arc(-0.01, -0.06, 0.012, 0, Math.PI * 2)
-      ctx.fill()
-      // sống mũi xuống miệng
-      ctx.strokeStyle = '#333'
-      ctx.lineWidth = 0.014
-      ctx.beginPath()
-      ctx.moveTo(0, -0.02)
-      ctx.lineTo(0, 0.12)
-      ctx.stroke()
-      // miệng cười
-      ctx.beginPath()
-      ctx.arc(0, 0.06, 0.13, 0.2 * Math.PI, 0.8 * Math.PI)
-      ctx.stroke()
-      // râu
-      ctx.lineWidth = 0.012
-      for (const side of [-1, 1]) {
-        for (const yy of [-0.06, -0.02, 0.02]) {
-          ctx.beginPath()
-          ctx.moveTo(side * 0.06, yy)
-          ctx.lineTo(side * 0.2, yy - 0.01)
-          ctx.stroke()
-        }
-      }
-      // vòng cổ đỏ + chuông vàng
-      ctx.strokeStyle = '#d8332a'
-      ctx.lineWidth = 0.05
-      ctx.beginPath()
-      ctx.arc(0, 0.02, 0.24, 0.18 * Math.PI, 0.82 * Math.PI)
-      ctx.stroke()
-      const bell = ctx.createRadialGradient(0, 0.21, 0.01, 0, 0.23, 0.06)
-      bell.addColorStop(0, '#fff0a8')
-      bell.addColorStop(1, '#e9a81b')
-      ctx.fillStyle = bell
-      ctx.beginPath()
-      ctx.arc(0, 0.23, 0.05, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.strokeStyle = '#9a6f10'
-      ctx.lineWidth = 0.012
-      ctx.beginPath()
-      ctx.moveTo(-0.04, 0.22)
-      ctx.lineTo(0.04, 0.22)
-      ctx.moveTo(0, 0.23)
-      ctx.lineTo(0, 0.27)
-      ctx.stroke()
-      ctx.restore()
-
-      // ====== Nobita (ngồi bên phải) ======
-      ctx.save()
-      ctx.translate(0.32, -0.12)
-      // thân áo vàng
-      const shirt = ctx.createLinearGradient(0, 0.0, 0, 0.34)
-      shirt.addColorStop(0, '#ffd34d')
-      shirt.addColorStop(1, '#e9a92a')
-      ctx.fillStyle = shirt
-      ctx.beginPath()
-      ctx.moveTo(-0.16, 0.32)
-      ctx.quadraticCurveTo(-0.2, 0.04, -0.1, -0.02)
-      ctx.lineTo(0.1, -0.02)
-      ctx.quadraticCurveTo(0.2, 0.04, 0.16, 0.32)
-      ctx.closePath()
-      ctx.fill()
-      // đầu da
-      ctx.fillStyle = '#ffe0bd'
-      ctx.beginPath()
-      ctx.arc(0, -0.13, 0.18, 0, Math.PI * 2)
-      ctx.fill()
-      // tóc đen
-      ctx.fillStyle = '#231a17'
-      ctx.beginPath()
-      ctx.arc(0, -0.16, 0.18, Math.PI * 1.04, Math.PI * 2.04)
-      ctx.fill()
-      for (let i = 0; i < 5; i += 1) {
-        const ang = Math.PI * (1.08 + i * 0.21)
-        ctx.beginPath()
-        ctx.moveTo(Math.cos(ang) * 0.16, -0.16 + Math.sin(ang) * 0.16)
-        ctx.lineTo(Math.cos(ang) * 0.2, -0.16 + Math.sin(ang) * 0.2 - 0.02)
-        ctx.lineWidth = 0.04
-        ctx.strokeStyle = '#231a17'
-        ctx.stroke()
-      }
-      // kính tròn
-      ctx.strokeStyle = '#3a2f2a'
-      ctx.lineWidth = 0.018
-      ctx.fillStyle = '#fff'
-      for (const ex of [-0.075, 0.075]) {
-        ctx.beginPath()
-        ctx.arc(ex, -0.12, 0.06, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.stroke()
-      }
-      ctx.beginPath()
-      ctx.moveTo(-0.015, -0.12)
-      ctx.lineTo(0.015, -0.12)
-      ctx.stroke()
-      // mắt
-      ctx.fillStyle = '#1a1a1a'
-      ctx.beginPath()
-      ctx.arc(-0.075, -0.12, 0.016, 0, Math.PI * 2)
-      ctx.arc(0.075, -0.12, 0.016, 0, Math.PI * 2)
-      ctx.fill()
-      // miệng cười
-      ctx.strokeStyle = '#9a5a45'
-      ctx.lineWidth = 0.014
-      ctx.beginPath()
-      ctx.arc(0, -0.04, 0.05, 0.1 * Math.PI, 0.9 * Math.PI)
-      ctx.stroke()
-      ctx.restore()
-
-      ctx.restore()
-    }
+    // Cỗ máy thời gian giờ được dựng bằng MODEL 3D thật (xem component
+    // IntroTimeMachine + lớp <Canvas> overlay trong phần return). Canvas 2D này
+    // chỉ còn lo nền sao warp / điểm kỳ dị / Big Bang, không vẽ tàu nữa.
 
     const drawVignette = () => {
       const g = ctx.createRadialGradient(cx, cy, Math.min(w, h) * 0.25, cx, cy, Math.max(w, h) * 0.7)
@@ -398,7 +146,6 @@ export default function WarpIntro({ onReveal, onDone, onSkip }) {
       }
 
       drawVignette()
-      drawShip(t)
     }
 
     const drawCollapse = (t) => {
@@ -561,6 +308,7 @@ export default function WarpIntro({ onReveal, onDone, onSkip }) {
       const t = now - start
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
+      shipTRef.current = t // cho lớp 3D đọc để bay đồng bộ
 
       updateCaption(t)
 
@@ -601,6 +349,21 @@ export default function WarpIntro({ onReveal, onDone, onSkip }) {
   return (
     <div className="warp-intro" ref={rootRef} aria-hidden="true">
       <canvas ref={canvasRef} className="warp-intro__canvas" />
+      {/* Cỗ máy thời gian 3D bay đè lên nền warp, trong suốt để lộ sao phía sau.
+          Đồng bộ với timeline 2D qua shipTRef. */}
+      <Canvas
+        className="warp-intro__model"
+        gl={{ alpha: true, antialias: true }}
+        camera={{ position: [0, 0, 8], fov: 45 }}
+        dpr={[1, 1.5]}
+      >
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[3, 5, 4]} intensity={1.5} color="#dfefff" />
+        <pointLight position={[-4, -2, 3]} intensity={0.7} color="#9ab8ff" />
+        <Suspense fallback={null}>
+          <IntroTimeMachine tRef={shipTRef} />
+        </Suspense>
+      </Canvas>
       <p ref={captionRef} className="warp-intro__caption is-cruise">
         Khởi hành vào không gian sâu thẳm
       </p>
