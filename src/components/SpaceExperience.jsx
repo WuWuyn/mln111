@@ -463,6 +463,7 @@ export default function SpaceExperience({ onBack, handControlStore, latchStore }
           onClose={() => navigateView(null)}
           onNavigate={openExperience}
           onQuizPass={markQuizPass}
+          handControlStore={handControlStore}
         />
       )}
       {activeView === 'badge' && (

@@ -58,13 +58,13 @@ function HudShell({ widget, children }) {
   )
 }
 
-export default function PlanetWidget({ widget }) {
+export default function PlanetWidget({ widget, handStore }) {
   const Widget = WIDGETS[widget]
   if (!Widget) return null
-  if (!HUD_META[widget]) return <Widget />
+  if (!HUD_META[widget]) return <Widget handStore={handStore} />
   return (
     <HudShell widget={widget}>
-      <Widget />
+      <Widget handStore={handStore} />
     </HudShell>
   )
 }

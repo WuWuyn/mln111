@@ -44,7 +44,7 @@ function isVisualFirst(widget) {
   return widget === 'matter' || widget === 'consciousness' || widget === 'relation' || widget === 'contradiction' || widget === 'praxis'
 }
 
-export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }) {
+export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, handControlStore }) {
   const [guideOpen, setGuideOpen] = useState(false)
   const colors = planetPalette[planet.color] ?? planetPalette.cyan
   const index = planets.findIndex((item) => item.id === planet.id)
@@ -134,7 +134,7 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
 
         <aside className="detail-interactive">
           <p className="overlay-eyebrow">Mô hình tương tác</p>
-          <PlanetWidget widget={planet.widget} />
+          <PlanetWidget widget={planet.widget} handStore={handControlStore} />
         </aside>
       </div>
 

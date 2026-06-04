@@ -613,3 +613,99 @@
     min-height: 2.5rem;
   }
 }
+
+/* ── Điều khiển bằng tay ───────────────────────────────────────────────────── */
+/* Reticle bám theo tay, đặt trong khung lõi sao (toạ độ chuẩn hoá 0..1). */
+.core-hand-reticle {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -0.75rem 0 0 -0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--cyan);
+  box-shadow:
+    0 0 0 0.32rem rgba(118, 215, 247, 0.14),
+    0 0 16px rgba(118, 215, 247, 0.6);
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.core-hand-reticle::after {
+  content: "";
+  position: absolute;
+  inset: 38%;
+  border-radius: 999px;
+  background: var(--ice);
+}
+
+/* Bảng trạng thái + chú thích cử chỉ, đặt trên cùng cụm điều khiển. */
+.core-hand {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgba(118, 215, 247, 0.22);
+  border-left: 3px solid rgba(118, 215, 247, 0.4);
+  border-radius: 0 0.7rem 0.7rem 0;
+  background: rgba(8, 14, 28, 0.55);
+}
+
+.core-hand.is-live {
+  border-color: rgba(118, 215, 247, 0.5);
+  border-left-color: var(--cyan);
+  background: rgba(118, 215, 247, 0.08);
+}
+
+.core-hand-dot {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: rgba(153, 172, 220, 0.45);
+  box-shadow: 0 0 0 0.25rem rgba(153, 172, 220, 0.12);
+}
+
+.core-hand.is-live .core-hand-dot {
+  background: var(--cyan);
+  box-shadow: 0 0 0 0.25rem rgba(118, 215, 247, 0.22);
+  animation: coreHandPulse 1.4s ease-in-out infinite;
+}
+
+.core-hand-text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.core-hand-text strong {
+  color: var(--ice);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.core-hand-text span {
+  color: rgba(214, 225, 246, 0.7);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+@keyframes coreHandPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0.25rem rgba(118, 215, 247, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 0.5rem rgba(118, 215, 247, 0.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core-hand.is-live .core-hand-dot {
+    animation: none;
+  }
+}

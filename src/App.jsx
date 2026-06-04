@@ -19,6 +19,15 @@ function isContentSubPage() {
   return Boolean(window.location.hash.split('/')[1])
 }
 
+// The badge profile page has no use for hand control, so its floating toggle is
+// hidden there. On the planet experiment page we keep it visible so a station
+// like "Lõi Sao Biện Chứng" can be driven by hand.
+function isBadgeSubPage() {
+  if (typeof window === 'undefined') return false
+  const slug = window.location.hash.split('/')[1]
+  return slug === 'huy-hieu' || slug === 'doi-song' || slug === 'thu-thach'
+}
+
 function App() {
   const [currentPage, setCurrentPage] = useState(() => getPageFromLocation())
   const [handControlStore] = useState(createHandControlStore)
@@ -27,12 +36,14 @@ function App() {
   // hand-tracking loop (which owns handControlStore) fighting over the value.
   const [latchStore] = useState(createHandControlStore)
   const [onContentPage, setOnContentPage] = useState(isContentSubPage)
+  const [onBadgePage, setOnBadgePage] = useState(isBadgeSubPage)
 
   useEffect(() => {
     const syncPage = () => {
       startTransition(() => {
         setCurrentPage(getPageFromLocation())
         setOnContentPage(isContentSubPage())
+        setOnBadgePage(isBadgeSubPage())
       })
     }
 
@@ -53,6 +64,7 @@ function App() {
     startTransition(() => {
       setCurrentPage('explore')
       setOnContentPage(false)
+      setOnBadgePage(false)
     })
   }, [])
 
@@ -64,6 +76,7 @@ function App() {
     startTransition(() => {
       setCurrentPage('landing')
       setOnContentPage(false)
+      setOnBadgePage(false)
     })
   }, [])
 
@@ -80,7 +93,7 @@ function App() {
       {!onContentPage && <HandPointer store={handControlStore} latchStore={latchStore} />}
       {/* Kept mounted across content sub-pages so the camera/permission persists
           when a planet's experiment opens — only its on-screen UI is hidden. */}
-      <HandTrackingPanel store={handControlStore} hideUI={onContentPage} />
+      <HandTrackingPanel store={handControlStore} hideUI={onBadgePage} />
       <GenshinCursor />
     </main>
   )

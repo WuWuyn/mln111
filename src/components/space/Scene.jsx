@@ -7,6 +7,7 @@ import { planets } from '../../data/cosmos'
 import AsteroidField from './AsteroidField'
 import CentralPlanet from './CentralPlanet'
 import CosmicDust from './CosmicDust'
+import CuteStars from './CuteStars'
 import GalaxyParticles from './GalaxyParticles'
 import PlanetMesh from './PlanetMesh'
 import GameShooter from './game/GameShooter'
@@ -215,6 +216,7 @@ export default function Scene({
       <Stars radius={260} depth={140} count={11000} factor={6} saturation={0} fade speed={0.25} />
       <GalaxyParticles />
       <CosmicDust />
+      <CuteStars />
       <AsteroidField store={asteroidStore} resetKey={resetKey} active={gameMode} />
       <AppearDriver appearRef={appearRef} formState={formState} />
       {!destroyed.includes('central') && (
