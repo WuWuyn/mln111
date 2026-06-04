@@ -163,11 +163,6 @@ export default function PraxisLoop() {
           </div>
         </div>
 
-        <div className="lab-console lab-console--result" role="status">
-          <span>Kết quả</span>
-          <strong>{built ? 'Đã cải biến' : succeeded ? 'Hạ cánh thành công' : failed ? 'Cần điều chỉnh' : 'Chưa kiểm nghiệm'}</strong>
-          <p>{message}</p>
-        </div>
       </div>
 
       <div className="praxis-lab-controls">
@@ -211,6 +206,11 @@ export default function PraxisLoop() {
         </section>
 
         <section className="praxis-panel action-panel">
+          <div className="action-result" role="status">
+            <span className="panel-kicker">Kết quả</span>
+            <strong>{built ? 'Đã cải biến' : succeeded ? 'Hạ cánh thành công' : failed ? 'Cần điều chỉnh' : 'Chưa kiểm nghiệm'}</strong>
+            <p>{message}</p>
+          </div>
           <span className="panel-kicker">Thực tiễn kiểm nghiệm</span>
           <p>Kéo điểm đáp trên hành tinh, rồi phóng robot từ trạm để kiểm nghiệm giả thuyết.</p>
           {failed && (

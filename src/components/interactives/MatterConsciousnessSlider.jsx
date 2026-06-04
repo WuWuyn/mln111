@@ -25,17 +25,17 @@ const COGNITION_LAYERS = [
 
 const INSIGHTS = {
   silent: {
-    mark: '!',
+    stage: 'Quá trình',
     title: 'Ý thức vắng mặt',
     body: 'Hành tinh vẫn quay. Vật chất không biến mất khi ta ngừng quan sát.',
   },
   observer: {
-    mark: '?',
+    stage: 'Lớp quan sát',
     title: 'Lớp quan sát',
-    body: 'Scan, nhãn và số liệu chỉ là hình ảnh của thế giới trong ý thức.',
+    body: 'Nhãn và số liệu giúp ta quan sát, nhưng không thay thế hiện thực khách quan.',
   },
   reality: {
-    mark: '!',
+    stage: 'Lớp hiện thực',
     title: 'Lớp hiện thực',
     body: 'Chuyển động, va chạm và lực hút thuộc về thế giới khách quan.',
   },
@@ -55,7 +55,7 @@ export default function MatterConsciousnessSlider() {
   const depth = cognition / 100
   const insight =
     activeInsight === 'layer'
-      ? { mark: cognition < 16 ? '?' : '!', title: layer.label, body: layer.insight }
+      ? { stage: 'Hiện tượng', title: layer.label, body: layer.insight }
       : INSIGHTS[activeInsight]
 
   const toggleObserver = () => {
@@ -107,7 +107,8 @@ export default function MatterConsciousnessSlider() {
           onClick={() => setActiveInsight('reality')}
           aria-label="Mở kiến thức về lớp hiện thực"
         >
-          !
+          <span>Lớp hiện thực</span>
+          <strong>Vận động vẫn diễn ra</strong>
         </button>
         <button
           type="button"
@@ -115,11 +116,12 @@ export default function MatterConsciousnessSlider() {
           onClick={() => setActiveInsight('observer')}
           aria-label="Mở kiến thức về lớp quan sát"
         >
-          ?
+          <span>Lớp quan sát</span>
+          <strong>Dữ liệu để đối chiếu</strong>
         </button>
 
         <div className="matter-insight" role="status">
-          <span>{insight.mark}</span>
+          <span>{insight.stage}</span>
           <strong>{insight.title}</strong>
           <p>{insight.body}</p>
         </div>

@@ -2697,3 +2697,391 @@
     width: 100%;
   }
 }
+
+/* 3D experiment modal: the cosmos remains alive behind the interactive lab. */
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+  display: grid;
+  place-items: center;
+  height: 100svh;
+  padding: clamp(0.55rem, 1.4vw, 1rem);
+  overflow: hidden;
+  perspective: 1400px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(126, 220, 255, 0.14), transparent 24rem),
+    radial-gradient(circle at 50% 50%, rgba(255, 209, 122, 0.08), transparent 30rem),
+    rgba(2, 4, 11, 0.24);
+  animation: labModalVeil 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail::before {
+  position: absolute;
+  inset: 2.2rem;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid rgba(126, 220, 255, 0.12);
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, transparent, rgba(126, 220, 255, 0.12), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 22%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 5rem rgba(126, 220, 255, 0.08);
+  transform: translateZ(-80px) rotateX(58deg) scale(0.92);
+  transform-origin: center;
+  content: '';
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail .content-page-inner {
+  position: relative;
+  width: min(94rem, calc(100vw - clamp(1rem, 3vw, 2rem)));
+  height: min(92svh, 56rem);
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at 18% 0%, rgba(126, 220, 255, 0.12), transparent 22rem),
+    radial-gradient(circle at 100% 100%, rgba(255, 154, 51, 0.08), transparent 22rem),
+    rgba(5, 9, 20, 0.88);
+  box-shadow:
+    0 3rem 7rem rgba(0, 0, 0, 0.58),
+    0 0 0 0.5rem rgba(255, 255, 255, 0.025),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+  transform-style: preserve-3d;
+  animation: labModalDock 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail .content-page-inner::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(126, 220, 255, 0.65), rgba(255, 209, 122, 0.6), transparent 58%) top left / 100% 0.16rem no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 16%);
+  content: '';
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail .content-page-inner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) {
+  padding: clamp(0.55rem, 1.4vw, 1rem);
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "stage";
+  gap: clamp(0.55rem, 1.2svh, 0.85rem);
+  padding: clamp(0.75rem, 1.5vw, 1.15rem);
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive {
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
+    rgba(255, 255, 255, 0.02);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+}
+
+@keyframes labModalVeil {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+
+  to {
+    opacity: 1;
+    backdrop-filter: blur(3px);
+  }
+}
+
+@keyframes labModalDock {
+  from {
+    opacity: 0;
+    transform: translateY(5rem) translateZ(-220px) rotateX(18deg) scale(0.82);
+  }
+
+  68% {
+    opacity: 1;
+    transform: translateY(-0.25rem) translateZ(18px) rotateX(-1.5deg) scale(1.01);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0) rotateX(0) scale(1);
+  }
+}
+
+@media (max-width: 720px) {
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail {
+    padding: 0.45rem;
+  }
+
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail::before {
+    inset: 1rem;
+    border-radius: 20px;
+  }
+
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail .content-page-inner {
+    width: calc(100vw - 0.9rem);
+    height: calc(100svh - 0.9rem);
+    border-radius: 20px;
+  }
+
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+    padding: 0.58rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail,
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail .content-page-inner {
+    animation: none;
+  }
+}
+
+::view-transition-old(root) {
+  animation: sceneWarpOut 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: sceneWarpIn 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes sceneWarpOut {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0.55;
+    filter: blur(7px);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sceneWarpIn {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Full-screen lab pass: message chips replace symbolic markers. */
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail {
+  padding: 0;
+  background: rgba(2, 4, 11, 0.18);
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail::before {
+  inset: 0.6rem;
+  border-radius: 18px;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail .content-page-inner {
+  width: 100vw;
+  height: 100svh;
+  border-radius: 0;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+  padding: clamp(0.55rem, 1.1vw, 0.9rem);
+}
+
+.knowledge-pulse {
+  display: grid;
+  width: min(17rem, 34%);
+  min-width: 10.5rem;
+  aspect-ratio: auto;
+  gap: 0.18rem;
+  padding: 0.72rem 0.86rem;
+  place-items: start;
+  border-color: rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  color: #eef7ff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    rgba(5, 10, 20, 0.68);
+  box-shadow:
+    0 1rem 2.4rem rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  text-align: left;
+  animation: overlayFade 220ms ease both;
+}
+
+.knowledge-pulse span {
+  color: #7edcff;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.knowledge-pulse strong {
+  color: #fff8dc;
+  font-size: 0.88rem;
+  line-height: 1.22;
+}
+
+.knowledge-pulse:hover {
+  transform: translateY(-2px);
+  border-color: rgba(126, 220, 255, 0.45);
+  filter: none;
+}
+
+.knowledge-pulse--reality {
+  left: 1.4rem;
+  top: 1.4rem;
+}
+
+.knowledge-pulse--observer {
+  right: 1.4rem;
+  top: 1.4rem;
+  bottom: auto;
+}
+
+.matter-insight {
+  right: 1.4rem;
+  bottom: 1.4rem;
+  grid-template-columns: minmax(0, 1fr);
+  width: min(24rem, calc(100% - 2.8rem));
+}
+
+.matter-insight span {
+  grid-row: auto;
+  width: fit-content;
+  min-height: 1.55rem;
+  aspect-ratio: auto;
+  padding: 0.18rem 0.56rem;
+  border: 1px solid rgba(126, 220, 255, 0.28);
+  border-radius: 999px;
+  color: #9fe7ff;
+  background: rgba(126, 220, 255, 0.1);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  .knowledge-pulse {
+    width: min(14rem, calc(50% - 1rem));
+    min-width: 0;
+    padding: 0.58rem 0.62rem;
+  }
+
+  .knowledge-pulse strong {
+    font-size: 0.76rem;
+  }
+
+  .knowledge-pulse--reality {
+    left: 0.7rem;
+    top: 0.7rem;
+  }
+
+  .knowledge-pulse--observer {
+    right: 0.7rem;
+    top: 0.7rem;
+  }
+}
+
+/* Portal modals: always float above the transformed 3D lab shell. */
+.mini-quiz-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.8rem, 3vw, 1.5rem);
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 209, 122, 0.14), transparent 24rem),
+    rgba(2, 4, 11, 0.72);
+  backdrop-filter: blur(14px);
+  animation: overlayFade 180ms ease both;
+}
+
+.mini-quiz-modal .mini-quiz-body {
+  width: min(40rem, 100%);
+  max-height: min(82svh, 42rem);
+  overflow: auto;
+  padding: clamp(1.05rem, 3vw, 1.45rem);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at 12% 0%, rgba(255, 209, 122, 0.13), transparent 16rem),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+  animation: overlayRise 260ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+
+.mini-quiz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mini-quiz-head h3 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: clamp(1.2rem, 2.8vw, 1.65rem);
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.mini-quiz-close {
+  display: grid;
+  flex: none;
+  width: 2.35rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.guide-modal {
+  z-index: 95;
+}

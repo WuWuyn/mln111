@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 
-// Shared shell for every 2D content page. Each one is a full, standalone page
-// (not a popup over the cosmos): it fills the viewport, scrolls on its own, and
-// Escape sends the reader back to the map.
-export default function OverlayShell({ variant = '', onClose, children }) {
+// Shared shell for every 2D content page. Full pages fill the viewport; modal
+// pages sit above the live cosmos scene. Escape sends the reader back.
+export default function OverlayShell({ variant = '', modal = false, onClose, children }) {
   useEffect(() => {
     const onKey = (event) => {
       if (event.key === 'Escape') onClose?.()
@@ -13,7 +12,7 @@ export default function OverlayShell({ variant = '', onClose, children }) {
   }, [onClose])
 
   return (
-    <div className={`content-page ${variant}`}>
+    <div className={`content-page ${variant}`} role={modal ? 'dialog' : undefined} aria-modal={modal || undefined}>
       <div className="content-page-inner">{children}</div>
     </div>
   )

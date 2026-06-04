@@ -1,330 +1,281 @@
-/* ──────────────────────────────────────────────────────────────────────────
-   BadgeResult.css — "Huy hiệu Nhà du hành" celebratory finale page
-   ALL rules scoped under .content-page.overlay-panel--badge so they cannot
-   leak to other pages and also out-specify shared rules in SpaceExperience.css.
-
-   Design tokens (from App.css / SpaceExperience.css):
-     display   Georgia, 'Times New Roman', serif
-     ink       #f7f9ff   muted #cbd5ee / rgba(220,229,255,.76)
-     gold      #ffd17a · #ff9a33 · #f0491c
-     cyan      #7edcff · #9fc3ff
-     glass     border rgba(255,255,255,.13), bg rgba(4,9,22,.66), blur(18px)
-     accent    linear-gradient(135deg,#fff2a6,#ff9a33 60%,#f0491c)
-   ────────────────────────────────────────────────────────────────────────── */
-
-/* ── Page-level ambient backdrop (warm gold glow, cosmic feel) ─────────── */
 .content-page.overlay-panel--badge {
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  padding: clamp(0.65rem, 1.5vw, 1rem);
+  color: #f7f9ff;
   background:
-    radial-gradient(ellipse 75% 55% at 50% -5%,  rgba(255, 209, 122, 0.11), transparent 60%),
-    radial-gradient(ellipse 60% 45% at 10% 90%,  rgba(126, 220, 255, 0.07), transparent 55%),
-    radial-gradient(ellipse 55% 40% at 90% 80%,  rgba(240, 73, 28, 0.07),   transparent 55%),
-    linear-gradient(155deg, #02040b, #08101e 50%, #14071a);
+    radial-gradient(circle at 15% 14%, rgba(126, 220, 255, 0.12), transparent 24%),
+    radial-gradient(circle at 88% 86%, rgba(240, 73, 28, 0.08), transparent 30%),
+    linear-gradient(135deg, #050813, #0b1020 55%, #170817);
 }
 
-/* ── Widen the inner column slightly for badge layout ───────────────────── */
 .content-page.overlay-panel--badge .content-page-inner {
-  width: min(52rem, 100%);
-  display: flex;
-  flex-direction: column;
+  width: min(62.5rem, 100%);
+  height: 100%;
   min-height: 0;
-  gap: 0;
-}
-
-/* ── Header: eyebrow + title + close ────────────────────────────────────── */
-.content-page.overlay-panel--badge .overlay-head {
-  align-items: center;
-  margin-bottom: clamp(0.8rem, 2svh, 1.3rem);
-  padding-bottom: clamp(0.65rem, 1.6svh, 1rem);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.content-page.overlay-panel--badge .overlay-head h2 {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  background: linear-gradient(135deg, #fff2a6, #ff9a33 60%, #f0491c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Badge Hero ─────────────────────────────────────────────────────────── */
-.content-page.overlay-panel--badge .badge-hero {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(0.45rem, 1.4svh, 0.8rem);
-  padding: clamp(1.1rem, 3svh, 2rem) 1.2rem clamp(0.9rem, 2.4svh, 1.5rem);
-  margin-bottom: clamp(0.75rem, 2svh, 1.2rem);
-  border: 1px solid rgba(255, 209, 122, 0.18);
-  border-radius: 20px;
-  background:
-    radial-gradient(ellipse 90% 70% at 50% 0%, rgba(255, 209, 122, 0.09), transparent 65%),
-    rgba(4, 9, 22, 0.55);
-  backdrop-filter: blur(18px);
-  text-align: center;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
+  gap: clamp(0.42rem, 1svh, 0.68rem);
+  margin: 0 auto;
   overflow: hidden;
 }
 
-/* Subtle top-edge accent line */
-.content-page.overlay-panel--badge .badge-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  border-radius: 20px 20px 0 0;
-  background: linear-gradient(90deg, transparent, #ffd17a 35%, #ff9a33 65%, transparent);
-  opacity: 0.75;
+.content-page.overlay-panel--badge .badge-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  padding-bottom: clamp(0.38rem, 0.9svh, 0.55rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 }
 
-/* Decorative ray burst behind emblem — reduced motion respects OS setting */
+.content-page.overlay-panel--badge .badge-head > div {
+  min-width: 0;
+}
+
+.content-page.overlay-panel--badge .overlay-eyebrow {
+  margin: 0 0 0.12rem;
+  color: #8fdfff;
+  font-size: clamp(0.62rem, 1.2svh, 0.72rem);
+  font-weight: 900;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.content-page.overlay-panel--badge .badge-head h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1.55rem, 4.2svh, 2.35rem);
+  line-height: 0.98;
+  color: #ffd84d;
+  letter-spacing: 0;
+  text-shadow: 0 0 22px rgba(255, 154, 51, 0.16);
+}
+
+.content-page.overlay-panel--badge .overlay-close {
+  width: clamp(2rem, 4.5svh, 2.42rem);
+  align-self: center;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.content-page.overlay-panel--badge .badge-hero {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: clamp(0.22rem, 0.76svh, 0.42rem);
+  padding: clamp(0.78rem, 1.9svh, 1.12rem) clamp(1rem, 2.4vw, 1.4rem);
+  border: 1px solid rgba(255, 209, 122, 0.22);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 11%, rgba(255, 216, 116, 0.12), transparent 32%),
+    linear-gradient(145deg, rgba(10, 12, 24, 0.88), rgba(5, 7, 17, 0.95));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+    0 18px 58px rgba(0, 0, 0, 0.26);
+  overflow: hidden;
+  text-align: center;
+}
+
+.content-page.overlay-panel--badge .badge-hero::before,
 .content-page.overlay-panel--badge .badge-hero::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 50%;
-  translate: -50% -30%;
-  width: 28rem;
-  height: 28rem;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg  10deg,  rgba(255, 209, 122, 0.035) 10deg 20deg,
-    transparent 20deg 30deg,  rgba(255, 209, 122, 0.035) 30deg 40deg,
-    transparent 40deg 50deg,  rgba(255, 209, 122, 0.035) 50deg 60deg,
-    transparent 60deg 70deg,  rgba(255, 209, 122, 0.035) 70deg 80deg,
-    transparent 80deg 90deg,  rgba(255, 209, 122, 0.035) 90deg 100deg,
-    transparent 100deg 110deg, rgba(255, 209, 122, 0.035) 110deg 120deg,
-    transparent 120deg 130deg, rgba(255, 209, 122, 0.035) 130deg 140deg,
-    transparent 140deg 150deg, rgba(255, 209, 122, 0.035) 150deg 160deg,
-    transparent 160deg 170deg, rgba(255, 209, 122, 0.035) 170deg 180deg,
-    transparent 180deg 190deg, rgba(255, 209, 122, 0.035) 190deg 200deg,
-    transparent 200deg 210deg, rgba(255, 209, 122, 0.035) 210deg 220deg,
-    transparent 220deg 230deg, rgba(255, 209, 122, 0.035) 230deg 240deg,
-    transparent 240deg 250deg, rgba(255, 209, 122, 0.035) 250deg 260deg,
-    transparent 260deg 270deg, rgba(255, 209, 122, 0.035) 270deg 280deg,
-    transparent 280deg 290deg, rgba(255, 209, 122, 0.035) 290deg 300deg,
-    transparent 300deg 310deg, rgba(255, 209, 122, 0.035) 310deg 320deg,
-    transparent 320deg 330deg, rgba(255, 209, 122, 0.035) 330deg 340deg,
-    transparent 340deg 350deg, rgba(255, 209, 122, 0.035) 350deg 360deg
-  );
   pointer-events: none;
-  animation: badgeRaysSpin 40s linear infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .content-page.overlay-panel--badge .badge-hero::after {
-    animation: none;
-  }
-}
-
-/* ── Emblem medallion ───────────────────────────────────────────────────── */
-.content-page.overlay-panel--badge .badge-emblem {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: clamp(5.7rem, 15svh, 8rem);
-  height: clamp(5.7rem, 15svh, 8rem);
-  border-radius: 50%;
-  border: 2px solid rgba(255, 209, 122, 0.32);
+.content-page.overlay-panel--badge .badge-hero::before {
+  inset: 0;
   background:
-    radial-gradient(ellipse 80% 80% at 40% 30%, rgba(255, 241, 180, 0.18), transparent 65%),
-    rgba(14, 10, 2, 0.72);
-  backdrop-filter: blur(12px);
-  box-shadow:
-    0 0 0 6px rgba(255, 209, 122, 0.08),
-    0 0 0 12px rgba(255, 209, 122, 0.04),
-    0 12px 48px rgba(255, 153, 51, 0.35),
-    0 2px 8px rgba(0, 0, 0, 0.6);
-  font-size: clamp(2.7rem, 7svh, 3.8rem);
-  line-height: 1;
-  filter: drop-shadow(0 0 1.2rem rgba(255, 213, 132, 0.7));
-  animation: badgeFloat 3.6s ease-in-out infinite;
+    linear-gradient(105deg, transparent 0 26%, rgba(126, 220, 255, 0.14) 27%, transparent 31%),
+    radial-gradient(circle at 50% 26%, rgba(255, 216, 116, 0.12), transparent 18%);
+  opacity: 0.52;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .content-page.overlay-panel--badge .badge-emblem {
-    animation: none;
-  }
+.content-page.overlay-panel--badge .badge-hero::after {
+  top: -6rem;
+  left: 50%;
+  width: clamp(13rem, 32svh, 20rem);
+  height: clamp(13rem, 32svh, 20rem);
+  translate: -50% 0;
+  border-radius: 999px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 216, 116, 0.055) 0deg 9deg,
+    transparent 9deg 18deg
+  );
+  opacity: 0.6;
 }
 
-/* ── Badge title ────────────────────────────────────────────────────────── */
-.content-page.overlay-panel--badge .badge-title {
-  position: relative;
-  z-index: 1;
-  margin: 0.2rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 700;
-  line-height: 1.1;
-  color: #fff;
-  text-shadow: 0 2px 20px rgba(255, 209, 122, 0.25);
-}
-
-/* ── Badge blurb ────────────────────────────────────────────────────────── */
-.content-page.overlay-panel--badge .badge-blurb {
-  position: relative;
-  z-index: 1;
-  max-width: 34rem;
-  margin: 0;
-  color: rgba(220, 229, 255, 0.82);
-  font-size: clamp(0.9rem, 1.8vw, 1.02rem);
-  line-height: 1.5;
-}
-
-/* ── Score display ──────────────────────────────────────────────────────── */
+.content-page.overlay-panel--badge .badge-emblem,
+.content-page.overlay-panel--badge .badge-title,
+.content-page.overlay-panel--badge .badge-blurb,
 .content-page.overlay-panel--badge .badge-score {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  margin-top: 0.5rem;
-  padding: 0.55rem 1.4rem;
-  border: 1px solid rgba(255, 209, 122, 0.22);
+}
+
+.content-page.overlay-panel--badge .badge-emblem {
+  display: grid;
+  place-items: center;
+  width: clamp(4rem, 12svh, 5.8rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 216, 116, 0.36);
   border-radius: 999px;
-  background: rgba(255, 209, 122, 0.07);
+  background:
+    radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.24), transparent 28%),
+    radial-gradient(circle, rgba(255, 216, 116, 0.2), rgba(50, 43, 17, 0.82) 62%, rgba(7, 8, 18, 0.94));
+  box-shadow:
+    0 0 0 0.48rem rgba(255, 216, 116, 0.05),
+    0 12px 38px rgba(255, 216, 116, 0.16);
+  color: #fff2a8;
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 5.7svh, 3rem);
+  line-height: 1;
+}
+
+.content-page.overlay-panel--badge .badge-title {
+  max-width: 18ch;
+  margin: 0.1rem 0 0;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: clamp(1.7rem, 5.2svh, 3rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.content-page.overlay-panel--badge .badge-blurb {
+  max-width: 36rem;
+  margin: 0;
+  color: rgba(220, 229, 255, 0.76);
+  font-size: clamp(0.76rem, 1.7svh, 0.92rem);
+  font-weight: 700;
+  line-height: 1.32;
+}
+
+.content-page.overlay-panel--badge .badge-score {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.44rem;
+  min-width: min(18rem, 100%);
+  margin-top: 0.1rem;
+  padding: 0.33rem clamp(0.85rem, 2vw, 1.2rem);
+  border: 1px solid rgba(255, 216, 116, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 216, 116, 0.07);
 }
 
 .content-page.overlay-panel--badge .badge-score-num {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 2.8rem);
-  font-weight: 700;
+  color: #ffd84d;
+  font-family: var(--font-sans);
+  font-size: clamp(1.9rem, 5.7svh, 2.8rem);
+  font-weight: 850;
   line-height: 1;
-  background: linear-gradient(135deg, #fff2a6, #ffd17a 50%, #ff9a33);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .content-page.overlay-panel--badge .badge-score-unit {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: rgba(220, 229, 255, 0.65);
-  letter-spacing: 0.03em;
+  color: rgba(220, 229, 255, 0.64);
+  font-size: clamp(0.66rem, 1.42svh, 0.8rem);
+  font-weight: 900;
 }
 
-/* ── Stat cards row ─────────────────────────────────────────────────────── */
+.content-page.overlay-panel--badge .badge-progress-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.42fr);
+  gap: clamp(0.45rem, 1vw, 0.7rem);
+  align-items: stretch;
+}
+
 .content-page.overlay-panel--badge .badge-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: clamp(0.7rem, 1.8svh, 1.1rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.45rem, 1vw, 0.7rem);
+  min-width: 0;
 }
 
 .content-page.overlay-panel--badge .badge-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  padding: clamp(0.7rem, 1.5svh, 0.95rem) 0.7rem;
+  min-height: clamp(3.55rem, 8.2svh, 4.6rem);
+  display: grid;
+  place-items: center;
+  gap: 0.12rem;
+  padding: 0.45rem 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  background: rgba(4, 9, 22, 0.5);
-  backdrop-filter: blur(14px);
+  border-radius: 8px;
+  background: rgba(5, 7, 17, 0.58);
   text-align: center;
-  transition: border-color 200ms ease, background 200ms ease;
-}
-
-.content-page.overlay-panel--badge .badge-stat:hover {
-  border-color: rgba(126, 220, 255, 0.28);
-  background: rgba(15, 30, 60, 0.6);
 }
 
 .content-page.overlay-panel--badge .badge-stat strong {
-  display: block;
-  font-family: var(--font-display);
-  font-size: clamp(1.3rem, 3vw, 1.65rem);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.1;
-}
-
-/* Colour the values distinctly per stat position */
-.content-page.overlay-panel--badge .badge-stat:nth-child(1) strong {
-  color: #7edcff;
+  color: #8fdfff;
+  font-family: var(--font-sans);
+  font-size: clamp(1.22rem, 3.3svh, 1.72rem);
+  line-height: 1;
 }
 
 .content-page.overlay-panel--badge .badge-stat:nth-child(2) strong {
-  color: #9fc3ff;
+  color: #b6c8ff;
 }
 
 .content-page.overlay-panel--badge .badge-stat:nth-child(3) strong {
-  background: linear-gradient(135deg, #ffd17a, #ff9a33);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffd84d;
 }
 
 .content-page.overlay-panel--badge .badge-stat span {
-  font-size: 0.74rem;
-  font-weight: 700;
   color: rgba(220, 229, 255, 0.58);
-  line-height: 1.35;
-  letter-spacing: 0.02em;
+  font-size: clamp(0.58rem, 1.25svh, 0.7rem);
+  font-weight: 850;
+  line-height: 1.18;
 }
 
-/* ── Hint (challenge not done) ──────────────────────────────────────────── */
 .content-page.overlay-panel--badge .badge-hint {
+  min-height: 100%;
   display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  margin: 0 0 clamp(0.75rem, 1.7svh, 1.1rem);
-  padding: 0.75rem 0.9rem;
-  border: 1px solid rgba(126, 220, 255, 0.2);
-  border-left: 3px solid rgba(126, 220, 255, 0.55);
-  border-radius: 0 12px 12px 0;
-  background: rgba(126, 220, 255, 0.06);
-  color: #cbd5ee;
-  font-size: 0.92rem;
-  line-height: 1.6;
+  align-items: center;
+  margin: 0;
+  padding: 0.36rem 0.78rem;
+  border: 1px solid rgba(126, 220, 255, 0.18);
+  border-left: 3px solid rgba(126, 220, 255, 0.58);
+  border-radius: 0 8px 8px 0;
+  background: rgba(126, 220, 255, 0.055);
+  color: rgba(220, 229, 255, 0.82);
+  font-size: clamp(0.72rem, 1.55svh, 0.86rem);
+  font-weight: 700;
+  line-height: 1.26;
 }
 
-.content-page.overlay-panel--badge .badge-hint::before {
-  content: '💡';
-  flex: none;
-  font-size: 1rem;
-  line-height: 1.6;
-  filter: saturate(0.8);
+.content-page.overlay-panel--badge .badge-hint strong {
+  color: #ffd84d;
 }
 
-.content-page.overlay-panel--badge .badge-hint .link-action {
-  color: #ffd17a;
-  font-weight: 800;
-  transition: color 150ms ease;
-}
-
-.content-page.overlay-panel--badge .badge-hint .link-action:hover {
-  color: #fff2a6;
-}
-
-/* ── Name input ─────────────────────────────────────────────────────────── */
 .content-page.overlay-panel--badge .badge-name {
   display: grid;
-  gap: 0.5rem;
-  margin-bottom: clamp(0.7rem, 1.7svh, 1.05rem);
+  gap: 0.22rem;
+  margin: 0;
 }
 
 .content-page.overlay-panel--badge .badge-name span {
-  font-size: 0.73rem;
+  color: #b7c8ff;
+  font-size: clamp(0.58rem, 1.25svh, 0.68rem);
   font-weight: 900;
-  color: #9fc3ff;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .content-page.overlay-panel--badge .badge-name input {
-  min-height: 3rem;
-  padding: 0 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  background: rgba(4, 9, 22, 0.6);
-  backdrop-filter: blur(10px);
-  color: #f7f9ff;
+  width: 100%;
+  min-height: clamp(2.05rem, 4.8svh, 2.45rem);
+  padding: 0 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(4, 8, 18, 0.62);
+  color: #f8fafc;
   font: inherit;
-  font-size: 0.98rem;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  font-size: clamp(0.78rem, 1.65svh, 0.9rem);
 }
 
 .content-page.overlay-panel--badge .badge-name input::placeholder {
@@ -332,52 +283,42 @@
 }
 
 .content-page.overlay-panel--badge .badge-name input:focus-visible {
-  outline: none;
-  border-color: rgba(126, 220, 255, 0.55);
-  box-shadow: 0 0 0 3px rgba(126, 220, 255, 0.14);
+  outline: 2px solid rgba(143, 223, 255, 0.38);
+  outline-offset: 2px;
 }
 
-/* ── Action buttons row ─────────────────────────────────────────────────── */
 .content-page.overlay-panel--badge .badge-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.45rem, 1vw, 0.7rem);
 }
 
-/* Primary "Tải chứng nhận" gets extra weight on this final page */
-.content-page.overlay-panel--badge .badge-actions .primary-action {
-  flex: 1 1 auto;
-  min-width: 10rem;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
-  box-shadow: 0 16px 44px rgba(241, 76, 27, 0.32);
-}
-
+.content-page.overlay-panel--badge .badge-actions .primary-action,
 .content-page.overlay-panel--badge .badge-actions .ghost-action {
-  flex: 1 1 auto;
-  min-width: 8.5rem;
-  font-size: 0.93rem;
-}
-
-/* ── Share confirmation message ─────────────────────────────────────────── */
-.content-page.overlay-panel--badge .badge-share-msg {
-  display: flex;
+  min-width: 0;
+  min-height: clamp(2.18rem, 5svh, 2.6rem);
+  display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  margin: 0.6rem 0 0;
-  padding: 0.7rem 1rem;
-  border: 1px solid rgba(111, 240, 171, 0.3);
-  border-radius: 10px;
-  background: rgba(111, 240, 171, 0.07);
-  color: #6ff0ab;
-  font-size: 0.88rem;
-  font-weight: 700;
-  animation: badgeMsgIn 260ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  justify-content: center;
+  padding-inline: clamp(0.7rem, 1.7vw, 1rem);
+  border-radius: 999px;
+  font-size: clamp(0.74rem, 1.62svh, 0.88rem);
+  font-weight: 900;
+  white-space: nowrap;
 }
 
-/* ── Hidden canvas (download helper — must stay in DOM, never visible) ──── */
+.content-page.overlay-panel--badge .badge-share-msg {
+  justify-self: center;
+  margin: 0;
+  padding: 0.42rem 0.75rem;
+  border: 1px solid rgba(143, 223, 255, 0.24);
+  border-radius: 8px;
+  background: rgba(143, 223, 255, 0.07);
+  color: #8fdfff;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
 .content-page.overlay-panel--badge .badge-canvas {
   position: absolute;
   width: 1px;
@@ -388,93 +329,37 @@
   pointer-events: none;
 }
 
-/* ── Keyframes ──────────────────────────────────────────────────────────── */
-@keyframes badgeRaysSpin {
-  from { rotate: 0deg; }
-  to   { rotate: 360deg; }
-}
-
-@keyframes badgeMsgIn {
-  from {
-    opacity: 0;
-    transform: translateY(0.4rem);
+@media (max-height: 700px) and (min-width: 700px) {
+  .content-page.overlay-panel--badge .content-page-inner {
+    width: min(58rem, 100%);
+    gap: 0.38rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-/* ── Responsive: tablet ~768px ──────────────────────────────────────────── */
-@media (max-width: 780px) {
   .content-page.overlay-panel--badge .badge-hero {
-    padding: 2rem 1.2rem 1.6rem;
+    padding-block: 0.6rem;
   }
 
-  .content-page.overlay-panel--badge .badge-emblem {
-    width: 7rem;
-    height: 7rem;
-    font-size: 3.25rem;
-  }
-
-  .content-page.overlay-panel--badge .badge-stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.55rem;
-  }
-
-  .content-page.overlay-panel--badge .badge-stat {
-    padding: 0.9rem 0.5rem 0.85rem;
+  .content-page.overlay-panel--badge .badge-blurb {
+    display: none;
   }
 }
 
-/* ── Responsive: mobile ~360px ──────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .content-page.overlay-panel--badge .badge-hero {
-    padding: 1.75rem 1rem 1.5rem;
-    border-radius: 14px;
-  }
-
-  .content-page.overlay-panel--badge .badge-emblem {
-    width: 6rem;
-    height: 6rem;
-    font-size: 2.8rem;
+@media (max-width: 700px) {
+  .content-page.overlay-panel--badge .content-page-inner {
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
   }
 
   .content-page.overlay-panel--badge .badge-title {
-    font-size: clamp(1.35rem, 6vw, 1.75rem);
+    max-width: 100%;
   }
 
-  .content-page.overlay-panel--badge .badge-stats {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .content-page.overlay-panel--badge .badge-stat {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.85rem 1rem;
-    text-align: left;
-  }
-
-  .content-page.overlay-panel--badge .badge-stat strong {
-    order: 2;
-    font-size: 1.25rem;
-  }
-
-  .content-page.overlay-panel--badge .badge-stat span {
-    order: 1;
-    flex: 1;
-  }
-
+  .content-page.overlay-panel--badge .badge-progress-row,
+  .content-page.overlay-panel--badge .badge-stats,
   .content-page.overlay-panel--badge .badge-actions {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .content-page.overlay-panel--badge .badge-actions .primary-action,
-  .content-page.overlay-panel--badge .badge-actions .ghost-action {
-    width: 100%;
-    flex: none;
-    text-align: center;
+  .content-page.overlay-panel--badge .badge-blurb {
+    display: none;
   }
 }

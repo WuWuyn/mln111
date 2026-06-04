@@ -4,9 +4,7 @@ import { flushSync } from 'react-dom'
 import { planets } from '../data/cosmos'
 import { challengeQuestions } from '../data/learning'
 import BadgeResult from './overlays/BadgeResult'
-import LifeApplication from './overlays/LifeApplication'
 import PlanetDetail from './overlays/PlanetDetail'
-import QuizChallenge from './overlays/QuizChallenge'
 import InfoPanel from './space/InfoPanel'
 import Scene from './space/Scene'
 import './SpaceExperience.css'
@@ -14,7 +12,7 @@ import './SpaceExperience.css'
 const NAV_ITEMS = [
   { id: 'map', label: 'Khám phá' },
   { id: 'detail', label: 'Thực nghiệm' },
-  { id: 'life', label: 'Vận dụng' },
+  { id: 'badge', label: 'Hồ sơ hành trình' },
 ]
 
 function BackIcon() {
@@ -38,13 +36,13 @@ function PanelIcon() {
 const EXPLORE_BASE = '#kham-pha'
 const VIEW_TO_SLUG = {
   detail: 'trai-nghiem',
-  quiz: 'thu-thach',
-  life: 'doi-song',
   badge: 'huy-hieu',
 }
 const SLUG_TO_VIEW = {
   ...Object.fromEntries(Object.entries(VIEW_TO_SLUG).map(([view, slug]) => [slug, view])),
   'chi-tiet': 'detail',
+  'doi-song': 'badge',
+  'thu-thach': 'badge',
 }
 
 function getViewFromHash() {
@@ -72,7 +70,7 @@ function shuffleQuestionIndexes(lastQuestionIndex) {
   return indexes
 }
 
-function ShotQuiz({ quiz, onClose }) {
+function ShotQuiz({ quiz, onAnswer, onClose }) {
   const [picked, setPicked] = useState(null)
   const question = challengeQuestions[quiz.questionIndex % challengeQuestions.length]
   const answered = picked !== null
@@ -81,6 +79,7 @@ function ShotQuiz({ quiz, onClose }) {
   const choose = (value) => {
     if (answered) return
     setPicked(value)
+    onAnswer?.(value === question.answer)
   }
 
   return (
@@ -102,6 +101,7 @@ function ShotQuiz({ quiz, onClose }) {
             const isAnswer = option.value === question.answer
             const isPicked = option.value === picked
             const cls = answered ? (isAnswer ? 'is-correct' : isPicked ? 'is-wrong' : 'is-muted') : ''
+
             return (
               <button
                 key={option.value}
@@ -151,7 +151,13 @@ export default function SpaceExperience({ onBack, handControlStore }) {
   const [selectedPlanet, setSelectedPlanet] = useState(planets[0])
   const [panelVisible, setPanelVisible] = useState(true)
   const [activeView, setActiveView] = useState(getViewFromHash)
-  const [progress, setProgress] = useState({ visited: [], passed: [], challengeScore: null })
+  const [progress, setProgress] = useState({
+    visited: [],
+    passed: [],
+    challengeScore: null,
+    shotAnswered: 0,
+    shotCorrect: 0,
+  })
   const [gameMode, setGameMode] = useState(false)
   const [destroyed, setDestroyed] = useState([])
   const [shotQuiz, setShotQuiz] = useState(null)
@@ -175,7 +181,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
       key: `planet-${id}-${Date.now()}`,
       questionIndex: nextQuestionIndex(),
       kicker: planet ? `Hành tinh ${planet.name}` : 'Lõi trung tâm',
-      title: 'Hành tinh vỡ, quiz xuất hiện',
+      title: 'Mục tiêu vỡ, quiz xuất hiện',
     })
   }, [nextQuestionIndex])
 
@@ -240,11 +246,18 @@ export default function SpaceExperience({ onBack, handControlStore }) {
     setProgress((prev) => ({ ...prev, passed: addUnique(prev.passed, planetId) }))
   }, [])
 
-  const recordChallenge = useCallback((score) => {
-    setProgress((prev) => ({
-      ...prev,
-      challengeScore: Math.max(prev.challengeScore ?? 0, score),
-    }))
+  const recordShotQuiz = useCallback((correct) => {
+    setProgress((prev) => {
+      const shotAnswered = (prev.shotAnswered ?? 0) + 1
+      const shotCorrect = (prev.shotCorrect ?? 0) + (correct ? 1 : 0)
+
+      return {
+        ...prev,
+        shotAnswered,
+        shotCorrect,
+        challengeScore: Math.round((shotCorrect / shotAnswered) * 100),
+      }
+    })
   }, [])
 
   const handleAsteroidDestroy = useCallback((index) => {
@@ -256,8 +269,11 @@ export default function SpaceExperience({ onBack, handControlStore }) {
     })
   }, [nextQuestionIndex])
 
+  const detailOpen = activeView === 'detail'
+  const fullPageViewOpen = Boolean(activeView) && !detailOpen
+
   return (
-    <section className="experience-page">
+    <section className={`experience-page ${detailOpen ? 'has-3d-modal' : ''}`}>
       {activeView === null && (
         <>
           <div className="experience-topbar">
@@ -294,13 +310,13 @@ export default function SpaceExperience({ onBack, handControlStore }) {
         </>
       )}
 
-      <div className="space-experience" hidden={Boolean(activeView)}>
+      <div className={`space-experience ${detailOpen ? 'is-detail-backdrop' : ''}`} hidden={fullPageViewOpen}>
         <Canvas
           camera={{ position: [0, 14, 23], fov: 48, near: 0.1, far: 120 }}
           dpr={[1, 1.5]}
           gl={{ powerPreference: 'high-performance' }}
           performance={{ min: 0.5 }}
-          frameloop={activeView ? 'never' : 'always'}
+          frameloop={fullPageViewOpen ? 'never' : 'always'}
         >
           <Suspense fallback={null}>
             <Scene
@@ -327,20 +343,30 @@ export default function SpaceExperience({ onBack, handControlStore }) {
             {gameMode ? 'Đang bắn phá' : 'Chế độ bắn phá'}
           </button>
           {gameMode && (
-            <>
-              <button type="button" className="game-reset" onClick={resetGame}>
-                Khôi phục
-              </button>
-            </>
+            <button type="button" className="game-reset" onClick={resetGame}>
+              Khôi phục
+            </button>
           )}
         </div>
 
-        {gameMode && <p className="game-hint">Nhắm vào thiên thạch hoặc hành tinh rồi bấm để bắn. Mục tiêu vỡ sẽ mở quiz nhanh.</p>}
+        {gameMode && (
+          <p className="game-hint">
+            Nhắm vào thiên thạch hoặc hành tinh rồi bấm để bắn. Mục tiêu vỡ sẽ mở quiz nhanh và cộng điểm hồ sơ.
+          </p>
+        )}
+
+        {gameMode && (
+          <div className="game-score-pill" aria-live="polite">
+            <span>Điểm quiz</span>
+            <strong>{progress.challengeScore ?? 0}%</strong>
+          </div>
+        )}
 
         {gameMode && shotQuiz && (
           <ShotQuiz
             key={shotQuiz.key}
             quiz={shotQuiz}
+            onAnswer={recordShotQuiz}
             onClose={() => setShotQuiz(null)}
           />
         )}
@@ -393,27 +419,11 @@ export default function SpaceExperience({ onBack, handControlStore }) {
           onQuizPass={markQuizPass}
         />
       )}
-      {activeView === 'quiz' && (
-        <QuizChallenge
-          onClose={() => navigateView('life')}
-          onComplete={recordChallenge}
-          onGoBadge={() => navigateView('badge')}
-        />
-      )}
-      {activeView === 'life' && (
-        <LifeApplication
-          progress={progress}
-          onClose={() => navigateView(null)}
-          onGoQuiz={() => navigateView('quiz')}
-          onGoBadge={() => navigateView('badge')}
-        />
-      )}
       {activeView === 'badge' && (
         <BadgeResult
           progress={progress}
-          onClose={() => navigateView('life')}
+          onClose={() => navigateView(null)}
           onReplay={() => navigateView(null)}
-          onGoQuiz={() => navigateView('quiz')}
         />
       )}
     </section>

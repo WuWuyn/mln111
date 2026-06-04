@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function GuidanceModal({ title, eyebrow = 'Hướng dẫn', items, onClose }) {
   useEffect(() => {
@@ -10,7 +11,7 @@ export default function GuidanceModal({ title, eyebrow = 'Hướng dẫn', items
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  return (
+  const modal = (
     <div className="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title">
       <div className="guide-modal-panel">
         <header className="guide-modal-head">
@@ -31,4 +32,6 @@ export default function GuidanceModal({ title, eyebrow = 'Hướng dẫn', items
       </div>
     </div>
   )
+
+  return createPortal(modal, document.body)
 }

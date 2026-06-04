@@ -27,13 +27,13 @@ const EXPERIENCE_COPY = {
   },
   contradiction: {
     title: 'Lõi Sao Biện Chứng',
-    kicker: 'Mâu thuẫn tạo động lực - Lượng tích lũy tạo bước nhảy.',
+    kicker: 'Mâu thuẫn tạo động lực. Lượng tích lũy tạo bước nhảy.',
     prompt:
       'Nhìn vào lõi sao, cân hai lực đối lập rồi tích lũy lượng đến điểm nút. Trước điểm nút sao chỉ sáng dần; vượt điểm nút, chất mới ra đời.',
   },
   praxis: {
     title: 'Trạm Kiểm Nghiệm Thực Tiễn',
-    kicker: 'Nghĩ đúng chưa đủ - phải kiểm chứng trong hiện thực.',
+    kicker: 'Nghĩ đúng chưa đủ, phải kiểm chứng trong hiện thực.',
     prompt:
       'Quan sát hành tinh, kéo dữ liệu vào giả thuyết, phóng robot kiểm nghiệm rồi điều chỉnh nhận thức. Khi giả thuyết đi qua thực tiễn thành công, hãy dùng nó để xây trạm trên hiện thực.',
   },
@@ -57,14 +57,18 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
   }
 
   return (
-    <OverlayShell variant="overlay-panel--detail" onClose={onClose}>
+    <OverlayShell variant="overlay-panel--detail" modal onClose={onClose}>
       <header className="detail-head" style={{ '--accent': colors[1], '--accent-soft': colors[0] }}>
-        <div>
+        <div className="detail-title-stack">
           <p className="overlay-eyebrow">Trạm tương tác</p>
           <h2 className="detail-title">{copy.title}</h2>
-          <p className="detail-type">{copy.kicker}</p>
+          <div className="detail-title-meta">
+            <span className="detail-type">{copy.kicker}</span>
+            <span className="detail-stage-tag">{planet.concept}</span>
+          </div>
         </div>
         <div className="detail-head-actions">
+          <MiniQuiz key={planet.id} quiz={planet.miniQuiz} onPass={() => onQuizPass?.(planet.id)} />
           <button
             type="button"
             className="guide-icon-button"
@@ -72,7 +76,7 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
             aria-label="Mở hướng dẫn tương tác"
             title="Hướng dẫn"
           >
-            ?
+            Hướng dẫn
           </button>
           <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng trang">
             ×
@@ -120,8 +124,6 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
         </aside>
       </div>
 
-      <MiniQuiz key={planet.id} quiz={planet.miniQuiz} onPass={() => onQuizPass?.(planet.id)} />
-
       <footer className="detail-foot">
         <button
           type="button"
@@ -152,7 +154,7 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
           items={[
             copy.prompt,
             'Thử kéo, bấm hoặc thay đổi các nút điều khiển trong mô hình để quan sát phản hồi.',
-            'Sau khi hiểu cơ chế, mở mini quiz ở góc màn hình để tự kiểm tra nhanh.',
+            'Sau khi hiểu cơ chế, mở mini quiz ở hàng nút trên cùng để tự kiểm tra nhanh.',
           ]}
           onClose={() => setGuideOpen(false)}
         />

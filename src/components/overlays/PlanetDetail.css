@@ -1552,3 +1552,244 @@
     bottom: 0.6rem;
   }
 }
+
+/* Full-screen final pass: redesigned title and header-level quiz controls. */
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(0.8rem, 1.8vw, 1.2rem);
+  padding: clamp(0.6rem, 1.2vw, 0.95rem) clamp(0.7rem, 1.4vw, 1.05rem) clamp(0.55rem, 1vw, 0.85rem);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.experience-page.has-3d-modal .detail-title-stack {
+  min-width: 0;
+  display: grid;
+  gap: 0.34rem;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head .overlay-eyebrow {
+  width: fit-content;
+  margin: 0;
+  padding-left: 0.72rem;
+  border-left: 0.18rem solid var(--accent, #7edcff);
+  color: color-mix(in srgb, var(--accent, #7edcff) 88%, white);
+  font-size: clamp(0.62rem, 1vw, 0.74rem);
+  letter-spacing: 0.2em;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+  max-width: min(56rem, calc(100vw - 24rem));
+  margin: 0;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: clamp(1.55rem, 3.4vw, 3.15rem);
+  font-weight: 950;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-shadow: 0 0 2rem color-mix(in srgb, var(--accent, #7edcff) 24%, transparent);
+}
+
+.experience-page.has-3d-modal .detail-title-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.experience-page.has-3d-modal .detail-type,
+.experience-page.has-3d-modal .detail-stage-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  max-width: min(32rem, 100%);
+  padding: 0.22rem 0.64rem;
+  border: 1px solid rgba(126, 220, 255, 0.24);
+  border-radius: 999px;
+  color: #9fe7ff;
+  background: rgba(126, 220, 255, 0.08);
+  font-size: clamp(0.62rem, 1vw, 0.72rem);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.experience-page.has-3d-modal .detail-stage-tag {
+  border-color: rgba(255, 209, 122, 0.24);
+  color: #fff1b8;
+  background: rgba(255, 209, 122, 0.08);
+}
+
+.experience-page.has-3d-modal .detail-head-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .guide-icon-button,
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz-toggle {
+  width: auto;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0 0.86rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .guide-icon-button {
+  aspect-ratio: auto;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz {
+  position: static;
+  width: auto;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz-kicker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz-toggle {
+  border: 1px solid rgba(255, 209, 122, 0.3);
+  color: #fff1b8;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025)),
+    rgba(255, 209, 122, 0.08);
+}
+
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz.is-open {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  width: auto;
+  padding: clamp(0.8rem, 3vw, 1.4rem);
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 209, 122, 0.12), transparent 24rem),
+    rgba(2, 4, 11, 0.68);
+  backdrop-filter: blur(14px);
+}
+
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz.is-open .mini-quiz-toggle {
+  position: absolute;
+  top: clamp(0.8rem, 2vw, 1.2rem);
+  right: clamp(4rem, 5.5vw, 5.2rem);
+  min-width: 4.6rem;
+}
+
+.experience-page.has-3d-modal .detail-head-actions .mini-quiz.is-open .mini-quiz-body {
+  width: min(38rem, 100%);
+  max-height: min(78svh, 38rem);
+  overflow: auto;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at 12% 0%, rgba(255, 209, 122, 0.13), transparent 16rem),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+}
+
+.experience-page.has-3d-modal .detail-body--visual-first ~ .detail-foot {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+    max-width: 100%;
+    font-size: clamp(1.34rem, 7vw, 2.15rem);
+  }
+
+  .experience-page.has-3d-modal .detail-head-actions {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .experience-page.has-3d-modal .detail-head-actions::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Clean lab header: centered title, floating modals, no layout drift. */
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  grid-template-columns: minmax(11rem, 1fr) minmax(0, 2.2fr) minmax(11rem, 1fr);
+  align-items: center;
+  min-height: clamp(8.2rem, 16svh, 11rem);
+}
+
+.experience-page.has-3d-modal .detail-title-stack {
+  grid-column: 2;
+  justify-items: center;
+  text-align: center;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head .overlay-eyebrow {
+  padding: 0 0 0.44rem;
+  border-left: 0;
+  border-bottom: 0.16rem solid var(--accent, #7edcff);
+  text-align: center;
+}
+
+.experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+  max-width: min(58rem, 100%);
+  text-align: center;
+}
+
+.experience-page.has-3d-modal .detail-title-meta {
+  justify-content: center;
+}
+
+.experience-page.has-3d-modal .detail-head-actions {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.experience-page.has-3d-modal .detail-type {
+  display: none;
+}
+
+.experience-page.has-3d-modal .detail-stage-tag {
+  max-width: min(24rem, 100%);
+}
+
+@media (max-width: 860px) {
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: auto;
+  }
+
+  .experience-page.has-3d-modal .detail-title-stack,
+  .experience-page.has-3d-modal .detail-head-actions {
+    grid-column: 1;
+    justify-self: center;
+  }
+}
