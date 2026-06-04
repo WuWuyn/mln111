@@ -1793,3 +1793,92 @@
     justify-self: center;
   }
 }
+
+/* ── Short-viewport rescue ────────────────────────────────────────────────────
+   The 3D experiment card is a fixed, clipped one-screen layout (height capped,
+   overflow hidden). On short screens (laptops, split windows) the header eats the
+   top, the stage fills 1fr, and the controls — including the range slider — get
+   squeezed into a tiny scroll strip with no visible scrollbar, so the slider is
+   unreachable. Below this height we let the card grow to its content and scroll
+   the whole card instead, so every control stays reachable.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (max-height: 900px) {
+  /* Card: size to content up to the cap, then scroll the whole card.
+     :has(.detail-body) lifts specificity to (0,6,0) so this beats the fixed
+     height/overflow rule in SpaceExperience.css (loaded later, specificity 0,5,0). */
+  .experience-page.has-3d-modal > .content-page.overlay-panel--detail:has(.detail-body) .content-page-inner {
+    height: auto;
+    max-height: min(92svh, 56rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  /* Visual-first inner grid: let the stage row take natural height, not 1fr. */
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+    grid-template-rows: auto auto;
+  }
+
+  /* Unclip the interactive wrapper so its content can push the card height. */
+  .content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Widget root grids: stack header/stage/controls at natural height. */
+  .content-page.overlay-panel--detail .detail-body--visual-first .silent-universe,
+  .content-page.overlay-panel--detail .detail-body--visual-first .mirror-redesign,
+  .content-page.overlay-panel--detail .detail-body--visual-first .dialectic-system,
+  .content-page.overlay-panel--detail .detail-body--visual-first .dialectic-core,
+  .content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab {
+    height: auto;
+    grid-template-rows: auto auto;
+  }
+
+  /* Stages keep a usable fixed canvas height instead of greedily filling 1fr. */
+  .content-page.overlay-panel--detail .detail-body--visual-first .silent-scene,
+  .content-page.overlay-panel--detail .detail-body--visual-first .mirror-stage,
+  .content-page.overlay-panel--detail .detail-body--visual-first .mirror-stage--lens,
+  .content-page.overlay-panel--detail .detail-body--visual-first .dialectic-stage,
+  .content-page.overlay-panel--detail .detail-body--visual-first .core-stage,
+  .content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab-stage {
+    height: clamp(16rem, 46svh, 26rem);
+    max-height: none;
+  }
+
+  /* Controls (incl. the slider) show in full; the card scrolls if needed. */
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .mirror-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .dialectic-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .core-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .praxis-flow {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Non-visual-first stations: let the single card scrollbar own the scroll. */
+  .content-page.overlay-panel--detail .detail-text,
+  .content-page.overlay-panel--detail .detail-interactive {
+    overflow: visible;
+  }
+}
+
+/* Nút "Quay lại bản đồ" trong trang thực nghiệm — tái dùng dáng pill của
+   guide-icon-button, chỉ đổi tông accent xanh và cho phép rộng theo chữ. */
+.experience-page.has-3d-modal .detail-head-actions .detail-back-map {
+  aspect-ratio: auto;
+  gap: 0.4rem;
+  white-space: nowrap;
+  border-color: rgba(126, 220, 255, 0.4);
+  color: #d8f4ff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025)),
+    rgba(126, 220, 255, 0.1);
+}
+
+.experience-page.has-3d-modal .detail-head-actions .detail-back-map:hover {
+  border-color: rgba(126, 220, 255, 0.75);
+  background: rgba(126, 220, 255, 0.2);
+  transform: translateY(-1px);
+}

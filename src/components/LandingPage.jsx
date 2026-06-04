@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { publicAsset } from '../utils/publicAsset'
 
+// How long the hand cursor must rest on the button before it activates.
+const DWELL_MS = 850
+
 const introItems = [
   {
     index: '01',
@@ -46,6 +49,16 @@ export default function LandingPage({ onExplore, handControlStore }) {
     section.style.setProperty('--pointer-y', `${y}%`)
   }, [])
 
+  // Dwell-to-enter: hold the hand cursor over the button and a ring fills; when
+  // it completes, we "click". No pinch / second gesture needed — just keep
+  // pointing — which is by far the most reliable hand-tracking activation.
+  const dwellStartRef = useRef(0)
+
+  const setDwell = useCallback((pct) => {
+    const button = buttonRef.current
+    if (button) button.style.setProperty('--hand-dwell', String(pct))
+  }, [])
+
   const handleExplore = useCallback(() => {
     setBurstKey((key) => key + 1)
     window.setTimeout(onExplore, 420)
@@ -75,6 +88,8 @@ export default function LandingPage({ onExplore, handControlStore }) {
           setHandHovering(false)
         }
         clickedByHandRef.current = false
+        dwellStartRef.current = 0
+        setDwell(0)
         setPressedSafe(false)
         return
       }
@@ -100,15 +115,23 @@ export default function LandingPage({ onExplore, handControlStore }) {
         setHandHovering(isInside)
       }
 
-      if (!control.pinched) {
+      // Off the button: reset the dwell ring and wait. (A completed dwell stays
+      // "clicked" until the hand leaves, so it can't double-fire.)
+      if (!isInside) {
+        dwellStartRef.current = 0
         clickedByHandRef.current = false
+        setDwell(0)
         setPressedSafe(false)
         return
       }
 
-      setPressedSafe(isInside)
+      const nowMs = performance.now()
+      if (dwellStartRef.current === 0) dwellStartRef.current = nowMs
+      const progress = Math.min(1, (nowMs - dwellStartRef.current) / DWELL_MS)
+      setDwell(progress)
+      setPressedSafe(progress > 0.12)
 
-      if (isInside && !clickedByHandRef.current) {
+      if (progress >= 1 && !clickedByHandRef.current) {
         clickedByHandRef.current = true
         handleExplore()
       }
@@ -116,7 +139,7 @@ export default function LandingPage({ onExplore, handControlStore }) {
 
     apply(handControlStore.get())
     return handControlStore.subscribe(apply)
-  }, [handControlStore, handleExplore, setPointer, setPressedSafe])
+  }, [handControlStore, handleExplore, setPointer, setPressedSafe, setDwell])
 
   return (
     <section
@@ -139,6 +162,17 @@ export default function LandingPage({ onExplore, handControlStore }) {
       <div className="landing-ambient landing-ambient--one" aria-hidden="true" />
       <div className="landing-ambient landing-ambient--two" aria-hidden="true" />
       <div className="landing-stars" aria-hidden="true" />
+      <div className="hud-scan" aria-hidden="true" />
+      <div className="hud-frame" aria-hidden="true" />
+
+      <div className="landing-hud-bar" aria-hidden="true">
+        <span className="hud-tag">ATLAS // SYS-READY</span>
+        <span className="landing-hud-coord">SECTOR 0427 · ORBIT NOMINAL</span>
+        <span className="landing-hud-live">
+          <i className="landing-hud-dot" />
+          LIVE
+        </span>
+      </div>
 
       <div className="landing-explore-only">
         <div className="landing-type-lockup">

@@ -1,13 +1,19 @@
 import { useMemo, useRef, useState } from 'react'
 import { planets } from '../../data/cosmos'
 import OverlayShell from './OverlayShell'
+import RankCrest from './RankCrest'
 import './BadgeResult.css'
 
 const profileTiers = [
   {
     id: 'master',
     min: 90,
-    emblem: '*',
+    emblem: '✦',
+    rank: 'I',
+    metal: 'Vàng sao',
+    accent: '#ffd86a',
+    deep: '#7a4f12',
+    glow: 'rgba(255, 200, 90, 0.45)',
     title: 'Nhà du hành biện chứng',
     blurb:
       'Hoàn thành bản đồ khái niệm, thực nghiệm quy luật và kiểm chứng tri thức qua chế độ bắn phá.',
@@ -15,21 +21,36 @@ const profileTiers = [
   {
     id: 'praxis',
     min: 70,
-    emblem: 'A',
+    emblem: '✧',
+    rank: 'II',
+    metal: 'Bạch kim',
+    accent: '#9fe6ff',
+    deep: '#1b4d63',
+    glow: 'rgba(126, 220, 255, 0.42)',
     title: 'Người kiểm nghiệm thực tiễn',
     blurb: 'Hiểu rằng tri thức cần được thử, sửa và chứng minh trong hoạt động thực tế.',
   },
   {
     id: 'dialectic',
     min: 45,
-    emblem: 'B',
+    emblem: '◈',
+    rank: 'III',
+    metal: 'Đồng đỏ',
+    accent: '#ffa06a',
+    deep: '#6b3413',
+    glow: 'rgba(255, 138, 80, 0.4)',
     title: 'Người giải mã vận động',
     blurb: 'Bắt đầu nhìn thế giới như một quá trình có liên hệ, mâu thuẫn và biến đổi.',
   },
   {
     id: 'novice',
     min: 0,
-    emblem: 'C',
+    emblem: '◇',
+    rank: 'IV',
+    metal: 'Hợp kim',
+    accent: '#b9c8ff',
+    deep: '#2a3756',
+    glow: 'rgba(150, 170, 230, 0.36)',
     title: 'Nhà du hành nhập môn',
     blurb: 'Hành trình mới mở ra. Tiếp tục khám phá hành tinh và tích điểm bằng quiz bắn phá.',
   },
@@ -72,35 +93,53 @@ export default function BadgeResult({ progress, onClose, onReplay }) {
     ctx.fillStyle = bg
     ctx.fillRect(0, 0, 1200, 800)
 
-    ctx.strokeStyle = 'rgba(255, 209, 122, 0.62)'
+    ctx.strokeStyle = badge.accent
+    ctx.globalAlpha = 0.62
     ctx.lineWidth = 3
     ctx.strokeRect(48, 48, 1104, 704)
     ctx.strokeStyle = 'rgba(126, 220, 255, 0.34)'
+    ctx.globalAlpha = 1
     ctx.lineWidth = 1.5
     ctx.strokeRect(78, 78, 1044, 644)
 
     ctx.textAlign = 'center'
     ctx.fillStyle = '#7edcff'
-    ctx.font = '700 26px Arial, sans-serif'
-    ctx.fillText('VŨ TRỤ TRIẾT HỌC - HỒ SƠ HÀNH TRÌNH', 600, 150)
+    ctx.font = '700 24px "Be Vietnam Pro", Arial, sans-serif'
+    ctx.fillText('V Ũ   T R Ụ   T R I Ế T   H Ọ C   ·   H Ồ   S Ơ   H À N H   T R Ì N H', 600, 140)
 
-    ctx.font = '700 90px Arial, sans-serif'
-    ctx.fillStyle = '#ffd84d'
-    ctx.fillText(badge.emblem, 600, 300)
+    // Vầng huy hiệu
+    const medal = ctx.createRadialGradient(600, 285, 8, 600, 285, 96)
+    medal.addColorStop(0, badge.accent)
+    medal.addColorStop(0.55, badge.deep)
+    medal.addColorStop(1, 'rgba(7, 8, 18, 0.9)')
+    ctx.beginPath()
+    ctx.arc(600, 285, 92, 0, Math.PI * 2)
+    ctx.fillStyle = medal
+    ctx.fill()
+    ctx.lineWidth = 2
+    ctx.strokeStyle = badge.accent
+    ctx.stroke()
+    ctx.font = '700 78px "Noto Serif", Georgia, serif'
+    ctx.fillStyle = '#fff6df'
+    ctx.fillText(badge.emblem, 600, 312)
+
+    ctx.fillStyle = badge.accent
+    ctx.font = '600 20px "Be Vietnam Pro", Arial, sans-serif'
+    ctx.fillText(`HẠNG ${badge.rank} · ${badge.metal.toUpperCase()}`, 600, 415)
 
     ctx.fillStyle = '#ffffff'
-    ctx.font = '700 58px Arial, sans-serif'
-    ctx.fillText(badge.title, 600, 410)
+    ctx.font = '800 56px "Noto Serif", Georgia, serif'
+    ctx.fillText(badge.title, 600, 470)
+
+    ctx.fillStyle = 'rgba(220,229,255,0.78)'
+    ctx.font = '24px "Be Vietnam Pro", Arial, sans-serif'
+    ctx.fillText('Trao tặng', 600, 528)
+    ctx.fillStyle = badge.accent
+    ctx.font = '700 48px "Noto Serif", Georgia, serif'
+    ctx.fillText(traveller, 600, 585)
 
     ctx.fillStyle = 'rgba(220,229,255,0.86)'
-    ctx.font = '28px Arial, sans-serif'
-    ctx.fillText('Trao tặng', 600, 480)
-    ctx.fillStyle = '#ffd17a'
-    ctx.font = '700 52px Arial, sans-serif'
-    ctx.fillText(traveller, 600, 545)
-
-    ctx.fillStyle = 'rgba(220,229,255,0.86)'
-    ctx.font = '26px Arial, sans-serif'
+    ctx.font = '26px "Be Vietnam Pro", Arial, sans-serif'
     ctx.fillText(
       `Đã khám phá ${progress.visited.length}/${planets.length} điểm triết học - Điểm hành trình ${score}/100`,
       600,
@@ -133,8 +172,14 @@ export default function BadgeResult({ progress, onClose, onReplay }) {
     }
   }
 
+  const tierStyle = {
+    '--tier-accent': badge.accent,
+    '--tier-deep': badge.deep,
+    '--tier-glow': badge.glow,
+  }
+
   return (
-    <OverlayShell variant="overlay-panel--badge" onClose={onClose}>
+    <OverlayShell variant={`overlay-panel--badge tier-${badge.id}`} onClose={onClose} style={tierStyle}>
       <header className="overlay-head badge-head">
         <div>
           <p className="overlay-eyebrow">Hồ sơ hành trình</p>
@@ -145,12 +190,25 @@ export default function BadgeResult({ progress, onClose, onReplay }) {
         </button>
       </header>
 
-      <div className="badge-hero">
-        <div className="badge-emblem" aria-hidden="true">
-          {badge.emblem}
+      <div className="badge-hero" data-tier={badge.id}>
+        <span className="badge-corner badge-corner--tl" aria-hidden="true" />
+        <span className="badge-corner badge-corner--tr" aria-hidden="true" />
+        <span className="badge-corner badge-corner--bl" aria-hidden="true" />
+        <span className="badge-corner badge-corner--br" aria-hidden="true" />
+
+        <div className="badge-crest" data-tier={badge.id}>
+          <span className="badge-crest-halo" aria-hidden="true" />
+          <RankCrest glyph={badge.emblem} accent={badge.accent} deep={badge.deep} uid={badge.id} />
+          <span className="badge-crest-rank">{badge.rank}</span>
         </div>
-        <h3 className="badge-title">{badge.title}</h3>
+
+        <div className="badge-banner">
+          <span className="badge-banner-metal">{badge.metal}</span>
+          <h3 className="badge-title">{badge.title}</h3>
+        </div>
+
         <p className="badge-blurb">{badge.blurb}</p>
+
         <div className="badge-score">
           <span className="badge-score-num">{score}</span>
           <span className="badge-score-unit">/100 điểm hành trình</span>

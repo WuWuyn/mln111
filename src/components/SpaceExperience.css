@@ -722,6 +722,31 @@
   color: #ff9580;
 }
 
+.mini-quiz-score {
+  margin: 0 0 0.8rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: #9fb4d8;
+}
+
+.mini-quiz-next {
+  margin-top: 0.75rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(126, 220, 255, 0.45);
+  background: rgba(126, 220, 255, 0.12);
+  color: #cfeaff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.mini-quiz-next:hover {
+  background: rgba(126, 220, 255, 0.22);
+  transform: translateX(0.15rem);
+}
+
 /* ── Shared widget chrome ─────────────────────────────────────────────────── */
 .widget {
   display: grid;
@@ -3084,4 +3109,103 @@
 
 .guide-modal {
   z-index: 95;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Explore navigation + panel CTA — HUD pass (appended last in the explore chunk
+   so it wins). Orbital nav reads as a mode selector; the InfoPanel CTA becomes a
+   notched command key. Consumes the global tokens from hud-kit.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.experience-nav {
+  border-radius: 999px;
+  border-color: var(--hud-line);
+}
+
+.nav-pill {
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nav-pill.is-active {
+  border-color: color-mix(in srgb, var(--hud-accent) 55%, transparent);
+  color: #eaf7ff;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--hud-accent) 22%, transparent), rgba(255, 255, 255, 0.04)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0.9rem color-mix(in srgb, var(--hud-accent) 30%, transparent);
+}
+
+.panel-cta {
+  border-radius: 999px;
+  border-color: var(--hud-line);
+  color: #eaf7ff;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--hud-accent) 20%, transparent), rgba(255, 255, 255, 0.03)),
+    rgba(6, 12, 24, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 1.2rem color-mix(in srgb, var(--hud-accent) 16%, transparent);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panel-cta:hover {
+  border-color: color-mix(in srgb, var(--hud-accent) 70%, white);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 0 1.8rem var(--hud-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Overlay HUD pass — quiz / life / badge content pages + the portaled quizzes.
+   The shared frame/scan come from OverlayShell; here we anchor them to the card,
+   keep them subtle behind content, and bring quiz labels into the mono language.
+   Eyebrows + primary buttons already inherit the HUD look from hud-kit.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.content-page-inner { position: relative; }
+
+/* Keep the overlay scanlines quiet behind readable copy. */
+.content-page .hud-scan { opacity: 0.3; }
+.content-page .hud-frame,
+.content-page .hud-scan { border-radius: inherit; }
+
+/* Portaled quick-quiz + asteroid quiz → instrument labels. */
+.mini-quiz-kicker,
+.mini-quiz-toggle-hint,
+.mini-quiz-score,
+.asteroid-quiz-kicker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mini-quiz-mark,
+.asteroid-quiz-option span {
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+/* Rounded answer keys for a softer console feel. */
+.mini-quiz-option,
+.asteroid-quiz-option {
+  border-radius: 12px;
+}
+
+.mini-quiz-body,
+.asteroid-quiz-card {
+  border-radius: 18px;
+}
+
+/* Accent the quick-quiz toggle that lives in the detail header. */
+.mini-quiz-toggle {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
 }

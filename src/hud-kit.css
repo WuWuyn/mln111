@@ -1,0 +1,161 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   hud-kit.css — project-wide sci-fi HUD design kit.
+
+   Imported LAST in main.jsx so its global tokens live on :root everywhere and
+   its restyles of the shared primitives (.eyebrow, .overlay-eyebrow,
+   .primary-action, .secondary-action) win across landing + explore + overlays.
+
+   Surface-specific HUD rules live in each surface's own stylesheet and consume
+   the tokens defined here. Decorative helpers (.hud-frame, .hud-scan, .hud-tag)
+   are reusable across any surface.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --hud-accent: #7edcff;
+  --hud-gold: #ffd17a;
+  --hud-warn: #ff5a45;
+  --hud-ok: #79f0a6;
+  --hud-line: color-mix(in srgb, var(--hud-accent) 42%, transparent);
+  --hud-glow: color-mix(in srgb, var(--hud-accent) 60%, transparent);
+  --hud-ink: #dff1ff;
+  --hud-dim: rgba(178, 205, 240, 0.62);
+  --hud-panel: rgba(4, 10, 20, 0.72);
+}
+
+/* ── Keyframes (shared) ──────────────────────────────────────────────────── */
+@keyframes hud-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.18; }
+}
+
+@keyframes hud-sweep {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(420%); }
+}
+
+/* ── Decorative helpers ──────────────────────────────────────────────────── */
+/* Four L-shaped corner brackets painted with eight no-repeat gradients. */
+.hud-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px top 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px top 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px bottom 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px bottom 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px top 11px / 2px 18px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px top 11px / 2px 18px,
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px bottom 11px / 2px 18px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px bottom 11px / 2px 18px;
+  background-repeat: no-repeat;
+}
+
+/* Scanlines + faint accent wash + a slow vertical sweep. */
+.hud-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.5;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.1) 2px 3px),
+    linear-gradient(90deg, color-mix(in srgb, var(--hud-accent) 4%, transparent), transparent 42%);
+}
+
+.hud-scan::after {
+  content: '';
+  position: absolute;
+  inset: -50% 0 auto 0;
+  height: 32%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--hud-accent) 13%, transparent),
+    transparent
+  );
+  animation: hud-sweep 7s linear infinite;
+}
+
+/* Mono data tag with a leading accent bar — `▌ LABEL`. */
+.hud-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-left: 0.7rem;
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hud-accent);
+}
+
+.hud-tag::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.22rem;
+  height: 0.86em;
+  transform: translateY(-50%);
+  background: var(--hud-accent);
+  box-shadow: 0 0 0.4rem var(--hud-glow);
+}
+
+/* ── Shared primitive restyles ───────────────────────────────────────────── */
+/* Eyebrows become tracked mono station labels with a leading bar. */
+.eyebrow,
+.overlay-eyebrow {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.eyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.72rem;
+  color: color-mix(in srgb, var(--hud-accent) 86%, white);
+}
+
+.eyebrow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.22rem;
+  height: 0.82em;
+  transform: translateY(-50%);
+  background: var(--hud-accent);
+  box-shadow: 0 0 0.4rem var(--hud-glow);
+}
+
+/* Primary CTA: rounded command key — mono label, soft pill, no notch. */
+.primary-action {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+/* Secondary / ghost button: rounded, tracked, instrument-cool. */
+.secondary-action {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-scan::after { animation: none; display: none; }
+}

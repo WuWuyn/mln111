@@ -7,7 +7,17 @@ import BadgeResult from './overlays/BadgeResult'
 import PlanetDetail from './overlays/PlanetDetail'
 import InfoPanel from './space/InfoPanel'
 import Scene from './space/Scene'
+import WarpIntro from './space/intro/WarpIntro'
 import './SpaceExperience.css'
+
+// Cinematic mở màn chạy mỗi lần vào trang khám phá (tức mỗi lần bấm "Bắt đầu
+// du hành", vì lúc đó SpaceExperience mount lại). Chỉ bỏ qua khi vào thẳng một
+// trang con qua hash (deep link) để không chắn nội dung.
+function initialIntro() {
+  if (typeof window === 'undefined') return 'done'
+  if (getViewFromHash()) return 'done'
+  return 'playing'
+}
 
 const NAV_ITEMS = [
   { id: 'map', label: 'Khám phá' },
@@ -147,7 +157,7 @@ function runSceneTransition(update) {
   })
 }
 
-export default function SpaceExperience({ onBack, handControlStore }) {
+export default function SpaceExperience({ onBack, handControlStore, latchStore }) {
   const [selectedPlanet, setSelectedPlanet] = useState(planets[0])
   const [panelVisible, setPanelVisible] = useState(true)
   const [activeView, setActiveView] = useState(getViewFromHash)
@@ -162,7 +172,27 @@ export default function SpaceExperience({ onBack, handControlStore }) {
   const [destroyed, setDestroyed] = useState([])
   const [shotQuiz, setShotQuiz] = useState(null)
   const [resetSignal, setResetSignal] = useState(0)
+  const [intro, setIntro] = useState(initialIntro)
   const questionBag = useRef({ remaining: [], last: null })
+
+  // Big Bang lóe lên -> bắt đầu cho hành tinh 3D mọc ra.
+  const handleIntroReveal = useCallback(() => setIntro('forming'), [])
+
+  const handleIntroDone = useCallback(() => setIntro('done'), [])
+
+  const skipIntro = useCallback(() => setIntro('done'), [])
+
+  // Lưới an toàn: dù vòng lặp animation của intro có khựng hay lỗi giữa chừng,
+  // sau ~7s vẫn buộc intro kết thúc để lớp phủ warp gỡ ra và lộ bản đồ + bảng
+  // tri thức bên dưới (tránh trường hợp panel bị che vĩnh viễn).
+  useEffect(() => {
+    if (intro === 'done') return undefined
+    const timer = setTimeout(() => setIntro('done'), 7000)
+    return () => clearTimeout(timer)
+  }, [intro])
+
+  const introReady = intro === 'done'
+  const formState = intro === 'done' ? 'shown' : intro === 'forming' ? 'forming' : 'hidden'
 
   const nextQuestionIndex = useCallback(() => {
     if (questionBag.current.remaining.length === 0) {
@@ -274,7 +304,7 @@ export default function SpaceExperience({ onBack, handControlStore }) {
 
   return (
     <section className={`experience-page ${detailOpen ? 'has-3d-modal' : ''}`}>
-      {activeView === null && (
+      {activeView === null && introReady && (
         <>
           <div className="experience-topbar">
             <button
@@ -324,16 +354,20 @@ export default function SpaceExperience({ onBack, handControlStore }) {
               setSelectedPlanet={selectPlanet}
               onOpenExperience={openExperience}
               handControlStore={handControlStore}
+              latchStore={latchStore}
               overlayOpen={Boolean(activeView) || panelVisible}
               gameMode={gameMode}
               destroyed={destroyed}
               onDestroyPlanet={destroyPlanet}
               onDestroyAsteroid={handleAsteroidDestroy}
               resetKey={resetSignal}
+              formState={formState}
             />
           </Suspense>
         </Canvas>
 
+        {introReady && (
+          <>
         <div className="space-game-controls">
           <button
             type="button"
@@ -382,16 +416,24 @@ export default function SpaceExperience({ onBack, handControlStore }) {
             <span>Double click</span> thực nghiệm
           </div>
           <div>
-            <span>Ngón trỏ</span> chọn hành tinh
+            <span>Ngón trỏ</span> chọn &amp; giữ hành tinh
           </div>
           <div>
-            <span>Xòe tay</span> xoay camera
+            <span>Hai ngón</span> mở thực nghiệm
           </div>
           <div>
-            <span>Chụm ngón</span> zoom
+            <span>Xòe tay</span> xoay · vặn cổ tay zoom
+          </div>
+          <div>
+            <span>Nắm tay</span> thả hành tinh
           </div>
         </div>
+          </>
+        )}
 
+        {/* Bảng tri thức luôn hiển thị trên bản đồ (không phụ thuộc intro), để
+            phần định nghĩa / chi tiết / khái niệm không bị mất sau màn mở đầu.
+            Trong lúc intro chạy, lớp phủ warp toàn màn hình che panel này. */}
         {!gameMode && panelVisible && (
           <InfoPanel
             planet={selectedPlanet}
@@ -410,6 +452,10 @@ export default function SpaceExperience({ onBack, handControlStore }) {
           </button>
         )}
       </div>
+
+      {intro !== 'done' && (
+        <WarpIntro onReveal={handleIntroReveal} onDone={handleIntroDone} onSkip={skipIntro} />
+      )}
 
       {activeView === 'detail' && (
         <PlanetDetail

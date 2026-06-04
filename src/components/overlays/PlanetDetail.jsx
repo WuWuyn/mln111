@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { planetPalette, planets } from '../../data/cosmos'
+import { quizBankByPlanet } from '../../data/quizBank'
 import PlanetWidget from '../interactives'
 import GuidanceModal from './GuidanceModal'
 import MiniQuiz from './MiniQuiz'
@@ -68,7 +69,20 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
           </div>
         </div>
         <div className="detail-head-actions">
-          <MiniQuiz key={planet.id} quiz={planet.miniQuiz} onPass={() => onQuizPass?.(planet.id)} />
+          <button
+            type="button"
+            className="guide-icon-button detail-back-map"
+            onClick={onClose}
+            aria-label="Quay lại bản đồ vũ trụ"
+            title="Quay lại bản đồ"
+          >
+            ← Bản đồ
+          </button>
+          <MiniQuiz
+            key={planet.id}
+            quizzes={quizBankByPlanet[planet.id] ?? [planet.miniQuiz]}
+            onPass={() => onQuizPass?.(planet.id)}
+          />
           <button
             type="button"
             className="guide-icon-button"

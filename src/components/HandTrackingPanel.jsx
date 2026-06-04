@@ -9,6 +9,10 @@ const WASM_PATH = publicAsset('mediapipe/wasm')
 // window the reticle fades out gradually instead of snapping off.
 const GRACE_MS = 600
 
+// Remembers that the user has already seen the gesture guide, so it only pops
+// up automatically the very first time they switch hand control on.
+const GUIDE_SEEN_KEY = 'vutru-hand-guide-seen'
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
@@ -110,24 +114,52 @@ function readFingers(landmarks) {
   }
 }
 
-// Decide what the hand is doing from its shape, so the control axes never fight
-// each other. Each gesture drives exactly one thing:
-//   point    (index only)            → move the selection cursor
-//   navigate (open palm)             → rotate the camera
-//   zoom     (thumb+index pinch)     → zoom the camera
-//   idle     (fist / anything else)  → pause
-//
-// Pinch vs. fist is the tricky part: both bring the thumb near the fingers.
-// The tell is the index finger — in a pinch it reaches OUT to the thumb (tip
-// stays far from its own base), in a fist it curls IN toward the palm (tip
-// collapses onto its base). `indexReach` captures exactly that.
-function readGesture(fingers, pinchRatio, indexReach) {
-  const openCount = [fingers.index, fingers.middle, fingers.ring, fingers.pinky].filter(Boolean).length
+// Decide what the hand is doing purely from *which fingers are extended* — the
+// single most robust signal MediaPipe gives us. No pinch/thumb contact (which is
+// noisy at an angle or distance): each mode is a clear, countable finger pose.
+//   idle     (fist, 0 fingers)            → release the locked planet / pause
+//   point    (index only ☝️)              → select & lock a planet
+//   confirm  (index + middle ✌️)          → open the locked planet's experiment
+//   navigate (open palm, 3+ fingers 🖐️)  → move to orbit, twist wrist to zoom
+// The thumb is deliberately ignored, so it doesn't matter whether it's tucked or
+// out — that's what makes every pose easy to hold and easy to detect.
+function readGesture(fingers) {
+  const { index, middle, ring, pinky } = fingers
+  const openCount = [index, middle, ring, pinky].filter(Boolean).length
 
-  if (pinchRatio < 0.5 && indexReach > 0.55) return 'zoom'
+  if (openCount === 0) return 'idle'
+  if (index && middle && !ring && !pinky) return 'confirm'
+  if (index && !middle && !ring && !pinky) return 'point'
   if (openCount >= 3) return 'navigate'
-  if (fingers.index && !fingers.middle && !fingers.ring) return 'point'
   return 'idle'
+}
+
+// Hand shape jitters frame-to-frame near a gesture boundary (a finger flickers
+// "extended" for a single frame), which would make the mode snap around. We only
+// *commit* a new gesture once it has held for a few consecutive frames; the
+// current gesture wins ties.
+const GESTURE_HOLD_FRAMES = 3
+
+function stabilizeGesture(raw, runtime) {
+  if (raw === runtime.stableGesture) {
+    runtime.pendingGesture = raw
+    runtime.pendingCount = 0
+    return raw
+  }
+
+  if (raw === runtime.pendingGesture) {
+    runtime.pendingCount += 1
+  } else {
+    runtime.pendingGesture = raw
+    runtime.pendingCount = 1
+  }
+
+  if (runtime.pendingCount >= GESTURE_HOLD_FRAMES) {
+    runtime.stableGesture = raw
+    runtime.pendingCount = 0
+  }
+
+  return runtime.stableGesture
 }
 
 function readMetrics(landmarks) {
@@ -141,11 +173,7 @@ function readMetrics(landmarks) {
   const palmWidth = distance(indexBase, pinkyBase)
   const palmDepth = distance(wrist, middleBase)
   const handOpen = distance(indexTip, thumbTip)
-  const pinchDistance = distance(indexTip, thumbTip)
   const fingers = readFingers(landmarks)
-  const safeWidth = Math.max(palmWidth, 1e-3)
-  const pinchRatio = pinchDistance / safeWidth
-  const indexReach = distance(indexTip, indexBase) / safeWidth
 
   return {
     rawX: clamp(1 - indexTip.x, 0, 1),
@@ -154,34 +182,39 @@ function readMetrics(landmarks) {
     palmY: (indexBase.y + pinkyBase.y + wrist.y) / 3,
     handScale: clamp((palmWidth + palmDepth + handOpen * 0.55 - 0.2) / 0.3, 0, 1),
     rollRaw: angleBetween(indexBase, pinkyBase),
-    palmWidth,
-    pinchDistance,
-    pinchRatio,
-    indexReach,
     edge: edgeProximity(landmarks),
     fingers,
-    gesture: readGesture(fingers, pinchRatio, indexReach),
+    gesture: readGesture(fingers),
   }
 }
 
-// Zoom sensitivity for the pinch-and-scrub gesture: how much hand travel (in
-// normalised screen height) it takes to sweep the full zoom range.
-const ZOOM_GAIN = 2.6
+// Volume-knob zoom: how much wrist twist (in radians) it takes to sweep the full
+// zoom range, plus a small deadzone so a steady open palm doesn't creep the zoom.
+const ZOOM_ROLL_GAIN = 0.85
+const ROLL_DEADZONE = 0.05
+
+// Smallest signed angle from b to a, handling the ±π wrap of atan2.
+function angularDelta(a, b) {
+  let d = a - b
+  while (d > Math.PI) d -= 2 * Math.PI
+  while (d < -Math.PI) d += 2 * Math.PI
+  return d
+}
 
 // Build the control object for one frame. Each axis is fed through its One Euro
 // filter every frame (so the filters stay warm and continuous), but only the
 // axis that belongs to the current gesture is *committed* — the rest hold their
-// previous value. That's what fully decouples point / rotate / zoom.
+// previous value. That's what fully decouples point / navigate.
 function createControl(metrics, previous, calibration, filters, t, runtime) {
   const gesture = metrics.gesture
   const wasActive = Boolean(previous?.active)
   const prevZoom = wasActive ? previous.zoom : 0.5
 
-  // Pinch-to-zoom: when the pinch begins, anchor to the current hand height and
-  // zoom level, so afterwards moving the hand up zooms in / down zooms out,
-  // relative to where you grabbed — precise and free of webcam depth noise.
-  if (gesture === 'zoom' && runtime.prevGesture !== 'zoom') {
-    runtime.zoomAnchorY = metrics.palmY
+  // Zoom rides the open-palm (navigate) pose: twisting the wrist like a volume
+  // knob dollies the camera. Anchor the roll + zoom when navigation begins, so
+  // it's a *relative* twist from wherever you started — no absolute calibration.
+  if (gesture === 'navigate' && runtime.prevGesture !== 'navigate') {
+    runtime.rollAnchor = metrics.rollRaw
     runtime.zoomAnchorValue = prevZoom
   }
   runtime.prevGesture = gesture
@@ -190,8 +223,10 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
   const targetY = mapAroundCenter(metrics.rawY, calibration.cursorY, calibration.cursorRangeY, 0.015)
   const targetRotationX = clamp((metrics.palmX - calibration.palmX) / 0.26, -1, 1)
   const targetRotationY = clamp((metrics.palmY - calibration.palmY) / 0.22, -1, 1)
-  const targetZoom = gesture === 'zoom'
-    ? clamp(runtime.zoomAnchorValue + (runtime.zoomAnchorY - metrics.palmY) * ZOOM_GAIN, 0, 1)
+  let rollTwist = gesture === 'navigate' ? angularDelta(metrics.rollRaw, runtime.rollAnchor) : 0
+  rollTwist = Math.sign(rollTwist) * Math.max(0, Math.abs(rollTwist) - ROLL_DEADZONE)
+  const targetZoom = gesture === 'navigate'
+    ? clamp(runtime.zoomAnchorValue + rollTwist * ZOOM_ROLL_GAIN, 0, 1)
     : prevZoom
 
   // Always run the filters so they never go stale between mode switches.
@@ -205,7 +240,6 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
 
   const pointing = gesture === 'point'
   const navigating = gesture === 'navigate'
-  const zooming = gesture === 'zoom'
 
   return {
     active: true,
@@ -218,17 +252,15 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
     palmY: metrics.palmY,
     handScale: metrics.handScale,
     rollRaw: metrics.rollRaw,
-    pinched: false,
     // Cursor moves only while pointing; otherwise it stays put so it can't drift
     // off the planet you just lined up.
     x: pointing ? fx : base.x,
     y: pointing ? fy : base.y,
-    // Rotate only with an open palm.
+    // Orbit + zoom both ride the open palm: hand motion rotates, wrist twist zooms.
     rotationX: navigating ? fRotX : base.rotationX,
     rotationY: navigating ? fRotY : base.rotationY,
     roll: 0,
-    // Zoom only while pinching.
-    zoom: zooming ? fZoom : base.zoom,
+    zoom: navigating ? fZoom : base.zoom,
   }
 }
 
@@ -245,9 +277,11 @@ const HAND_CONNECTIONS = [
 // can colour each tip by whether that finger reads as extended.
 const TIP_FINGER = { 8: 'index', 12: 'middle', 16: 'ring', 20: 'pinky' }
 
-// Debug overlay: draws the skeleton plus extended (green) / curled (red)
+// Debug overlay: draws the hand skeleton plus extended (green) / curled (red)
 // fingertips and the detected gesture, so mis-recognised hand shapes are
-// obvious at a glance. Mirrored to match the flipped preview video.
+// obvious at a glance. It is OFF by default and never shows the raw webcam feed
+// — only the skeleton on a dark backdrop — so nothing identifying is on screen.
+// Mirrored to match a selfie view.
 function drawHand(canvas, metrics, landmarks, gesture) {
   const context = canvas.getContext('2d')
   context.clearRect(0, 0, canvas.width, canvas.height)
@@ -290,34 +324,89 @@ function drawHand(canvas, metrics, landmarks, gesture) {
 
   context.restore()
 
-  // Text is drawn un-mirrored so it stays readable. The pinch/index numbers let
-  // us see exactly why a pinch is (or isn't) recognised and tune the thresholds.
+  // Text is drawn un-mirrored so it stays readable. The per-finger flags show
+  // exactly which fingers read as extended, so a mis-counted pose is obvious.
+  const { index, middle, ring, pinky } = metrics.fingers
   context.fillStyle = '#ffffff'
   context.font = '600 13px system-ui, sans-serif'
   context.fillText(gesture.toUpperCase(), 8, 18)
   context.font = '500 11px system-ui, sans-serif'
-  context.fillStyle = metrics.pinchRatio < 0.5 && metrics.indexReach > 0.55 ? '#5dff9b' : 'rgba(255,255,255,0.8)'
-  context.fillText(`pinch ${metrics.pinchRatio.toFixed(2)} (<0.50)  idx ${metrics.indexReach.toFixed(2)} (>0.55)`, 8, 34)
+  context.fillStyle = 'rgba(255,255,255,0.82)'
+  context.fillText(`trỏ:${index ? '1' : '0'} giữa:${middle ? '1' : '0'} áp:${ring ? '1' : '0'} út:${pinky ? '1' : '0'}`, 8, 34)
 }
 
 const GESTURE_HINTS = {
-  point: '☝️ Ngón trỏ — di để chọn hành tinh',
-  navigate: '🖐️ Xòe tay — di để xoay camera',
-  zoom: '🤏 Chụm ngón — kéo lên/xuống để zoom',
-  idle: '✊ Nắm tay — tạm dừng điều khiển',
+  point: '☝️ Một ngón — chọn & giữ hành tinh',
+  navigate: '🖐️ Xòe tay — di để xoay, vặn cổ tay để zoom',
+  confirm: '✌️ Hai ngón — mở thực nghiệm hành tinh',
+  idle: '✊ Nắm tay — thả hành tinh đang giữ',
 }
 
-export default function HandTrackingPanel({ store }) {
+const GESTURE_GUIDE = [
+  { icon: '☝️', title: 'Một ngón trỏ', text: 'Trỏ vào hành tinh để chọn — con trỏ dính chặt vào nó cho tới khi bạn nắm tay.' },
+  { icon: '✌️', title: 'Hai ngón', text: 'Khi đã giữ được hành tinh, giơ hai ngón để mở phần thực nghiệm của nó.' },
+  { icon: '🖐️', title: 'Xòe bàn tay', text: 'Di tay để xoay camera; vặn cổ tay như vặn nút âm lượng để phóng to / thu nhỏ.' },
+  { icon: '✊', title: 'Nắm tay', text: 'Nắm tay để thả hành tinh đang giữ, rồi trỏ chọn hành tinh khác.' },
+]
+
+function CameraIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" width="18" height="18">
+      <path d="M4 8.5h3l1.4-2h7.2L18 8.5h2a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <circle cx="12" cy="13" r="3.1" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  )
+}
+
+// One-time (and on-demand) cheat sheet of the four control gestures, shown the
+// first time the user turns hand control on so they aren't left guessing.
+function GestureGuide({ onClose }) {
+  return (
+    <div className="hand-guide" role="dialog" aria-modal="true" aria-labelledby="hand-guide-title">
+      <div className="hand-guide-card">
+        <p className="eyebrow">Điều khiển bằng tay</p>
+        <h2 id="hand-guide-title">Bốn cử chỉ để du hành</h2>
+        <p className="hand-guide-lead">
+          Đưa một bàn tay vào tầm camera. Lần đầu thấy tay, hệ thống tự lấy tâm — cứ giữ tay
+          giữa khung là điều khiển nhẹ nhất.
+        </p>
+        <ul className="hand-guide-list">
+          {GESTURE_GUIDE.map((item) => (
+            <li key={item.title}>
+              <span className="hand-guide-icon" aria-hidden="true">{item.icon}</span>
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <button type="button" className="hand-guide-done" onClick={onClose}>
+          Bắt đầu
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function HandTrackingPanel({ store, hideUI = false }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const landmarkerRef = useRef(null)
   const frameRef = useRef(null)
   const streamRef = useRef(null)
   const controlRef = useRef({ active: false })
-  const statusRef = useRef('Tắt hand tracking')
+  const statusRef = useRef('')
   const filtersRef = useRef(null)
-  // Carries the pinch-to-zoom anchor between frames.
-  const runtimeRef = useRef({ prevGesture: 'idle', zoomAnchorY: 0.5, zoomAnchorValue: 0.5 })
+  // Carries the volume-knob zoom anchor and gesture-stabiliser state between frames.
+  const runtimeRef = useRef({
+    prevGesture: 'idle',
+    rollAnchor: 0,
+    zoomAnchorValue: 0.5,
+    stableGesture: 'idle',
+    pendingGesture: 'idle',
+    pendingCount: 0,
+  })
   // Tighter ranges than a 1:1 mapping → higher gain, so the hand stays near the
   // centre of the frame and never has to reach the edge to point anywhere.
   const calibrationRef = useRef({
@@ -334,7 +423,9 @@ export default function HandTrackingPanel({ store }) {
   const lastSeenRef = useRef(0)
   const calibratedRef = useRef(false)
   const [enabled, setEnabled] = useState(false)
-  const [status, setStatus] = useState('Tắt hand tracking')
+  const [status, setStatus] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
 
   // The detect loop runs every frame; only push status changes to React state
   // so we don't queue a redundant render ~60 times per second.
@@ -367,6 +458,31 @@ export default function HandTrackingPanel({ store }) {
     filtersRef.current = makeFilters()
     updateStatus('Đã đặt lại tâm tay')
   }
+
+  const toggleEnabled = useCallback(() => {
+    setEnabled((current) => {
+      const next = !current
+      if (next) {
+        let seen = false
+        try {
+          seen = window.localStorage.getItem(GUIDE_SEEN_KEY) === '1'
+        } catch {
+          // Storage blocked — treat as "not seen" and show the guide.
+        }
+        if (!seen) setShowGuide(true)
+      }
+      return next
+    })
+  }, [])
+
+  const dismissGuide = useCallback(() => {
+    try {
+      window.localStorage.setItem(GUIDE_SEEN_KEY, '1')
+    } catch {
+      // Private mode / storage disabled — fine, the guide just shows again next time.
+    }
+    setShowGuide(false)
+  }, [])
 
   useEffect(() => {
     if (!enabled) {
@@ -425,12 +541,27 @@ export default function HandTrackingPanel({ store }) {
         await videoRef.current.play()
         updateStatus('Đưa bàn tay vào tầm camera')
 
+        // Frame skipping: a hand-less webcam still costs a full GPU inference per
+        // frame. When no hand has been seen for a while we run the detector less
+        // often (every 2nd, then every 3rd frame) to free the GPU/main thread,
+        // and snap back to full rate the instant a hand returns.
+        let tick = 0
+
         const detect = () => {
           if (!videoRef.current || !landmarkerRef.current) return
 
+          const now = performance.now()
+          const idleMs = now - lastSeenRef.current
+          const stride = idleMs > 2500 ? 3 : idleMs > 700 ? 2 : 1
+          tick = (tick + 1) % stride
+
+          if (tick !== 0) {
+            frameRef.current = requestAnimationFrame(detect)
+            return
+          }
+
           const video = videoRef.current
           const canvas = canvasRef.current
-          const now = performance.now()
 
           if (canvas && canvas.width !== video.videoWidth) canvas.width = video.videoWidth
           if (canvas && canvas.height !== video.videoHeight) canvas.height = video.videoHeight
@@ -440,6 +571,7 @@ export default function HandTrackingPanel({ store }) {
 
           if (landmarks) {
             const metrics = readMetrics(landmarks)
+            metrics.gesture = stabilizeGesture(metrics.gesture, runtimeRef.current)
 
             // Auto-centre on the first hand we see so the user doesn't have to
             // press a button before pointing.
@@ -495,25 +627,62 @@ export default function HandTrackingPanel({ store }) {
   }, [enabled, store, updateStatus, captureCalibration])
 
   return (
-    <aside className={`hand-tracking-panel ${enabled ? 'is-enabled' : ''}`}>
-      {/* Debug preview: the mirrored camera feed with the detected skeleton and
-          gesture drawn on top, so hand-shape mis-reads are easy to spot. */}
-      <div className="hand-tracking-preview">
-        <video ref={videoRef} playsInline muted aria-hidden="true" />
-        <canvas ref={canvasRef} />
-      </div>
-      <div className="hand-tracking-copy">
-        <p className="eyebrow">Điều khiển bằng tay</p>
-        <p>{status}</p>
-        <div className="hand-tracking-actions">
-          <button type="button" onClick={() => setEnabled((current) => !current)}>
-            {enabled ? 'Tắt camera' : 'Bật điều khiển tay'}
+    <>
+      {/* The video feed is required for MediaPipe to read frames, but it is kept
+          visually hidden — we never show the raw webcam. The optional skeleton
+          preview below shows only landmarks on a dark backdrop. */}
+      <video ref={videoRef} className="hand-cam-feed" playsInline muted aria-hidden="true" />
+
+      {!hideUI && (
+      <div className={`hand-control ${enabled ? 'is-enabled' : ''}`}>
+        {enabled && showPreview && (
+          <div className="hand-control-preview">
+            <canvas ref={canvasRef} />
+          </div>
+        )}
+
+        {enabled && status && <p className="hand-control-status">{status}</p>}
+
+        <div className="hand-control-actions">
+          <button
+            type="button"
+            className="hand-control-toggle"
+            onClick={toggleEnabled}
+            aria-pressed={enabled}
+          >
+            <CameraIcon />
+            {enabled ? 'Tắt tay' : 'Điều khiển tay'}
           </button>
-          <button type="button" onClick={recalibrate} disabled={!enabled}>
-            Đặt lại tâm
-          </button>
+
+          {enabled && (
+            <div className="hand-control-tools">
+              <button type="button" className="hand-control-mini" onClick={recalibrate} title="Đặt lại tâm tay">
+                ⊕
+              </button>
+              <button
+                type="button"
+                className={`hand-control-mini ${showPreview ? 'is-on' : ''}`}
+                onClick={() => setShowPreview((on) => !on)}
+                title="Hiện/ẩn khung xương tay"
+                aria-pressed={showPreview}
+              >
+                ▣
+              </button>
+              <button
+                type="button"
+                className="hand-control-mini"
+                onClick={() => setShowGuide(true)}
+                title="Hướng dẫn cử chỉ"
+              >
+                ?
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </aside>
+      )}
+
+      {!hideUI && showGuide && <GestureGuide onClose={dismissGuide} />}
+    </>
   )
 }

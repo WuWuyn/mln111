@@ -401,6 +401,20 @@ p {
   left: 118%;
 }
 
+/* Dwell-to-enter progress: a fill bar that grows along the bottom of the button
+   as the hand cursor rests on it (driven by the --hand-dwell var, 0 → 1). */
+.landing-explore-only .primary-action::after {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 0.28rem;
+  transform: scaleX(var(--hand-dwell, 0));
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(255, 231, 147, 0.95), rgba(118, 225, 255, 0.95));
+  box-shadow: 0 0 0.7rem rgba(255, 224, 141, 0.7);
+  opacity: calc(var(--hand-dwell, 0) * 0.9 + 0.1);
+  content: '';
+}
+
 .landing-explore-only .primary-action:active {
   box-shadow:
     0 0.75rem 1.8rem rgba(0, 0, 0, 0.26),
@@ -572,81 +586,84 @@ p {
   font-weight: 900;
 }
 
-.hand-tracking-panel {
-  position: absolute;
+/* Off-screen but live: MediaPipe needs a playing <video>, but we never show the
+   raw webcam — only the opt-in skeleton preview below. */
+.hand-cam-feed {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Compact floating control cluster, bottom-left on both landing and explore. */
+.hand-control {
+  position: fixed;
   left: 1rem;
-  bottom: 4.9rem;
-  z-index: 30;
-  display: grid;
-  grid-template-columns: 8.8rem minmax(0, 12rem);
-  gap: 0.8rem;
-  align-items: center;
-  width: min(25rem, calc(100% - 2rem));
-  padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 12px;
-  color: #f7f9ff;
-  background: rgba(4, 9, 22, 0.68);
-  box-shadow: 0 22px 90px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(18px);
+  bottom: 1rem;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: min(18rem, calc(100% - 2rem));
 }
 
-.hand-tracking-preview {
-  position: relative;
+.hand-control-status {
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(126, 220, 255, 0.22);
+  border-radius: 999px;
+  color: #eaf2ff;
+  background: rgba(4, 9, 22, 0.74);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(14px);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.hand-control-preview {
   overflow: hidden;
-  border: 1px solid rgba(126, 220, 255, 0.18);
-  border-radius: 8px;
+  width: 11rem;
+  border: 1px solid rgba(126, 220, 255, 0.22);
+  border-radius: 10px;
   aspect-ratio: 4 / 3;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(4, 9, 22, 0.82);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.34);
 }
 
-.hand-tracking-preview video,
-.hand-tracking-preview canvas {
-  position: absolute;
-  inset: 0;
+.hand-control-preview canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
-.hand-tracking-preview video {
-  transform: scaleX(-1);
-  opacity: 0.76;
-}
-
-.hand-tracking-preview canvas {
-  z-index: 1;
-}
-
-.hand-tracking-copy {
-  min-width: 0;
-}
-
-.hand-tracking-copy .eyebrow {
-  margin-bottom: 0.35rem;
-  font-size: 0.62rem;
-}
-
-.hand-tracking-copy p:not(.eyebrow) {
-  margin: 0 0 0.7rem;
-  color: #cbd5ee;
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-
-.hand-tracking-actions {
+.hand-control-actions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
 }
 
-.hand-tracking-copy button {
-  min-height: 2.35rem;
-  padding: 0 0.8rem;
-  border: 1px solid rgba(126, 220, 255, 0.24);
+.hand-control-tools {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.hand-control-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(126, 220, 255, 0.26);
   border-radius: 999px;
   color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(4, 9, 22, 0.74);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 850;
@@ -657,20 +674,139 @@ p {
     background 160ms ease;
 }
 
-.hand-tracking-copy button:hover {
+.hand-control.is-enabled .hand-control-toggle {
+  border-color: rgba(126, 220, 255, 0.5);
+  background: rgba(39, 114, 170, 0.3);
+}
+
+.hand-control-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(126, 220, 255, 0.6);
+}
+
+.hand-control-mini {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(4, 9, 22, 0.72);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.hand-control-mini:hover {
   transform: translateY(-1px);
   border-color: rgba(126, 220, 255, 0.52);
   background: rgba(39, 114, 170, 0.22);
 }
 
-.hand-tracking-copy button:disabled {
-  opacity: 0.44;
-  cursor: not-allowed;
-  transform: none;
+.hand-control-mini.is-on {
+  border-color: rgba(126, 220, 255, 0.55);
+  background: rgba(39, 114, 170, 0.32);
 }
 
-.hand-tracking-panel.is-enabled {
-  border-color: rgba(126, 220, 255, 0.28);
+/* First-run gesture cheat sheet. */
+.hand-guide {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  background: rgba(2, 4, 11, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.hand-guide-card {
+  width: min(28rem, 100%);
+  max-height: calc(100svh - 2.4rem);
+  overflow: auto;
+  padding: 1.5rem;
+  border: 1px solid rgba(126, 220, 255, 0.2);
+  border-radius: 18px;
+  color: #f3f7ff;
+  background: rgba(7, 13, 28, 0.94);
+  box-shadow: 0 30px 110px rgba(0, 0, 0, 0.5);
+}
+
+.hand-guide-card h2 {
+  margin: 0.3rem 0 0.6rem;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.hand-guide-lead {
+  margin: 0 0 1rem;
+  color: #c6d3ee;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.hand-guide-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1.3rem;
+  padding: 0;
+  list-style: none;
+}
+
+.hand-guide-list li {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.hand-guide-icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(126, 220, 255, 0.12);
+  font-size: 1.3rem;
+}
+
+.hand-guide-list strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.95rem;
+}
+
+.hand-guide-list p {
+  margin: 0;
+  color: #c1cfe8;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.hand-guide-done {
+  width: 100%;
+  min-height: 2.7rem;
+  border: 1px solid rgba(126, 220, 255, 0.4);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(39, 114, 170, 0.34);
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.hand-guide-done:hover {
+  transform: translateY(-1px);
+  background: rgba(39, 114, 170, 0.5);
 }
 
 /* Peripheral cue that replaces the camera preview: a soft inset glow that
@@ -710,6 +846,32 @@ p {
     0 0 0 0.48rem rgba(255, 210, 122, 0.18),
     0 0 1.45rem rgba(255, 245, 196, 0.78),
     0 0 2.4rem rgba(126, 220, 255, 0.36);
+}
+
+/* Locked onto a planet: a bigger cyan "target" ring that sits on the planet and
+   rides along with its orbit, so it's an obvious, stable thing to grab. */
+.hand-pointer-reticle.is-locked {
+  width: 2.5rem;
+  border-color: rgba(126, 220, 255, 0.95);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 0.14rem, transparent 0.2rem);
+  box-shadow:
+    0 0 0 0.18rem rgba(126, 220, 255, 0.22),
+    0 0 1.3rem rgba(126, 220, 255, 0.6);
+}
+
+.hand-pointer-reticle.is-locked::before,
+.hand-pointer-reticle.is-locked::after {
+  border-color: rgba(126, 220, 255, 0.7);
+}
+
+/* Two fingers while locked → opening the experiment: snap in + flare. */
+.hand-pointer-reticle.is-armed {
+  transform: translate(-50%, -50%) scale(0.82);
+  border-color: rgba(180, 245, 255, 1);
+  box-shadow:
+    0 0 0 0.3rem rgba(126, 220, 255, 0.32),
+    0 0 1.8rem rgba(180, 245, 255, 0.9),
+    0 0 3rem rgba(126, 220, 255, 0.5);
 }
 
 .hand-pointer-reticle::before,
@@ -1060,11 +1222,6 @@ p {
     max-height: 45svh;
   }
 
-  .hand-tracking-panel {
-    bottom: 8.3rem;
-    grid-template-columns: 7.2rem minmax(0, 1fr);
-  }
-
   .reopen-panel {
     top: auto;
     bottom: 5rem;
@@ -1140,16 +1297,15 @@ p {
     display: none;
   }
 
-  .hand-tracking-panel {
+  /* Lift the hand-control cluster clear of the full-width hud-bar at the very
+     bottom of small screens. */
+  .hand-control {
     left: 0.5rem;
-    bottom: 8.5rem;
-    width: calc(100% - 1rem);
-    grid-template-columns: 6.2rem minmax(0, 1fr);
-    gap: 0.6rem;
+    bottom: 3.6rem;
   }
 
-  .hand-tracking-copy .eyebrow {
-    font-size: 0.56rem;
+  .hand-control-preview {
+    width: 8.5rem;
   }
 
   .space-label {
@@ -1595,4 +1751,217 @@ p {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Landing — sci-fi HUD pass. Keeps the cinematic cosmic wallpaper but frames it
+   as a mission console: a top telemetry strip, scanlines/corner brackets (global
+   .hud-scan/.hud-frame), a mono station overline, and the intro list as readout
+   rows. The serif slogan stays as the one warm, human contrast.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.landing-page { --hud-accent: #7edcff; }
+
+/* Top telemetry strip */
+.landing-hud-bar {
+  position: absolute;
+  top: clamp(0.9rem, 2.4vh, 1.6rem);
+  left: clamp(1rem, 3vw, 2.4rem);
+  right: clamp(1rem, 3vw, 2.4rem);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.landing-hud-coord {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--hud-dim);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-hud-coord::before { content: '[ '; opacity: 0.55; }
+.landing-hud-coord::after { content: ' ]'; opacity: 0.55; }
+
+.landing-hud-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #ff8d7a;
+}
+
+.landing-hud-dot {
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 50%;
+  background: var(--hud-warn);
+  box-shadow: 0 0 0.5rem var(--hud-warn);
+  animation: hud-blink 1.4s steps(1, end) infinite;
+}
+
+/* Overline → mono station label with a leading bar */
+.landing-overline {
+  position: relative;
+  padding: 0 0 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--hud-line);
+  color: color-mix(in srgb, var(--hud-accent) 86%, white);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
+}
+
+.landing-overline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.05rem;
+  width: 0.22rem;
+  height: 0.82rem;
+  background: var(--hud-accent);
+  box-shadow: 0 0 0.4rem var(--hud-glow);
+}
+
+/* Intro list → readout console */
+.landing-short-content {
+  border-color: var(--hud-line);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--hud-accent) 6%, transparent), transparent 60%),
+    rgba(5, 10, 20, 0.5);
+}
+
+.landing-short-content article {
+  border-radius: 11px;
+  border-color: var(--hud-line);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hud-accent) 9%, transparent), transparent 26%),
+    rgba(255, 255, 255, 0.025);
+}
+
+.landing-short-content article::before {
+  background: linear-gradient(180deg, var(--hud-accent), transparent);
+  opacity: 0.85;
+}
+
+.landing-short-content article:hover {
+  border-color: color-mix(in srgb, var(--hud-accent) 50%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hud-accent) 15%, transparent), transparent 34%),
+    rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 1.1rem color-mix(in srgb, var(--hud-accent) 22%, transparent);
+}
+
+.landing-short-content span {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: var(--hud-accent);
+  text-shadow: 0 0 0.6rem var(--hud-glow);
+}
+
+.landing-short-content span::before { content: '['; opacity: 0.5; margin-right: 0.05rem; }
+.landing-short-content span::after { content: ']'; opacity: 0.5; margin-left: 0.05rem; }
+
+/* The landing CTA hosts a circular hand-dwell ring, so skip the notch clip here
+   (it would clip the ring); keep the mono / squared HUD treatment. */
+.landing-explore-only .primary-action {
+  clip-path: none;
+}
+
+/* The hand-target glow reads as a target lock on the command key */
+.landing-explore-only .primary-action.is-hand-target {
+  border-color: color-mix(in srgb, var(--hud-accent) 70%, white);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--hud-accent) 35%, transparent),
+    0 0 2.2rem var(--hud-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Explore 2D chrome — HUD pass. The floating panels over the live cosmos become
+   instrument modules: squared frames, mono telemetry, accent rails. Only `look`
+   is set here (appended last) so the responsive sizing blocks above still win.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.experience-page { --hud-accent: #7edcff; }
+
+.experience-topbar,
+.info-panel,
+.hud-bar,
+.reopen-panel,
+.game-score-pill,
+.game-hint {
+  border-radius: 14px;
+  border-color: var(--hud-line);
+}
+
+/* Topbar + info panel get a glowing accent top edge. The info panel must keep
+   its own `position: absolute` (top-right anchor) — overriding it to relative
+   dropped it into normal flow below the full-height canvas, off-screen. Its
+   absolute position already anchors the ::before edge, so no override needed. */
+.experience-topbar {
+  position: relative;
+}
+
+.experience-topbar::before,
+.info-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, var(--hud-accent), transparent 70%);
+  box-shadow: 0 0 0.6rem var(--hud-glow);
+}
+
+/* Keyboard-hint bar → mono command legend. */
+.hud-bar div {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 18%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hud-bar span { color: var(--hud-accent); }
+
+/* Concept strip inside the info panel. */
+.concept-strip span { font-family: var(--font-mono); color: var(--hud-accent); }
+
+/* Game mode controls → rounded command keys. */
+.game-toggle,
+.game-reset {
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.game-toggle:hover,
+.game-reset:not(:disabled):hover {
+  box-shadow:
+    0 22px 90px rgba(0, 0, 0, 0.28),
+    0 0 1rem color-mix(in srgb, var(--hud-accent) 40%, transparent);
+}
+
+/* Score + hint readouts. */
+.game-score-pill { border-color: var(--hud-line); }
+.game-score-pill span,
+.game-score-pill strong { font-family: var(--font-mono); }
+.game-score-pill strong { color: var(--hud-accent); text-shadow: 0 0 0.6rem var(--hud-glow); }
+
+.game-hint {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hud-dim);
 }

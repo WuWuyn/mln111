@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Noto+Serif:wght@500;600;700;800;900&display=swap&subset=vietnamese');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Noto+Serif:wght@500;600;700;800;900&display=swap&subset=vietnamese');
 
 :root {
   --font-sans: 'Be Vietnam Pro', 'Noto Sans', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Noto Serif', 'Be Vietnam Pro', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, monospace;
   font-family: var(--font-sans);
   color: #f6f7ff;
   background: #03040a;

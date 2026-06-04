@@ -1,0 +1,423 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   hud.css — shared sci-fi HUD chrome for the 5 visual-first experiment stations
+   (matter / consciousness / relation / contradiction / praxis).
+
+   Wraps each widget in <.hud-shell>: a station topbar (mono id + live feed + REC),
+   corner brackets, scanlines, and a faint instrument grid. Then it retunes the
+   widgets' own labels / readouts / sliders into an instrument-panel language —
+   monospace data type, segmented sliders, glowing console readouts — WITHOUT
+   touching each scene's bespoke physics layout.
+
+   Imported from interactives/index.jsx (after the widget modules) so it loads
+   after their own stylesheets; rules are scoped under .hud-shell so the extra
+   class reliably wins over the generic .widget rules in SpaceExperience.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hud-shell {
+  /* --hud-accent overridden per station below; --hud-line / --hud-glow / --hud-ink
+     / --hud-dim are inherited from :root (hud-kit.css) and re-resolve against this
+     scope's --hud-accent at use site. */
+  --hud-accent: #7edcff;
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(0.3rem, 0.8svh, 0.55rem);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  font-feature-settings: 'tnum' 1, 'ss01' 1;
+}
+
+/* Per-station accent — keeps each lab recognisable while sharing one language. */
+.hud-shell--matter { --hud-accent: #7edcff; }
+.hud-shell--consciousness { --hud-accent: #b69cff; }
+.hud-shell--relation { --hud-accent: #6ef0c8; }
+.hud-shell--contradiction { --hud-accent: #ffb469; }
+.hud-shell--praxis { --hud-accent: #79f0a6; }
+
+/* The widget itself fills the second row (replaces the old `.detail-interactive
+   > .widget` direct-child sizing now that .hud-shell sits in between). */
+.detail-interactive > .hud-shell {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.hud-shell > .widget {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Station topbar ──────────────────────────────────────────────────────── */
+.hud-topbar {
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 1.65rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--hud-line);
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--hud-accent) 10%, transparent), transparent 60%),
+    rgba(4, 10, 20, 0.66);
+  color: var(--hud-accent);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.hud-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--hud-accent);
+}
+
+.hud-caret {
+  font-style: normal;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.hud-slash {
+  font-style: normal;
+  opacity: 0.5;
+}
+
+.hud-feed {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--hud-dim);
+  text-overflow: ellipsis;
+}
+
+.hud-feed::before {
+  content: '[ ';
+  opacity: 0.55;
+}
+
+.hud-feed::after {
+  content: ' ]';
+  opacity: 0.55;
+}
+
+.hud-rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.36rem;
+  color: #ff8d7a;
+}
+
+.hud-rec-dot {
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 50%;
+  background: #ff5a45;
+  box-shadow: 0 0 0.5rem #ff5a45;
+  animation: hud-blink 1.4s steps(1, end) infinite;
+}
+
+/* ── Corner brackets ─────────────────────────────────────────────────────── */
+/* Eight no-repeat gradients paint four L-shaped corners with one element. */
+.hud-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 18px;
+  background:
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px top 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px top 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px bottom 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px bottom 11px / 18px 2px,
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px top 11px / 2px 18px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px top 11px / 2px 18px,
+    linear-gradient(var(--hud-line), var(--hud-line)) left 11px bottom 11px / 2px 18px,
+    linear-gradient(var(--hud-line), var(--hud-line)) right 11px bottom 11px / 2px 18px;
+  background-repeat: no-repeat;
+}
+
+/* ── Scanlines + instrument grid + slow sweep ────────────────────────────── */
+.hud-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 16px;
+  opacity: 0.55;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.1) 2px 3px),
+    linear-gradient(90deg, color-mix(in srgb, var(--hud-accent) 4%, transparent), transparent 40%);
+}
+
+.hud-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: -50% 0 auto 0;
+  height: 35%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--hud-accent) 14%, transparent),
+    transparent
+  );
+  animation: hud-sweep 7s linear infinite;
+}
+
+/* ═══ Instrument typography ══════════════════════════════════════════════════
+   Short data labels become monospace, uppercase, tracked — the hallmark of an
+   instrument panel. Long Vietnamese action buttons stay in the body font. */
+.hud-shell .widget-control-label,
+.hud-shell .cognition-control > span,
+.hud-shell .time-control > span,
+.hud-shell .core-slider > span,
+.hud-shell .mirror-panel-label,
+.hud-shell .panel-kicker,
+.hud-shell .matter-insight > span,
+.hud-shell .mirror-status > span,
+.hud-shell .system-readout > strong,
+.hud-shell .core-readout > span,
+.hud-shell .action-result .panel-kicker,
+.hud-shell .lab-console > span {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+/* Numeric value badges in slider labels — mono, glowing, right-aligned. */
+.hud-shell .widget-control-label strong,
+.hud-shell .time-control > span strong,
+.hud-shell .core-slider > span strong {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--hud-accent);
+  text-shadow: 0 0 0.6rem var(--hud-glow);
+}
+
+/* Panel / world labels read as tagged sensor windows: `▌ LABEL`. */
+.hud-shell .mirror-panel-label,
+.hud-shell .panel-kicker {
+  position: relative;
+  padding-left: 0.7rem;
+  color: var(--hud-accent);
+}
+
+.hud-shell .mirror-panel-label::before,
+.hud-shell .panel-kicker::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.22rem;
+  height: 0.86em;
+  transform: translateY(-50%);
+  background: var(--hud-accent);
+  box-shadow: 0 0 0.4rem var(--hud-glow);
+}
+
+/* ═══ Console readouts ═══════════════════════════════════════════════════════
+   The status panels each widget already renders become glassy HUD consoles with
+   a bracketed header and an accent rail. Only `look` is set, never position. */
+.hud-shell .matter-insight,
+.hud-shell .mirror-status,
+.hud-shell .system-readout,
+.hud-shell .core-readout,
+.hud-shell .lab-console,
+.hud-shell .action-result {
+  border: 1px solid var(--hud-line);
+  border-left: 2px solid var(--hud-accent);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--hud-accent) 7%, transparent), transparent 70%),
+    rgba(4, 10, 20, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 0 1.4rem color-mix(in srgb, var(--hud-accent) 14%, transparent);
+  backdrop-filter: blur(7px);
+}
+
+/* Readout titles in serif/sans keep their weight but gain an accent. */
+.hud-shell .matter-insight strong,
+.hud-shell .mirror-status strong,
+.hud-shell .core-readout span,
+.hud-shell .action-result strong {
+  color: #fff;
+}
+
+.hud-shell .matter-insight p,
+.hud-shell .mirror-status p,
+.hud-shell .system-readout p,
+.hud-shell .core-readout p,
+.hud-shell .action-result p {
+  color: var(--hud-dim);
+}
+
+/* ═══ Segmented HUD sliders ═══════════════════════════════════════════════════
+   .hud-shell .widget input[type='range'] (0,3,0) beats the generic
+   .widget input[type='range'] (0,2,0) in SpaceExperience.css. */
+.hud-shell .widget input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.4rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hud-shell .widget input[type='range']::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border: 1px solid var(--hud-line);
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 7px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hud-accent) 55%, transparent),
+      color-mix(in srgb, var(--hud-accent) 16%, transparent)
+    );
+  box-shadow: inset 0 0 0.6rem color-mix(in srgb, var(--hud-accent) 28%, transparent);
+}
+
+.hud-shell .widget input[type='range']::-moz-range-track {
+  height: 0.5rem;
+  border: 1px solid var(--hud-line);
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 7px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--hud-accent) 55%, transparent),
+      color-mix(in srgb, var(--hud-accent) 16%, transparent)
+    );
+}
+
+.hud-shell .widget input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.5rem;
+  height: 1.18rem;
+  margin-top: -0.36rem;
+  border: 1px solid #ffffff;
+  border-radius: 999px;
+  background: var(--hud-accent);
+  box-shadow:
+    0 0 0.45rem var(--hud-accent),
+    0 0 1.3rem var(--hud-glow);
+}
+
+.hud-shell .widget input[type='range']::-moz-range-thumb {
+  width: 0.5rem;
+  height: 1.18rem;
+  border: 1px solid #ffffff;
+  border-radius: 999px;
+  background: var(--hud-accent);
+  box-shadow:
+    0 0 0.45rem var(--hud-accent),
+    0 0 1.3rem var(--hud-glow);
+}
+
+.hud-shell .widget input[type='range']:focus-visible {
+  outline: none;
+}
+
+.hud-shell .widget input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.55),
+    0 0 0.7rem var(--hud-accent);
+}
+
+.hud-shell .widget input[type='range']:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ═══ Angular controls ═══════════════════════════════════════════════════════
+   Square the small toggles/buttons and give them a focus/hover instrument glow,
+   without overriding their semantic colours. */
+.hud-shell .observer-toggle,
+.hud-shell .mode-switch,
+.hud-shell .mode-switch button,
+.hud-shell .core-zoom,
+.hud-shell .core-reset,
+.hud-shell .quanta-tray button,
+.hud-shell .adjust-plan,
+.hud-shell .build-station,
+.hud-shell .probe-launch-pad,
+.hud-shell .data-chip,
+.hud-shell .mirror-tool {
+  border-radius: 999px;
+}
+
+.hud-shell .observer-toggle:hover,
+.hud-shell .mode-switch button:hover,
+.hud-shell .core-zoom:hover,
+.hud-shell .core-reset:hover,
+.hud-shell .quanta-tray button:not(:disabled):hover,
+.hud-shell .adjust-plan:hover,
+.hud-shell .build-station:not(:disabled):hover,
+.hud-shell .probe-launch-pad:hover,
+.hud-shell .data-chip:hover,
+.hud-shell .mirror-tool:hover {
+  box-shadow: 0 0 0.9rem color-mix(in srgb, var(--hud-accent) 45%, transparent);
+}
+
+/* The small "+ quantum" tray reads as mono command chips. */
+.hud-shell .quanta-tray button {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Mode switch labels (short) become mono tab labels. */
+.hud-shell .mode-switch button {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Praxis flow chips: mono step ticker. */
+.hud-shell .praxis-flow span {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hud-rec-dot { animation: none; }
+  .hud-scanlines::after { animation: none; display: none; }
+}
+
+/* ── Short viewports: trim the topbar so it never steals stage height ─────── */
+@media (max-height: 720px) {
+  .hud-topbar {
+    min-height: 1.4rem;
+    padding: 0.12rem 0.55rem;
+    font-size: 0.6rem;
+  }
+
+  .hud-feed { display: none; }
+}
+
+/* ── Narrow: drop the middle feed label ──────────────────────────────────── */
+@media (max-width: 720px) {
+  .hud-feed { display: none; }
+
+  .hud-topbar {
+    gap: 0.5rem;
+    font-size: 0.6rem;
+  }
+}

@@ -110,15 +110,6 @@ export default function MatterConsciousnessSlider() {
           <span>Lớp hiện thực</span>
           <strong>Vận động vẫn diễn ra</strong>
         </button>
-        <button
-          type="button"
-          className="knowledge-pulse knowledge-pulse--observer"
-          onClick={() => setActiveInsight('observer')}
-          aria-label="Mở kiến thức về lớp quan sát"
-        >
-          <span>Lớp quan sát</span>
-          <strong>Dữ liệu để đối chiếu</strong>
-        </button>
 
         <div className="matter-insight" role="status">
           <span>{insight.stage}</span>

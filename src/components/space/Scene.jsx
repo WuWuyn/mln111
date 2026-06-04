@@ -11,8 +11,8 @@ import GalaxyParticles from './GalaxyParticles'
 import PlanetMesh from './PlanetMesh'
 import GameShooter from './game/GameShooter'
 
-const projectedPosition = new THREE.Vector3()
 const planetPosition = new THREE.Vector3()
+const latchPosition = new THREE.Vector3()
 const cameraTarget = new THREE.Vector3(0, 0, 0)
 const desiredCameraPosition = new THREE.Vector3()
 
@@ -32,52 +32,107 @@ function isPointVisible(point) {
   return point.z > -1 && point.z < 1 && Math.abs(point.x) <= 1.15 && Math.abs(point.y) <= 1.15
 }
 
-function HandPointerSelector({ store, selectedPlanet, onSelect }) {
+// How close (in NDC, -1..1 across the screen) the cursor must get to a planet to
+// grab it. Once grabbed the lock is sticky until a fist, so no release radius.
+const SELECT_RADIUS = 0.22
+
+// Hand selection + sticky lock + gesture actions.
+//   point ☝️   → lock onto the nearest planet under the cursor. Once locked the
+//               cursor stays glued to it — even as the planet orbits — so there's
+//               nothing to chase; it holds until you make a fist.
+//   confirm ✌️ → opens the locked planet's experiment (rising-edge, fires once).
+//   fist ✊    → releases the lock so you can point at a different planet.
+//   While locked, the planet's live screen position is published to `latchStore`
+//   so the reticle rides along with it.
+function HandPointerSelector({ store, latchStore, selectedPlanet, onSelect, onOpenExperience }) {
   const { camera } = useThree()
   const lastSelectedId = useRef(selectedPlanet.id)
+  const lockedPlanetRef = useRef(null)
+  const prevGestureRef = useRef('idle')
+  const confirmFiredRef = useRef(false)
+  const latchActiveRef = useRef(false)
+
+  const clearLatch = () => {
+    if (latchActiveRef.current) {
+      latchActiveRef.current = false
+      latchStore.set({ active: false })
+    }
+  }
 
   useFrame((state) => {
     const control = store.get()
 
-    // Only the pointing gesture selects; an open (steering) or closed hand
-    // must not snap the selection around while the camera moves.
-    if (!control.active || control.mode !== 'point') {
+    if (!control.active) {
+      lockedPlanetRef.current = null
+      prevGestureRef.current = 'idle'
+      confirmFiredRef.current = false
       lastSelectedId.current = selectedPlanet.id
+      clearLatch()
       return
     }
 
+    const gesture = control.mode
     const pointerX = control.x * 2 - 1
     const pointerY = -(control.y * 2 - 1)
-    let closestPlanet = null
-    let closestDistance = 0.22
 
-    projectedPosition.set(0, 0, 0).project(camera)
+    if (gesture === 'idle') {
+      // Fist lets go of the held planet.
+      lockedPlanetRef.current = null
+      lastSelectedId.current = selectedPlanet.id
+    } else if (gesture === 'point' && !lockedPlanetRef.current) {
+      // Acquire the nearest planet under the cursor; once locked it stays put
+      // (no re-evaluation) until a fist releases it.
+      let closestPlanet = null
+      let closestDistance = SELECT_RADIUS
 
-    if (isPointVisible(projectedPosition)) {
-      const centralDistance = Math.hypot(projectedPosition.x - pointerX, projectedPosition.y - pointerY)
+      planets.forEach((planet) => {
+        setPlanetPosition(planetPosition, planet, state.clock.elapsedTime).project(camera)
 
-      if (centralDistance < closestDistance) {
-        closestPlanet = planets[0]
-        closestDistance = centralDistance
+        if (!isPointVisible(planetPosition)) return
+
+        const distance = Math.hypot(planetPosition.x - pointerX, planetPosition.y - pointerY)
+
+        if (distance < closestDistance) {
+          closestPlanet = planet
+          closestDistance = distance
+        }
+      })
+
+      if (closestPlanet) {
+        lockedPlanetRef.current = closestPlanet
+        if (closestPlanet.id !== lastSelectedId.current) {
+          lastSelectedId.current = closestPlanet.id
+          onSelect(closestPlanet)
+        }
       }
+    } else if (gesture !== 'point') {
+      // navigate / confirm keep the lock; just keep the selection ref in sync.
+      lastSelectedId.current = selectedPlanet.id
     }
 
-    planets.forEach((planet) => {
-      setPlanetPosition(planetPosition, planet, state.clock.elapsedTime).project(camera)
+    const locked = lockedPlanetRef.current
 
-      if (!isPointVisible(planetPosition)) return
-
-      const distance = Math.hypot(planetPosition.x - pointerX, planetPosition.y - pointerY)
-
-      if (distance < closestDistance) {
-        closestPlanet = planet
-        closestDistance = distance
+    if (gesture === 'confirm') {
+      if (locked && !confirmFiredRef.current && prevGestureRef.current !== 'confirm') {
+        confirmFiredRef.current = true
+        onOpenExperience?.(locked)
       }
-    })
+    } else {
+      confirmFiredRef.current = false
+    }
+    prevGestureRef.current = gesture
 
-    if (closestPlanet && closestPlanet.id !== lastSelectedId.current) {
-      lastSelectedId.current = closestPlanet.id
-      onSelect(closestPlanet)
+    if (locked) {
+      setPlanetPosition(latchPosition, locked, state.clock.elapsedTime).project(camera)
+      latchActiveRef.current = true
+      latchStore.set({
+        active: true,
+        x: (latchPosition.x + 1) / 2,
+        y: (1 - latchPosition.y) / 2,
+        armed: gesture === 'confirm',
+      })
+    } else {
+      clearLatch()
     }
   })
 
@@ -92,9 +147,9 @@ function HandCameraRig({ store, controlsRef }) {
 
     if (!control.active || !controlsRef.current) return
 
-    // rotationX/rotationY come only from the open-palm gesture, zoom only from
-    // the pinch gesture — so horizontal hand motion orbits, vertical motion
-    // tilts, and pinch-scrub dollies, with no cross-talk between them.
+    // All three come from the open-palm gesture: horizontal hand motion orbits,
+    // vertical motion tilts, and twisting the wrist (control.zoom) dollies — like
+    // turning a volume knob — with no cross-talk between them.
     const azimuth = control.rotationX * 1.7
     const radius = clamp(31 - control.zoom * 21, 9, 32)
     const height = clamp(13 - control.rotationY * 6, 8.5, 18)
@@ -113,19 +168,34 @@ function HandCameraRig({ store, controlsRef }) {
   return null
 }
 
+// Lái tiến trình "hình thành" (0->1) sau Big Bang. Giữ trong một ref và cập
+// nhật mỗi frame để các hành tinh đọc imperatively (không re-render mỗi frame).
+function AppearDriver({ appearRef, formState }) {
+  useFrame((_, delta) => {
+    const cur = appearRef.current
+    if (formState === 'shown') cur.p = 1
+    else if (formState === 'forming') cur.p = Math.min(1, cur.p + delta / 1.6)
+    else cur.p = 0
+  })
+  return null
+}
+
 export default function Scene({
   selectedPlanet,
   setSelectedPlanet,
   onOpenExperience,
   handControlStore,
+  latchStore,
   overlayOpen,
   gameMode = false,
   destroyed = [],
   onDestroyPlanet,
   onDestroyAsteroid,
   resetKey = 0,
+  formState = 'shown',
 }) {
   const controlsRef = useRef()
+  const appearRef = useRef({ p: formState === 'shown' ? 1 : 0 })
   // Shared between the asteroid belt (which publishes live positions + hides
   // shot rocks) and the shooter (which tests collisions + marks rocks dead).
   const asteroidStore = useRef({ live: [], destroyed: new Set() })
@@ -146,14 +216,16 @@ export default function Scene({
       <GalaxyParticles />
       <CosmicDust />
       <AsteroidField store={asteroidStore} resetKey={resetKey} active={gameMode} />
+      <AppearDriver appearRef={appearRef} formState={formState} />
       {!destroyed.includes('central') && (
         <CentralPlanet
           onClick={() => setSelectedPlanet(planets[0])}
           showLabel={!overlayOpen && !gameMode}
           interactive={interactive}
+          appearRef={appearRef}
         />
       )}
-      {planets.map((planet) =>
+      {planets.map((planet, index) =>
         destroyed.includes(planet.id) ? null : (
           <PlanetMesh
             key={planet.id}
@@ -163,6 +235,8 @@ export default function Scene({
             onOpenExperience={onOpenExperience}
             showLabel={!overlayOpen && !gameMode}
             interactive={interactive}
+            appearRef={appearRef}
+            appearIndex={index}
           />
         ),
       )}
@@ -185,7 +259,13 @@ export default function Scene({
       />
       <AdaptiveDpr pixelated />
       <HandCameraRig store={handControlStore} controlsRef={controlsRef} />
-      <HandPointerSelector store={handControlStore} selectedPlanet={selectedPlanet} onSelect={setSelectedPlanet} />
+      <HandPointerSelector
+        store={handControlStore}
+        latchStore={latchStore}
+        selectedPlanet={selectedPlanet}
+        onSelect={setSelectedPlanet}
+        onOpenExperience={onOpenExperience}
+      />
       <EffectComposer>
         <Bloom
           mipmapBlur

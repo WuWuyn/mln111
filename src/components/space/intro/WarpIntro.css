@@ -1,0 +1,123 @@
+.warp-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: #02040b;
+  transition: opacity 0.5s ease;
+}
+
+/* Lúc kết thúc, lớp cinematic đã trong suốt hoàn toàn (canvas tự clear) — chỉ
+   cần đảm bảo không chặn tương tác và mờ nốt phần còn lại nếu có. */
+.warp-intro.is-ending {
+  opacity: 0;
+  background: transparent;
+}
+
+.warp-intro__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.warp-intro__caption {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0 1.2rem;
+  text-align: center;
+  color: #cfe0ff;
+  font-size: clamp(0.95rem, 2.4vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(120, 170, 255, 0.55);
+  white-space: nowrap;
+  opacity: 0.9;
+  transition: color 0.4s ease, letter-spacing 0.5s ease, text-shadow 0.4s ease,
+    transform 0.5s ease, opacity 0.4s ease;
+  animation: warp-caption-in 0.6s ease both;
+}
+
+.warp-intro__caption.is-warp {
+  color: #aee0ff;
+  letter-spacing: 0.7em;
+  text-shadow: 0 0 26px rgba(120, 200, 255, 0.85);
+}
+
+.warp-intro__caption.is-collapse {
+  color: #ffd9a8;
+  letter-spacing: 0.3em;
+  text-shadow: 0 0 28px rgba(255, 190, 120, 0.9);
+}
+
+.warp-intro__caption.is-bang {
+  color: #fff6e8;
+  font-weight: 800;
+  font-size: clamp(1.6rem, 6vw, 4rem);
+  letter-spacing: 0.5em;
+  text-shadow: 0 0 40px rgba(255, 220, 170, 1), 0 0 80px rgba(255, 150, 90, 0.8);
+  bottom: 50%;
+  transform: translate(-50%, 50%);
+  animation: warp-bang 0.5s ease both;
+}
+
+.warp-intro__caption.is-form {
+  color: #d8e7ff;
+  letter-spacing: 0.46em;
+  text-shadow: 0 0 24px rgba(150, 200, 255, 0.7);
+}
+
+.warp-intro__skip {
+  position: absolute;
+  top: clamp(1rem, 3vw, 2rem);
+  right: clamp(1rem, 3vw, 2.2rem);
+  pointer-events: auto;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid rgba(180, 205, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(8, 14, 30, 0.45);
+  color: rgba(214, 228, 255, 0.85);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.warp-intro__skip:hover {
+  background: rgba(40, 60, 110, 0.6);
+  border-color: rgba(180, 205, 255, 0.7);
+  color: #fff;
+}
+
+@keyframes warp-caption-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 0.9;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes warp-bang {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, 50%) scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 50%) scale(1);
+  }
+}
