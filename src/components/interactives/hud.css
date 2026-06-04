@@ -270,9 +270,10 @@
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 1.4rem;
+  height: 1.7rem; /* vùng bấm/kéo cao hơn để dễ dùng chuột */
   background: transparent;
   cursor: pointer;
+  touch-action: none; /* kéo mượt, không cuộn trang khi rê trên thanh */
 }
 
 .hud-shell .widget input[type='range']::-webkit-slider-runnable-track {
@@ -305,10 +306,10 @@
 .hud-shell .widget input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 0.5rem;
-  height: 1.18rem;
-  margin-top: -0.36rem;
-  border: 1px solid #ffffff;
+  width: 1.2rem; /* núm tròn to, dễ "tóm" để kéo bằng chuột */
+  height: 1.2rem;
+  margin-top: -0.36rem; /* căn núm giữa thanh ray 0.5rem */
+  border: 2px solid #ffffff;
   border-radius: 999px;
   background: var(--hud-accent);
   box-shadow:
@@ -317,9 +318,9 @@
 }
 
 .hud-shell .widget input[type='range']::-moz-range-thumb {
-  width: 0.5rem;
-  height: 1.18rem;
-  border: 1px solid #ffffff;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #ffffff;
   border-radius: 999px;
   background: var(--hud-accent);
   box-shadow:
@@ -350,7 +351,6 @@
 .hud-shell .mode-switch button,
 .hud-shell .core-zoom,
 .hud-shell .core-reset,
-.hud-shell .quanta-tray button,
 .hud-shell .adjust-plan,
 .hud-shell .build-station,
 .hud-shell .probe-launch-pad,
@@ -363,21 +363,12 @@
 .hud-shell .mode-switch button:hover,
 .hud-shell .core-zoom:hover,
 .hud-shell .core-reset:hover,
-.hud-shell .quanta-tray button:not(:disabled):hover,
 .hud-shell .adjust-plan:hover,
 .hud-shell .build-station:not(:disabled):hover,
 .hud-shell .probe-launch-pad:hover,
 .hud-shell .data-chip:hover,
 .hud-shell .mirror-tool:hover {
   box-shadow: 0 0 0.9rem color-mix(in srgb, var(--hud-accent) 45%, transparent);
-}
-
-/* The small "+ quantum" tray reads as mono command chips. */
-.hud-shell .quanta-tray button {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
 }
 
 /* Mode switch labels (short) become mono tab labels. */

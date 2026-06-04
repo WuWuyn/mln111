@@ -74,7 +74,7 @@ export default function MatterConsciousnessSlider({ handStore }) {
   }
 
   const handTargets = [
-    { key: 'cognition', kind: 'slider', label: 'Nhận thức', get: () => cognition, set: updateCognition, min: 0, max: 100, step: 1 },
+    { key: 'cognition', kind: 'slider', label: 'Nhận thức', get: () => cognition, set: updateCognition, min: 0, max: 100, step: 1, mapping: 'absolute' },
     { key: 'observer', kind: 'button', label: observerOn ? 'Tắt soi' : 'Bật soi', onPress: toggleObserver },
   ]
   const hand = useHandTargets(handStore, handTargets)

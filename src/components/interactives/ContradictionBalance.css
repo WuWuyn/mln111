@@ -181,8 +181,7 @@
 }
 
 .core-zoom,
-.core-reset,
-.quanta-tray button {
+.core-reset {
   min-height: 2.6rem;
   border: 1px solid rgba(244, 200, 79, 0.36);
   border-radius: 999px;
@@ -203,9 +202,87 @@
 }
 
 .core-zoom:active,
-.core-reset:active,
-.quanta-tray button:active {
+.core-reset:active {
   transform: translateY(1px) scale(0.99);
+}
+
+/* ── Bề mặt gõ + vòng sáng kiểu osu! ──────────────────────────────────────── */
+.tap-field {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tap-field:disabled {
+  cursor: default;
+}
+
+/* Khi mở gõ được, đáy lõi sao hơi sáng lên để mời gõ. */
+.dialectic-core.is-balanced .tap-field:not(:disabled) {
+  background: radial-gradient(circle at 50% 48%, rgba(244, 200, 79, 0.05), transparent 55%);
+}
+
+.tap-ripple {
+  position: absolute;
+  z-index: 3;
+  width: 4.6rem;
+  height: 4.6rem;
+  margin: -2.3rem 0 0 -2.3rem;
+  border-radius: 999px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 248, 189, 0.5), rgba(244, 200, 79, 0.16) 46%, transparent 68%);
+  animation: tapBurst var(--ripple, 600ms) cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+/* Vòng nét mảnh nở ra nhanh hơn — cho cảm giác "trúng nhịp". */
+.tap-ripple::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 248, 189, 0.92);
+  box-shadow: 0 0 1.1rem rgba(244, 200, 79, 0.75);
+  animation: tapRing var(--ripple, 600ms) cubic-bezier(0.15, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes tapBurst {
+  0% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+
+  16% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.95);
+    opacity: 0;
+  }
+}
+
+@keyframes tapRing {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.95;
+  }
+
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-ripple,
+  .tap-ripple::before {
+    animation-duration: 1ms;
+  }
 }
 
 .core-readout {
@@ -296,49 +373,70 @@
   accent-color: var(--ember);
 }
 
-.quantity-milestones {
+.qty-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(235, 240, 255, 0.78);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.qty-head strong {
+  color: #fff8cf;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thanh tiến trình CHỈ ĐỂ XEM (không kéo được) — lượng dồn lên theo mỗi cú gõ. */
+.qty-meter {
   position: relative;
-  height: 0.55rem;
-  margin: -0.2rem 0 0.08rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  height: 0.62rem;
+  margin-top: 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: visible;
 }
 
-.quantity-milestones span,
-.quantity-milestones strong {
+.qty-meter-fill {
   position: absolute;
-  top: 0;
-  transform: translateX(-50%);
+  inset: 0;
+  width: var(--fill, 0%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(118, 215, 247, 0.7), var(--gold));
+  box-shadow: 0 0 0.7rem rgba(244, 200, 79, 0.55);
+  transition: width 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.quantity-milestones span {
-  width: 0.42rem;
+.qty-node {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 0.6rem;
   aspect-ratio: 1;
   border-radius: 999px;
-  background: rgba(244, 200, 79, 0.72);
+  transform: translate(-50%, -50%);
+  background: #f4c84f;
+  box-shadow: 0 0 0.6rem rgba(244, 200, 79, 0.9);
 }
 
-.quantity-milestones strong {
+.qty-node-label {
+  position: absolute;
+  top: -1.15rem;
+  right: 0;
   color: #f4c84f;
   font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 900;
   white-space: nowrap;
 }
 
-.quanta-tray {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.38rem;
+.qty-hint {
+  margin: 0;
+  color: rgba(231, 236, 255, 0.74);
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
-.quanta-tray button {
-  min-height: 2rem;
-  padding: 0 0.64rem;
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(249, 245, 226, 0.86);
-  font-size: 0.68rem;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.quanta-tray button:disabled,
 .core-slider input:disabled {
   cursor: not-allowed;
   opacity: 0.38;

@@ -18,6 +18,12 @@ const RATE_DEADZONE = 0.05 // vùng chết quanh tâm (X chuẩn hoá 0..1)
 const RATE_SPAN = 0.4 // lệch tối đa tính từ tâm để đạt tốc độ tối đa
 const RATE_FRACTION = 0.95 // tỉ lệ toàn dải / giây ở mức lệch tối đa
 
+// Chế độ bám-ngón (mapping:'absolute'): giá trị đi THEO độ dịch ngang của ngón
+// thay vì tích phân tốc độ. Không có độ trễ dồn → slider "đuổi" tay tức thì.
+// ABS_GAIN = bao nhiêu phần dải / một đơn vị dịch X: 1.3 nghĩa là quét tay ~0.77
+// bề ngang vùng điều khiển là đi hết thanh — vừa tầm, không mỏi.
+const ABS_GAIN = 1.3
+
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
 
 // Mục kế tiếp/trước còn bật được (bỏ qua mục disabled).
@@ -49,7 +55,7 @@ export function useHandTargets(handStore, targets) {
     if (!handStore) return undefined
 
     const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now())
-    const rt = { lastT: now(), anchorX: 0.5, valueFloat: 0, range: 1, stp: 1, prevMode: 'idle' }
+    const rt = { lastT: now(), anchorX: 0.5, anchorValue: 0, valueFloat: 0, range: 1, stp: 1, prevMode: 'idle' }
 
     const apply = (control) => {
       const active = Boolean(control?.active)
@@ -99,6 +105,7 @@ export function useHandTargets(handStore, targets) {
           }
           if (target?.kind === 'slider') {
             rt.valueFloat = target.get?.() ?? 0
+            rt.anchorValue = rt.valueFloat // neo giá trị để nhánh bám-ngón đi tương đối
             rt.range = (target.max ?? 100) - (target.min ?? 0) || 1
             rt.stp = target.step ?? 1
           }
@@ -110,16 +117,31 @@ export function useHandTargets(handStore, targets) {
           return
         }
 
+        const lo = target.min ?? 0
+        const hi = target.max ?? 100
+        const offset = x - rt.anchorX
+
+        // ── Bám ngón 1:1 (absolute) — trễ thấp, trực giác cho trạm 1 slider.
+        //    Giá trị = giá trị lúc bắt đầu trỏ + độ dịch ngang × khuếch đại.
+        //    Không tích phân theo thời gian nên không có độ trễ dồn.
+        if (target.mapping === 'absolute') {
+          rt.lastT = t
+          rt.valueFloat = clamp(rt.anchorValue + offset * ABS_GAIN * rt.range, lo, hi)
+          const v = clamp(Math.round(rt.valueFloat / rt.stp) * rt.stp, lo, hi)
+          target.set?.(v)
+          const dir = Math.abs(offset) <= RATE_DEADZONE ? 0 : Math.sign(offset)
+          setRateDir((d) => (d === dir ? d : dir))
+          return
+        }
+
+        // ── Rate control (mặc định) — lệch tâm = tốc độ, cho trạm nhiều mục.
         const dt = clamp((t - rt.lastT) / 1000, 0, 0.05)
         rt.lastT = t
-        const offset = x - rt.anchorX
         const mag = Math.max(0, Math.abs(offset) - RATE_DEADZONE)
         const dir = mag <= 0 ? 0 : Math.sign(offset)
         setRateDir((d) => (d === dir ? d : dir))
 
         if (mag > 0) {
-          const lo = target.min ?? 0
-          const hi = target.max ?? 100
           const speed = Math.sign(offset) * Math.pow(mag / RATE_SPAN, 1.4) * RATE_FRACTION * rt.range
           rt.valueFloat = clamp(rt.valueFloat + speed * dt, lo, hi)
           const v = clamp(Math.round(rt.valueFloat / rt.stp) * rt.stp, lo, hi)

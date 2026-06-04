@@ -168,10 +168,10 @@ export default function LandingPage({ onExplore, handControlStore }) {
       <div className="landing-hud-bar" aria-hidden="true">
         <span className="hud-tag">ATLAS // SYS-READY</span>
         <span className="landing-hud-coord">SECTOR 0427 · ORBIT NOMINAL</span>
-        <span className="landing-hud-live">
+        {/* <span className="landing-hud-live">
           <i className="landing-hud-dot" />
           LIVE
-        </span>
+        </span> */}
       </div>
 
       <div className="landing-explore-only">

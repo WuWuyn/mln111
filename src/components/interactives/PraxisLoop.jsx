@@ -126,6 +126,15 @@ export default function PraxisLoop({ handStore }) {
             {result === 'over' ? '↓ Giảm lực' : '↑ Tăng lực'}
           </div>
         )}
+
+        {/* Thanh điều khiển tay nổi đè MÉP TRÊN khung game — chỉ hiện khi đang
+            dùng tay (không đụng khung xương tay ở góc dưới-trái; chuột thì ẩn để
+            xem game trọn vẹn). */}
+        {handStore && hand.handActive && (
+          <div className="stage-hand-dock">
+            <HandControlBar targets={handTargets} {...hand} />
+          </div>
+        )}
       </div>
 
       <div className="thrust-deck">
@@ -184,8 +193,6 @@ export default function PraxisLoop({ handStore }) {
           )}
         </div>
       </div>
-
-      {handStore && <HandControlBar targets={handTargets} {...hand} />}
 
       <div className="praxis-flow" aria-label="Vòng nhận thức và thực tiễn">
         {FLOW.map((item, index) => (

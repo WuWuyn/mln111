@@ -59,8 +59,11 @@ export default function RelationNetwork({ handStore }) {
   const [mode, setMode] = useState('dialectic')
   const [dragging, setDragging] = useState(false)
   const [planet, setPlanet] = useState({ x: 69, y: 42 })
+  // `time` là giá trị LIÊN TỤC (0..PHASES.length-1) để thanh trượt mượt và
+  // `--phase` nội suy mượt các hiệu ứng. Mốc phase rời rạc lấy bằng làm tròn.
   const [time, setTime] = useState(2)
-  const phase = PHASES[time]
+  const phaseIndex = Math.round(time)
+  const phase = PHASES[phaseIndex]
 
   const handTargets = [
     { key: 'time', kind: 'slider', label: 'Thời gian', get: () => time, set: setTime, min: 0, max: PHASES.length - 1, step: 1 },
@@ -99,7 +102,7 @@ export default function RelationNetwork({ handStore }) {
 
   return (
     <div
-      className={`widget dialectic-system is-${mode} is-phase-${time} ${dragging ? 'is-dragging' : ''}`}
+      className={`widget dialectic-system is-${mode} is-phase-${phaseIndex} ${dragging ? 'is-dragging' : ''}`}
       style={{
         '--planet-x': `${planet.x}%`,
         '--planet-y': `${planet.y}%`,
@@ -163,7 +166,7 @@ export default function RelationNetwork({ handStore }) {
             type="range"
             min="0"
             max={PHASES.length - 1}
-            step="1"
+            step="0.01"
             value={time}
             onChange={(event) => setTime(Number(event.target.value))}
             aria-label="Dòng thời gian phát triển của hệ sao"

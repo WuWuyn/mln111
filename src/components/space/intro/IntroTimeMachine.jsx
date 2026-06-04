@@ -17,6 +17,10 @@ const CRUISE_END = 1500
 const WARP_END = 3600
 // Kích thước cỗ máy lúc vi hành (đơn vị world ở mặt phẳng z = 0).
 const TARGET_SIZE = 2.6
+// Nhào lộn kiểu máy bay: vi hành giữ thẳng đầu, chỉ cuộn trong lúc warp và cuộn
+// SỐ VÒNG CHẴN để kết thúc đúng tư thế thẳng (không bị lộn ngược).
+const ROLL_START = CRUISE_END
+const ROLL_TURNS = 2
 
 const smoothstep = (t) => t * t * (3 - 2 * t)
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
@@ -40,7 +44,7 @@ export default function IntroTimeMachine({ tRef }) {
     return { object: clone, fitScale: TARGET_SIZE / maxDim }
   }, [scene])
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     const g = groupRef.current
     if (!g) return
     const t = tRef.current
@@ -50,10 +54,10 @@ export default function IntroTimeMachine({ tRef }) {
     let visible = true
 
     if (t <= CRUISE_END) {
-      // Vi hành: bồng bềnh nhẹ.
-      y = -1.5 + Math.sin(t * 0.005) * 0.12
+      // Vi hành: bay thẳng, bồng bềnh rất nhẹ (không xoay vòng tại chỗ).
+      y = -1.5 + Math.sin(t * 0.005) * 0.1
     } else if (t < WARP_END) {
-      // Warp: vọt lên tâm + lùi xa (perspective tự thu nhỏ) như lao vào điểm kỳ dị.
+      // Warp: bay THẲNG lên tâm + lao xa dần (perspective thu nhỏ) như vào điểm kỳ dị.
       const e = smoothstep(clamp01((t - CRUISE_END) / (WARP_END - CRUISE_END)))
       y = -1.5 * (1 - e)
       z = -e * 30
@@ -66,12 +70,18 @@ export default function IntroTimeMachine({ tRef }) {
     g.position.set(0, y, z)
     g.scale.setScalar(fitScale)
 
-    // Đĩa tự xoay tròn cho sống động.
-    if (spinRef.current) spinRef.current.rotation.y += delta * 0.8
+    // Nhào lộn kiểu máy bay: cuộn quanh trục bay vài vòng — nhẹ lúc vi hành rồi
+    // cuộn nhanh dần khi vọt vào warp, sau đó dừng (không quay tròn vô tận).
+    if (spinRef.current) {
+      const rollT = smoothstep(clamp01((t - ROLL_START) / (WARP_END - ROLL_START)))
+      spinRef.current.rotation.z = rollT * Math.PI * 2 * ROLL_TURNS
+    }
   })
 
   return (
-    <group ref={groupRef} rotation={[0.5, 0, 0]}>
+    /* Lật ngược tàu ở tư thế gốc (xoay 180° quanh trục bay); barrel roll bên
+       trong cộng thêm lên trên nên vẫn kết thúc đúng tư thế (đã lật) này. */
+    <group ref={groupRef} rotation={[0.5, 0, Math.PI]}>
       <group ref={spinRef}>
         <primitive object={object} />
       </group>

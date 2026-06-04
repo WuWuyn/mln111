@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useHandTargets } from '../../hand/useHandTargets'
 import HandControlBar from './HandControlBar'
 import './ContradictionBalance.css'
 
-const QUANTA = [
-  { label: '+ Quan sát', value: 8 },
-  { label: '+ Kinh nghiệm', value: 10 },
-  { label: '+ Lần thử', value: 12 },
-  { label: '+ Điều chỉnh', value: 14 },
-  { label: '+ Thực tiễn', value: 16 },
-]
+// Lượng không còn kéo bằng thanh trượt nữa: người chơi GÕ (tap) liên tục vào lõi
+// sao để dồn lượng tới điểm nút rồi bùng nổ thành chất mới. Mỗi cú gõ thêm một
+// "nhịp" lượng và bắn một vòng sáng kiểu osu!. Bằng chuột là click; bằng tay là
+// chụm ngón cái–trỏ (pinch) — cú "bấm" 2 landmark rõ nhất, gõ nhanh dồn dập hay
+// chậm rãi đều bắt tốt — đi qua cầu nối con trỏ tay (HandWidgetCursor).
+const TAP_GAIN = 8 // mỗi cú gõ thêm bao nhiêu lượng
+const RIPPLE_MS = 600 // vòng sáng sống bao lâu trước khi gỡ khỏi DOM
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
@@ -20,6 +20,10 @@ export default function ContradictionBalance({ handStore }) {
   const [newForce, setNewForce] = useState(56)
   const [quantity, setQuantity] = useState(24)
   const [insideCore, setInsideCore] = useState(false)
+  const [ripples, setRipples] = useState([])
+
+  const stageRef = useRef(null)
+  const rippleIdRef = useRef(0)
 
   const gap = Math.abs(oldForce - newForce)
   const strength = Math.min(oldForce, newForce)
@@ -44,30 +48,40 @@ export default function ContradictionBalance({ handStore }) {
     return { id: 'struggle', label: 'Đấu tranh', note: 'Hai mặt đối lập tác động → vận động.' }
   }, [balanced, leapt, newDominates, oldDominates])
 
-  const updateQuantity = (value) => {
-    if (!balanced && !leapt) return
-    setQuantity(clamp(value, 0, 100))
+  const canTap = balanced && !leapt
+
+  // Một cú gõ: dồn thêm lượng + bắn vòng sáng tại đúng điểm gõ. Vị trí lấy từ
+  // toạ độ thật của sự kiện (chuột hoặc cú "bấm" tay do HandWidgetCursor phát ra)
+  // quy về phần trăm trong khung lõi sao.
+  const tapCore = (event) => {
+    const host = stageRef.current
+    if (!host || !canTap) return
+    const rect = host.getBoundingClientRect()
+    const x = clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100)
+    const y = clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100)
+
+    const id = (rippleIdRef.current += 1)
+    setRipples((list) => [...list, { id, x, y }])
+    window.setTimeout(() => {
+      setRipples((list) => list.filter((ripple) => ripple.id !== id))
+    }, RIPPLE_MS)
+
+    setQuantity((value) => clamp(value + TAP_GAIN, 0, 100))
   }
 
-  const addQuantum = (value) => {
-    updateQuantity(quantity + value)
-  }
+  const tapHint = leapt
+    ? 'Bước nhảy đã xảy ra — chất mới đã hình thành.'
+    : !balanced
+      ? 'Cân hai lực cho cân bằng trước để mở tích lũy lượng.'
+      : handStore
+        ? 'Chụm ngón cái + trỏ để “gõ” vào lõi sao, hoặc giữ con trỏ yên để tự gõ.'
+        : 'Bấm liên tục vào lõi sao để dồn lượng tới điểm nút.'
 
   // Điều khiển bằng tay: ✌ đổi mục · 🖐 mục trước · ☝ kéo nhẹ chỉnh · ✊ nghỉ.
+  // (Lượng nay gõ bằng pinch qua con trỏ tay, không còn là một thanh trượt.)
   const handTargets = [
     { key: 'old', kind: 'slider', label: 'Cái cũ', get: () => oldForce, set: setOldForce, min: 0, max: 100, step: 1 },
     { key: 'new', kind: 'slider', label: 'Cái mới', get: () => newForce, set: setNewForce, min: 0, max: 100, step: 1 },
-    {
-      key: 'quantity',
-      kind: 'slider',
-      label: 'Lượng',
-      get: () => quantity,
-      set: updateQuantity,
-      min: 0,
-      max: 100,
-      step: 1,
-      disabled: !balanced && !leapt,
-    },
   ]
   const hand = useHandTargets(handStore, handTargets)
 
@@ -81,7 +95,7 @@ export default function ContradictionBalance({ handStore }) {
         '--gap': gap / 100,
       }}
     >
-      <div className="core-stage" aria-label="Lõi sao biện chứng">
+      <div className="core-stage" aria-label="Lõi sao biện chứng" ref={stageRef}>
         <div className="core-space" aria-hidden="true" />
         <div className="new-quality-system" aria-hidden="true">
           <span className="new-star new-star--a" />
@@ -106,6 +120,26 @@ export default function ContradictionBalance({ handStore }) {
           </div>
           <div className="star-crust" />
         </div>
+
+        {/* Bề mặt gõ: phủ kín lõi sao, nằm dưới nút zoom & bảng trạng thái. Mỗi
+            pointerdown (chuột hoặc cú bấm tay) là một cú gõ. */}
+        <button
+          type="button"
+          className="tap-field"
+          data-hand-click
+          onPointerDown={tapCore}
+          disabled={!canTap}
+          aria-label="Gõ vào lõi sao để tích lũy lượng"
+        />
+
+        {ripples.map((ripple) => (
+          <span
+            key={ripple.id}
+            className="tap-ripple"
+            style={{ left: `${ripple.x}%`, top: `${ripple.y}%` }}
+            aria-hidden="true"
+          />
+        ))}
 
         <button type="button" className="core-zoom" onClick={() => setInsideCore((current) => !current)}>
           {insideCore ? 'Ra ngoài sao' : 'Nhìn vào lõi sao'}
@@ -152,47 +186,20 @@ export default function ContradictionBalance({ handStore }) {
           </label>
         </div>
 
-        <div className={`quantity-panel ${balanced || leapt ? 'is-open' : ''}`}>
-          <label className={`core-slider core-slider--quantity ${hand.activeKey === 'quantity' ? 'is-hand-locked' : ''}`}>
-            <span>
-              Lượng tích lũy
-              <strong>{quantity}%</strong>
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={quantity}
-              disabled={!balanced && !leapt}
-              onChange={(event) => updateQuantity(Number(event.target.value))}
-              aria-label="Lượng tích lũy"
-            />
-          </label>
-
-          <div className="quantity-milestones" aria-hidden="true">
-            <span style={{ left: '30%' }} />
-            <span style={{ left: '60%' }} />
-            <span style={{ left: '90%' }} />
-            <strong style={{ left: '100%' }}>Điểm nút</strong>
+        <div className={`quantity-panel ${canTap || leapt ? 'is-open' : ''}`}>
+          <div className="qty-head">
+            <span>Lượng tích lũy</span>
+            <strong>{quantity}%</strong>
           </div>
 
-          <div className="quanta-tray" aria-label="Thêm lượng tích lũy">
-            {QUANTA.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                disabled={!balanced && !leapt}
-                onClick={() => addQuantum(item.value)}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div className="qty-meter" style={{ '--fill': `${quantity}%` }} aria-hidden="true">
+            <span className="qty-meter-fill" />
+            <span className="qty-node" />
+            <em className="qty-node-label">Điểm nút</em>
           </div>
+
+          <p className="qty-hint">{tapHint}</p>
         </div>
-
-        <button type="button" className="core-reset" onClick={() => setQuantity(0)}>
-          Tái tạo sao
-        </button>
       </div>
     </div>
   )

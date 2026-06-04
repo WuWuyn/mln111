@@ -45,6 +45,12 @@ function isVisualFirst(widget) {
   return widget === 'matter' || widget === 'consciousness' || widget === 'relation' || widget === 'contradiction' || widget === 'praxis'
 }
 
+// Chỉ trạm điều khiển bằng CON TRỎ (kính lúp / đặt robot) mới cần reticle bám
+// ngón + bắn sự kiện chuột. Các trạm điều khiển bằng CỬ CHỈ (slider/nút qua
+// useHandTargets) không cần — và chấm sáng đó còn vô tình dwell-click lung tung,
+// nên tắt hẳn để hết "chấm theo ngón" và để slider bám ngón mượt hơn.
+const CURSOR_WIDGETS = new Set(['consciousness'])
+
 export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, handControlStore }) {
   const [guideOpen, setGuideOpen] = useState(false)
   const colors = planetPalette[planet.color] ?? planetPalette.cyan
@@ -160,30 +166,6 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
         </aside>
       </div>
 
-      <footer className="detail-foot">
-        <button
-          type="button"
-          className="detail-nav"
-          onClick={() => onNavigate?.(prev)}
-          aria-label={`Chuyển đến ${prev.name}`}
-          title={prev.name}
-        >
-          <span className="detail-nav-label">{prev.name}</span>
-        </button>
-        <span className="detail-foot-meta">
-          Trạm {index + 1}/{planets.length}
-        </span>
-        <button
-          type="button"
-          className="detail-nav detail-nav--next"
-          onClick={() => onNavigate?.(next)}
-          aria-label={`Chuyển đến ${next.name}`}
-          title={next.name}
-        >
-          <span className="detail-nav-label">{next.name}</span>
-        </button>
-      </footer>
-
       {guideOpen && (
         <GuidanceModal
           title={copy.title}
@@ -196,8 +178,9 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
         />
       )}
 
-      {/* Điều khiển bằng tay cho mô hình: ☝️ rê con trỏ, ✌️ để bấm. */}
-      {handControlStore && <HandWidgetCursor store={handControlStore} />}
+      {/* Con trỏ bằng tay CHỈ cho trạm dùng con trỏ (kính lúp/đặt robot). Trạm
+          điều khiển bằng cử chỉ không render reticle → hết chấm sáng bám ngón. */}
+      {handControlStore && CURSOR_WIDGETS.has(planet.widget) && <HandWidgetCursor store={handControlStore} />}
     </OverlayShell>
   )
 }

@@ -219,6 +219,94 @@ function Rocket({ refs }) {
   )
 }
 
+// Các vị trí alien nhô lên quanh rìa hành tinh (x, z) — sau/bên bệ đáp.
+const ALIEN_SPOTS = [
+  [-2.4, -1.6],
+  [2.5, -1.2],
+  [-1.3, -2.3],
+  [1.7, -2.0],
+  [3.0, 0.3],
+  [-3.0, 0.1],
+]
+
+// Alien xanh lấm ló: nhô lên ở một chỗ, ngó nghiêng tò mò, rồi thụt xuống và
+// hiện ở chỗ khác. Toàn bộ trong useFrame, theo chu kỳ thời gian.
+function Alien() {
+  const group = useRef()
+
+  useFrame((state) => {
+    const g = group.current
+    if (!g) return
+    const time = state.clock.elapsedTime
+    const period = 4.6
+    const idx = Math.floor(time / period) % ALIEN_SPOTS.length
+    const lt = time % period
+
+    // Bao hình "lấm ló": nhô lên → giữ → thụt xuống → ẩn.
+    let p
+    if (lt < 0.8) p = easeOut(lt / 0.8)
+    else if (lt < 3.0) p = 1
+    else if (lt < 3.8) p = 1 - easeIn((lt - 3.0) / 0.8)
+    else p = 0
+
+    const [x, z] = ALIEN_SPOTS[idx]
+    const bob = p > 0.5 ? Math.sin(time * 3) * 0.05 : 0
+    g.position.set(x, lerp(PAD_Y - 0.7, PAD_Y + 0.45, p) + bob, z)
+    g.scale.setScalar(0.0001 + p * 0.62)
+    g.visible = p > 0.01
+    g.rotation.y = Math.sin(time * 1.6) * 0.32 // ngó qua ngó lại
+    g.rotation.z = Math.sin(time * 2.3) * 0.05
+  })
+
+  return (
+    <group ref={group} visible={false}>
+      {/* Đầu */}
+      <mesh>
+        <sphereGeometry args={[0.4, 24, 24]} />
+        <meshStandardMaterial color="#86e3a6" roughness={0.5} metalness={0.1} />
+      </mesh>
+      {/* Mắt to + đốm sáng */}
+      {[-0.16, 0.16].map((dx, i) => (
+        <group key={i} position={[dx, 0.05, 0.34]}>
+          <mesh>
+            <sphereGeometry args={[0.13, 18, 18]} />
+            <meshStandardMaterial color="#0c1020" roughness={0.2} metalness={0.3} />
+          </mesh>
+          <mesh position={[0.04, 0.05, 0.1]}>
+            <sphereGeometry args={[0.04, 12, 12]} />
+            <meshBasicMaterial color="#ffffff" toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+      {/* Miệng nhỏ */}
+      <mesh position={[0, -0.2, 0.37]}>
+        <boxGeometry args={[0.13, 0.03, 0.02]} />
+        <meshBasicMaterial color="#0c1020" toneMapped={false} />
+      </mesh>
+      {/* Ăng-ten phát sáng */}
+      {[-0.14, 0.14].map((dx, i) => (
+        <group key={`a${i}`} position={[dx, 0.36, 0]} rotation={[0, 0, dx < 0 ? 0.32 : -0.32]}>
+          <mesh position={[0, 0.12, 0]}>
+            <cylinderGeometry args={[0.016, 0.016, 0.26, 8]} />
+            <meshStandardMaterial color="#5fae7e" />
+          </mesh>
+          <mesh position={[0, 0.27, 0]}>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color="#ffe07a" emissive="#ffb24d" emissiveIntensity={1.4} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+      {/* Hai bàn tay bám mép */}
+      {[-0.34, 0.34].map((dx, i) => (
+        <mesh key={`h${i}`} position={[dx, -0.34, 0.22]}>
+          <sphereGeometry args={[0.085, 12, 12]} />
+          <meshStandardMaterial color="#86e3a6" roughness={0.5} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 export default function RocketStage({ thrust, run, outcome, built }) {
   // Mỗi giá trị một ref (mutate ref trong effect là hợp lệ); vòng useFrame đọc
   // .current để khỏi re-render mỗi frame.
@@ -252,6 +340,7 @@ export default function RocketStage({ thrust, run, outcome, built }) {
       </mesh>
 
       <Rocket refs={refs} />
+      <Alien />
     </Canvas>
   )
 }
