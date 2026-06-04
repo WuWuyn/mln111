@@ -136,7 +136,7 @@ export default function MatterConsciousnessSlider({ handStore }) {
           aria-pressed={observerOn}
         >
           <span className="observer-toggle-light" />
-          {observerOn ? 'Xóa người quan sát' : 'Bật người quan sát'}
+          {observerOn ? 'Tắt soi' : 'Bật soi'}
         </button>
 
         <label className={`widget-control cognition-control ${hand.lockedKey === 'cognition' ? 'is-hand-locked' : ''}`}>

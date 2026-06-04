@@ -271,14 +271,21 @@
 
 .dialectic-controls {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.8fr) minmax(18rem, 1fr) minmax(18rem, 1.1fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: 0.65rem;
 }
 
+/* Thanh điều khiển tay + gợi ý chụm tay nằm trọn một hàng; hàng dưới là
+   "cách nhìn" + "thời gian" cạnh nhau — bớt chữ, gọn như trang Cosmic Mirror. */
+.dialectic-controls > .hand-ctl,
+.dialectic-controls > .grab-hint {
+  grid-column: 1 / -1;
+}
+
 .mode-switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.42rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
 .mode-switch button,
@@ -290,11 +297,13 @@
 }
 
 .mode-switch button {
-  min-height: 2.75rem;
+  min-height: var(--btn-h-sm);
+  padding: 0 var(--btn-pad-x-sm);
+  border-radius: var(--btn-radius);
   color: #eaf2ff;
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 900;
+  font-size: var(--btn-font-sm);
+  font-weight: var(--btn-weight);
   cursor: pointer;
   transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 }
@@ -332,6 +341,56 @@
 .time-control input {
   width: 100%;
   accent-color: var(--gold);
+}
+
+/* ── Thanh trượt DỄ KÉO ────────────────────────────────────────────────────
+   hud.css cho thumb mảnh 0.5rem rất khó bắt. Đè bằng `.widget.dialectic-system`
+   (cùng phần tử gốc → đủ đô thắng `.hud-shell .widget`, không phụ thuộc thứ tự)
+   để thumb to TRÒN, track dày, vùng chạm rộng. */
+.widget.dialectic-system .time-control input[type='range'] {
+  height: 2.2rem;
+  cursor: pointer;
+}
+
+.widget.dialectic-system .time-control input[type='range']::-webkit-slider-runnable-track {
+  height: 0.7rem;
+  border-radius: 999px;
+}
+
+.widget.dialectic-system .time-control input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-top: -0.46rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0.5rem var(--gold), 0 0 1.3rem rgba(255, 209, 122, 0.6);
+}
+
+.widget.dialectic-system .time-control input[type='range']::-moz-range-track {
+  height: 0.7rem;
+  border-radius: 999px;
+}
+
+.widget.dialectic-system .time-control input[type='range']::-moz-range-thumb {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0.5rem var(--gold), 0 0 1.3rem rgba(255, 209, 122, 0.6);
+}
+
+/* Cả sân khấu là vùng kéo quả cầu → khỏi phải nhắm trúng quả cầu nhỏ. */
+.dialectic-stage {
+  cursor: grab;
+  touch-action: none;
+}
+
+.is-dragging .dialectic-stage {
+  cursor: grabbing;
 }
 
 .dialectic-message {
@@ -626,4 +685,37 @@
   to {
     transform: rotate(16deg) scale(1.1);
   }
+}
+
+/* Đang CẦM quả cầu bằng tay (chụm tay): sáng lên + vòng "đang nắm" xoay. */
+.is-hand-grab .system-planet--driver {
+  transform: translate(-50%, -50%) scale(1.14);
+  box-shadow:
+    inset -0.8rem -0.75rem 1.4rem rgba(0, 0, 0, 0.5),
+    0 0 0 0.5rem rgba(126, 220, 255, 0.18),
+    0 0 2.4rem rgba(126, 220, 255, 0.6);
+}
+.is-hand-grab .system-planet--driver::after {
+  content: "";
+  position: absolute;
+  inset: -26%;
+  border-radius: 50%;
+  border: 2px dashed rgba(126, 220, 255, 0.75);
+  animation: grabRing 1.2s linear infinite;
+  pointer-events: none;
+}
+@keyframes grabRing {
+  to { transform: rotate(360deg); }
+}
+
+.grab-hint {
+  margin: 0;
+  color: rgba(206, 224, 255, 0.82);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+.grab-hint strong { color: #bfe7ff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .is-hand-grab .system-planet--driver::after { animation: none; }
 }

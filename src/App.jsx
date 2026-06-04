@@ -94,7 +94,11 @@ function App() {
       {!onContentPage && <HandPointer store={handControlStore} latchStore={latchStore} />}
       {/* Kept mounted across content sub-pages so the camera/permission persists
           when a planet's experiment opens — only its on-screen UI is hidden. */}
-      <HandTrackingPanel store={handControlStore} hideUI={onBadgePage} />
+      <HandTrackingPanel
+        store={handControlStore}
+        hideUI={onBadgePage}
+        context={onContentPage && !onBadgePage ? 'experiment' : 'map'}
+      />
       <BackgroundMusic hideUI={onContentPage} />
       <GenshinCursor />
     </main>

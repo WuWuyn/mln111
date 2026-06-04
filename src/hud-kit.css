@@ -36,6 +36,28 @@
   --lh-body: 1.6;
   --track-eyebrow: 0.16em;
   --track-display: -0.005em;
+
+  /* ── Button scale tokens ──────────────────────────────────────────────────
+     Một thang nút thống nhất cho các widget thực nghiệm + nút phụ trên trang
+     trải nghiệm. Mục tiêu: cùng chiều cao / padding / bo góc / cỡ chữ theo
+     nhóm, tránh tình trạng nút cao-đậm bất thường so với hàng xóm.
+       --btn-h-md : nút hành động chuẩn trong widget (Đốt động cơ, Xây trạm,
+         Bật/Tắt soi, Học/Tái…). ~2.4rem cho đều tay.
+       --btn-h-sm : nút phụ/nhỏ (Lượt khác, chip bước…).
+       --btn-icon : cạnh nút icon-only vuông.
+       --btn-pad-x / --btn-pad-x-sm : padding ngang theo nhóm.
+       --btn-radius : bo góc pill chung cho nút hành động.
+       --btn-font / --btn-font-sm : cỡ chữ nhãn nút.
+       --btn-weight : trọng số nhãn nút (mức được nạp, không 850/950). */
+  --btn-h-md: 2.4rem;
+  --btn-h-sm: 2.1rem;
+  --btn-icon: 2.4rem;
+  --btn-pad-x: 1.05rem;
+  --btn-pad-x-sm: 0.8rem;
+  --btn-radius: 999px;
+  --btn-font: 0.8rem;
+  --btn-font-sm: 0.72rem;
+  --btn-weight: 800;
 }
 
 /* ── Keyframes (shared) ──────────────────────────────────────────────────── */

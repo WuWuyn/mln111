@@ -9,10 +9,6 @@ const WASM_PATH = publicAsset('mediapipe/wasm')
 // window the reticle fades out gradually instead of snapping off.
 const GRACE_MS = 600
 
-// Remembers that the user has already seen the gesture guide, so it only pops
-// up automatically the very first time they switch hand control on.
-const GUIDE_SEEN_KEY = 'vutru-hand-guide-seen'
-
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
@@ -67,11 +63,14 @@ function makeOneEuro({ minCutoff = 1, beta = 0, dCutoff = 1 } = {}) {
 // camera axes want to feel heavy and stable. Tune these to taste.
 function makeFilters() {
   return {
-    x: makeOneEuro({ minCutoff: 2.0, beta: 0.25 }),
-    y: makeOneEuro({ minCutoff: 2.0, beta: 0.25 }),
+    x: makeOneEuro({ minCutoff: 1.5, beta: 0.5 }),
+    y: makeOneEuro({ minCutoff: 1.5, beta: 0.5 }),
     rotationX: makeOneEuro({ minCutoff: 0.9, beta: 0.04 }),
     rotationY: makeOneEuro({ minCutoff: 0.9, beta: 0.04 }),
     zoom: makeOneEuro({ minCutoff: 1.2, beta: 0.05 }),
+    // Lọc tỉ lệ pinch để dập gai 1-frame của MediaPipe ngay trước khi so ngưỡng —
+    // beta cao để vẫn bắt/nhả nhạy, minCutoff vừa phải để bóp những lần "nhả" hụt.
+    pinchRatio: makeOneEuro({ minCutoff: 2.5, beta: 0.6 }),
   }
 }
 
@@ -98,20 +97,45 @@ function edgeProximity(landmarks) {
   return clamp(1 - minMargin / 0.14, 0, 1)
 }
 
-// A finger is "extended" when its tip reaches farther from the wrist than its
-// middle (PIP) joint does. Cheap, orientation-independent, no extra model.
-function isFingerExtended(landmarks, tip, pip) {
-  const wrist = landmarks[0]
-  return distance(landmarks[tip], wrist) > distance(landmarks[pip], wrist) * 1.05
+// "Duỗi hay cụp" tính bằng GÓC GẬP tại khớp PIP, dùng vector 3D (kèm trục z của
+// MediaPipe) nên BẤT BIẾN với việc bàn tay nghiêng tới/xa camera — đây là điểm
+// yếu lớn nhất của cách cũ (so khoảng cách tới cổ tay, đọc sai mỗi khi tay
+// nghiêng, gây nhận nhầm cử chỉ). Trả về cos của góc khúc: ~1 là ngón thẳng,
+// thấp/âm là ngón gập lại.
+function vec3(a, b) {
+  return { x: b.x - a.x, y: b.y - a.y, z: (b.z ?? 0) - (a.z ?? 0) }
 }
 
-function readFingers(landmarks) {
+function straightness(landmarks, mcp, pip, tip) {
+  const a = vec3(landmarks[mcp], landmarks[pip])
+  const b = vec3(landmarks[pip], landmarks[tip])
+  const m = Math.hypot(a.x, a.y, a.z) * Math.hypot(b.x, b.y, b.z)
+  return m < 1e-6 ? 1 : (a.x * b.x + a.y * b.y + a.z * b.z) / m
+}
+
+// Cos góc khúc cho cả 4 ngón (CHƯA quyết duỗi/cụp — để tầng hysteresis quyết).
+function readStraightness(landmarks) {
   return {
-    index: isFingerExtended(landmarks, 8, 6),
-    middle: isFingerExtended(landmarks, 12, 10),
-    ring: isFingerExtended(landmarks, 16, 14),
-    pinky: isFingerExtended(landmarks, 20, 18),
+    index: straightness(landmarks, 5, 6, 8),
+    middle: straightness(landmarks, 9, 10, 12),
+    ring: straightness(landmarks, 13, 14, 16),
+    pinky: straightness(landmarks, 17, 18, 20),
   }
+}
+
+// Hysteresis từng ngón: phải VƯỢT ngưỡng ENTER mới tính "duỗi", và phải TỤT dưới
+// EXIT mới quay lại "cụp". Khe hở giữa hai mốc dập rung boolean khi cos dao động
+// quanh ngưỡng — đây là nguồn chính còn lại của nhận-nhầm-cử-chỉ ở ranh giới.
+// Ngón áp út & út ngắn, nhiễu hơn nên đặt ngưỡng thấp hơn.
+const FINGER_ENTER = { index: 0.62, middle: 0.62, ring: 0.55, pinky: 0.5 }
+const FINGER_EXIT = { index: 0.42, middle: 0.42, ring: 0.38, pinky: 0.32 }
+
+function resolveFingers(straight, runtime) {
+  const state = runtime.fingerState
+  for (const f of ['index', 'middle', 'ring', 'pinky']) {
+    state[f] = state[f] ? straight[f] > FINGER_EXIT[f] : straight[f] > FINGER_ENTER[f]
+  }
+  return { ...state }
 }
 
 // Decide what the hand is doing purely from *which fingers are extended* — the
@@ -138,7 +162,7 @@ function readGesture(fingers) {
 // "extended" for a single frame), which would make the mode snap around. We only
 // *commit* a new gesture once it has held for a few consecutive frames; the
 // current gesture wins ties.
-const GESTURE_HOLD_FRAMES = 3
+const GESTURE_HOLD_FRAMES = 2
 
 function stabilizeGesture(raw, runtime) {
   if (raw === runtime.stableGesture) {
@@ -166,6 +190,7 @@ function readMetrics(landmarks) {
   const wrist = landmarks[0]
   const thumbTip = landmarks[4]
   const indexBase = landmarks[5]
+  const indexDip = landmarks[7]
   const indexTip = landmarks[8]
   const middleBase = landmarks[9]
   const pinkyBase = landmarks[17]
@@ -173,11 +198,17 @@ function readMetrics(landmarks) {
   const palmWidth = distance(indexBase, pinkyBase)
   const palmDepth = distance(wrist, middleBase)
   const handOpen = distance(indexTip, thumbTip)
-  const fingers = readFingers(landmarks)
+  const straight = readStraightness(landmarks)
+
+  // Điểm trỏ = pha trộn đầu ngón (8) với khớp DIP (7). Đầu ngón trỏ là landmark
+  // nhiễu nhất; lùi nhẹ về khớp giúp con trỏ đằm hơn rõ rệt (giảm jitter tại
+  // nguồn) mà gần như không mất độ chính xác khi ngắm.
+  const pointX = indexTip.x * 0.65 + indexDip.x * 0.35
+  const pointY = indexTip.y * 0.65 + indexDip.y * 0.35
 
   return {
-    rawX: clamp(1 - indexTip.x, 0, 1),
-    rawY: clamp(indexTip.y, 0, 1),
+    rawX: clamp(1 - pointX, 0, 1),
+    rawY: clamp(pointY, 0, 1),
     palmX: 1 - (indexBase.x + pinkyBase.x + wrist.x) / 3,
     palmY: (indexBase.y + pinkyBase.y + wrist.y) / 3,
     handScale: clamp((palmWidth + palmDepth + handOpen * 0.55 - 0.2) / 0.3, 0, 1),
@@ -188,8 +219,8 @@ function readMetrics(landmarks) {
     pinchRatio: palmWidth > 1e-4 ? handOpen / palmWidth : 1,
     rollRaw: angleBetween(indexBase, pinkyBase),
     edge: edgeProximity(landmarks),
-    fingers,
-    gesture: readGesture(fingers),
+    // cos thô từng ngón; duỗi/cụp (kèm hysteresis) + cử chỉ quyết ở vòng lặp.
+    straight,
   }
 }
 
@@ -202,6 +233,10 @@ const ROLL_DEADZONE = 0.05
 // tỉ lệ < ENGAGE, nhả khi > RELEASE — khoảng đệm để không nhấp nháy ở ranh giới.
 const PINCH_ENGAGE = 0.5
 const PINCH_RELEASE = 0.72
+// Chống "nhả hụt": khi vừa chụm vừa di tay nhanh, MediaPipe hay báo nhả nhầm
+// 1–2 frame. Bắt pinch vẫn tức thì, nhưng phải thấy điều kiện nhả giữ liên tiếp
+// bấy nhiêu frame mới thực sự nhả — nên không rớt quả cầu giữa lúc đang kéo.
+const PINCH_RELEASE_FRAMES = 4
 
 // Smallest signed angle from b to a, handling the ±π wrap of atan2.
 function angularDelta(a, b) {
@@ -251,12 +286,21 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
   const pointing = gesture === 'point'
   const navigating = gesture === 'navigate'
 
-  // Pinch với hysteresis (trạng thái giữ trong runtime). Độc lập hoàn toàn với
-  // việc phân loại cử chỉ point/navigate ở trên.
+  // Pinch với hysteresis + đệm thời gian (trạng thái giữ trong runtime). Độc lập
+  // hoàn toàn với việc phân loại cử chỉ point/navigate ở trên. So ngưỡng trên tỉ
+  // lệ đã lọc, và yêu cầu nhả phải giữ vài frame (xem PINCH_RELEASE_FRAMES) để
+  // không nhả hụt khi vừa chụm vừa di tay.
+  const fPinchRatio = filters.pinchRatio(metrics.pinchRatio, t)
   if (runtime.pinching) {
-    if (metrics.pinchRatio > PINCH_RELEASE) runtime.pinching = false
-  } else if (metrics.pinchRatio < PINCH_ENGAGE) {
-    runtime.pinching = true
+    if (fPinchRatio > PINCH_RELEASE) {
+      runtime.pinchReleaseFrames += 1
+      if (runtime.pinchReleaseFrames >= PINCH_RELEASE_FRAMES) runtime.pinching = false
+    } else {
+      runtime.pinchReleaseFrames = 0
+    }
+  } else {
+    runtime.pinchReleaseFrames = 0
+    if (fPinchRatio < PINCH_ENGAGE) runtime.pinching = true
   }
 
   // Con trỏ "tự do" cho widget: LUÔN cập nhật mỗi frame (không cần giữ pose),
@@ -288,7 +332,7 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
     cursorX,
     cursorY,
     pinch: runtime.pinching,
-    pinchRatio: metrics.pinchRatio,
+    pinchRatio: fPinchRatio,
   }
 }
 
@@ -361,22 +405,68 @@ function drawHand(canvas, metrics, landmarks, gesture) {
   context.font = '500 11px system-ui, sans-serif'
   context.fillStyle = 'rgba(255,255,255,0.82)'
   context.fillText(`trỏ:${index ? '1' : '0'} giữa:${middle ? '1' : '0'} áp:${ring ? '1' : '0'} út:${pinky ? '1' : '0'}`, 8, 34)
+
+  // Giá trị cos thô từng ngón — để canh FINGER_ENTER/FINGER_EXIT cho khớp tay bạn.
+  if (metrics.straight) {
+    const s = metrics.straight
+    context.fillStyle = 'rgba(255,255,255,0.55)'
+    context.fillText(`cos ${s.index.toFixed(2)} ${s.middle.toFixed(2)} ${s.ring.toFixed(2)} ${s.pinky.toFixed(2)}`, 8, 50)
+  }
 }
 
+// Gợi ý trạng thái + bảng cử chỉ KHÁC NHAU theo ngữ cảnh: bản đồ vũ trụ điều
+// khiển bằng đếm ngón (chọn/mở/xoay hành tinh); còn trong trang thực nghiệm thì
+// thao tác bằng con trỏ + cú "bấm" (pinch/dwell), thêm lướt tay để đổi trạm.
 const GESTURE_HINTS = {
-  point: '☝️ Một ngón — chọn & giữ hành tinh',
-  navigate: '🖐️ Xòe tay — di để xoay, vặn cổ tay để zoom',
-  confirm: '✌️ Hai ngón — mở thực nghiệm hành tinh',
-  idle: '✊ Nắm tay — thả hành tinh đang giữ',
+  map: {
+    point: '☝️ Một ngón — chọn & giữ hành tinh',
+    navigate: '🖐️ Xòe tay — di để xoay, vặn cổ tay để zoom',
+    confirm: '✌️ Hai ngón — mở thực nghiệm hành tinh',
+    idle: '✊ Nắm tay — thả hành tinh đang giữ',
+  },
+  experiment: {
+    point: '☝️ Một ngón — rê con trỏ · chụm ngón cái để bấm',
+    navigate: '🖐️ Xòe tay — lướt ngang để đổi trạm',
+    confirm: '✌️ Hai ngón — đang rảnh',
+    idle: '✊ Nắm tay — tạm nghỉ',
+  },
 }
 
-const GESTURE_GUIDE = [
-  { icon: '☝️', title: 'Một ngón trỏ', text: 'Trỏ vào hành tinh để chọn — con trỏ dính chặt vào nó cho tới khi bạn nắm tay.' },
-  { icon: '✌️', title: 'Hai ngón', text: 'Khi đã giữ được hành tinh, giơ hai ngón để mở phần thực nghiệm của nó.' },
-  { icon: '🖐️', title: 'Xòe bàn tay', text: 'Di tay để xoay camera; vặn cổ tay như vặn nút âm lượng để phóng to / thu nhỏ.' },
-  { icon: '✊', title: 'Nắm tay', text: 'Nắm tay để thả hành tinh đang giữ, rồi trỏ chọn hành tinh khác.' },
-  { icon: '👋', title: 'Lướt bàn tay', text: 'Xòe tay rồi lướt nhanh sang trái/phải để chuyển trang: Khám phá · Thực nghiệm · Hồ sơ.' },
-]
+// Mỗi ngữ cảnh một bảng hướng dẫn riêng (eyebrow + tiêu đề + dẫn nhập + cử chỉ).
+const GESTURE_GUIDES = {
+  map: {
+    eyebrow: 'Điều khiển bằng tay · Bản đồ',
+    title: 'Cử chỉ du hành vũ trụ',
+    lead: 'Đưa một bàn tay vào tầm camera. Lần đầu thấy tay, hệ thống tự lấy tâm — cứ giữ tay giữa khung là điều khiển nhẹ nhất.',
+    cta: 'Bắt đầu',
+    items: [
+      { icon: '☝️', title: 'Một ngón trỏ', text: 'Trỏ vào hành tinh để chọn — con trỏ dính chặt vào nó cho tới khi bạn nắm tay.' },
+      { icon: '✌️', title: 'Hai ngón', text: 'Khi đã giữ được hành tinh, giơ hai ngón để mở phần thực nghiệm của nó.' },
+      { icon: '🖐️', title: 'Xòe bàn tay', text: 'Di tay để xoay camera; vặn cổ tay như vặn nút âm lượng để phóng to / thu nhỏ.' },
+      { icon: '✊', title: 'Nắm tay', text: 'Nắm tay để thả hành tinh đang giữ, rồi trỏ chọn hành tinh khác.' },
+    ],
+  },
+  experiment: {
+    eyebrow: 'Điều khiển bằng tay · Thực nghiệm',
+    title: 'Cử chỉ trong trang thực nghiệm',
+    lead: 'Trong một trạm thực nghiệm, bàn tay điều khiển bằng một con trỏ duy nhất — rê tới đâu, thao tác tới đó.',
+    cta: 'Bắt đầu thực nghiệm',
+    items: [
+      { icon: '☝️', title: 'Một ngón trỏ', text: 'Con trỏ bám đầu ngón trỏ — rê tới nút hoặc chỗ cần thao tác.' },
+      { icon: '🤏', title: 'Chụm ngón', text: 'Chạm ngón cái vào ngón trỏ = một cú “bấm” (như nhấp chuột). Chụm liên tục để gõ nhanh.' },
+      { icon: '✋', title: 'Giữ con trỏ yên', text: 'Đứng yên con trỏ ~0,7 giây trên một nút là nó tự bấm — không cần chụm.' },
+      { icon: '🖐️', title: 'Xòe tay lướt ngang', text: 'Xòe bàn tay rồi lướt nhanh sang trái / phải để chuyển sang trạm thực nghiệm trước / kế.' },
+      { icon: '✊', title: 'Nắm tay', text: 'Tạm nghỉ — không thao tác gì.' },
+    ],
+  },
+}
+
+// Khoá "đã xem" tách theo ngữ cảnh: bản đồ giữ khoá cũ (đã được bảng hướng dẫn
+// khám phá đánh dấu chung), trang thực nghiệm dùng khoá riêng.
+const GUIDE_SEEN_KEYS = {
+  map: 'vutru-hand-guide-seen',
+  experiment: 'vutru-hand-experiment-guide-seen',
+}
 
 function CameraIcon() {
   return (
@@ -387,20 +477,18 @@ function CameraIcon() {
   )
 }
 
-// One-time (and on-demand) cheat sheet of the four control gestures, shown the
-// first time the user turns hand control on so they aren't left guessing.
-function GestureGuide({ onClose }) {
+// One-time (and on-demand) cheat sheet of the control gestures, shown the first
+// time the user turns hand control on in each context (map / experiment).
+function GestureGuide({ context = 'map', onClose }) {
+  const guide = GESTURE_GUIDES[context] ?? GESTURE_GUIDES.map
   return (
     <div className="hand-guide" role="dialog" aria-modal="true" aria-labelledby="hand-guide-title">
       <div className="hand-guide-card">
-        <p className="eyebrow">Điều khiển bằng tay</p>
-        <h2 id="hand-guide-title">Bốn cử chỉ để du hành</h2>
-        <p className="hand-guide-lead">
-          Đưa một bàn tay vào tầm camera. Lần đầu thấy tay, hệ thống tự lấy tâm — cứ giữ tay
-          giữa khung là điều khiển nhẹ nhất.
-        </p>
+        <p className="eyebrow">{guide.eyebrow}</p>
+        <h2 id="hand-guide-title">{guide.title}</h2>
+        <p className="hand-guide-lead">{guide.lead}</p>
         <ul className="hand-guide-list">
-          {GESTURE_GUIDE.map((item) => (
+          {guide.items.map((item) => (
             <li key={item.title}>
               <span className="hand-guide-icon" aria-hidden="true">{item.icon}</span>
               <div>
@@ -411,14 +499,14 @@ function GestureGuide({ onClose }) {
           ))}
         </ul>
         <button type="button" className="hand-guide-done" onClick={onClose}>
-          Bắt đầu
+          {guide.cta}
         </button>
       </div>
     </div>
   )
 }
 
-export default function HandTrackingPanel({ store, hideUI = false }) {
+export default function HandTrackingPanel({ store, hideUI = false, context = 'map' }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const landmarkerRef = useRef(null)
@@ -436,6 +524,8 @@ export default function HandTrackingPanel({ store, hideUI = false }) {
     pendingGesture: 'idle',
     pendingCount: 0,
     pinching: false,
+    pinchReleaseFrames: 0,
+    fingerState: { index: false, middle: false, ring: false, pinky: false },
   })
   // Tighter ranges than a 1:1 mapping → higher gain, so the hand stays near the
   // centre of the frame and never has to reach the edge to point anywhere.
@@ -489,25 +579,35 @@ export default function HandTrackingPanel({ store, hideUI = false }) {
     updateStatus('Đã đặt lại tâm tay')
   }
 
+  // Bản mới nhất của ngữ cảnh cho vòng lặp nhận diện (chạy ngoài React) đọc.
+  const contextRef = useRef(context)
+  useEffect(() => {
+    contextRef.current = context
+  }, [context])
+
   const toggleEnabled = useCallback(() => {
-    setEnabled((current) => {
-      const next = !current
-      if (next) {
-        let seen = false
-        try {
-          seen = window.localStorage.getItem(GUIDE_SEEN_KEY) === '1'
-        } catch {
-          // Storage blocked — treat as "not seen" and show the guide.
-        }
-        if (!seen) setShowGuide(true)
-      }
-      return next
-    })
+    setEnabled((current) => !current)
   }, [])
+
+  // Tự mở bảng hướng dẫn đúng ngữ cảnh khi bật camera, hoặc khi lần đầu bước
+  // sang một ngữ cảnh mới (vd: từ bản đồ vào trang thực nghiệm) lúc đang bật.
+  // Hẹn qua timer (không gọi setState đồng bộ trong effect) để khỏi dồn render.
+  useEffect(() => {
+    if (!enabled || hideUI) return undefined
+    let seen = false
+    try {
+      seen = window.localStorage.getItem(GUIDE_SEEN_KEYS[context]) === '1'
+    } catch {
+      // Storage blocked — treat as "not seen" and show the guide.
+    }
+    if (seen) return undefined
+    const timer = setTimeout(() => setShowGuide(true), 0)
+    return () => clearTimeout(timer)
+  }, [enabled, hideUI, context])
 
   const dismissGuide = useCallback(() => {
     try {
-      window.localStorage.setItem(GUIDE_SEEN_KEY, '1')
+      window.localStorage.setItem(GUIDE_SEEN_KEYS[contextRef.current], '1')
     } catch {
       // Private mode / storage disabled — fine, the guide just shows again next time.
     }
@@ -601,7 +701,8 @@ export default function HandTrackingPanel({ store, hideUI = false }) {
 
           if (landmarks) {
             const metrics = readMetrics(landmarks)
-            metrics.gesture = stabilizeGesture(metrics.gesture, runtimeRef.current)
+            metrics.fingers = resolveFingers(metrics.straight, runtimeRef.current)
+            metrics.gesture = stabilizeGesture(readGesture(metrics.fingers), runtimeRef.current)
 
             // Auto-centre on the first hand we see so the user doesn't have to
             // press a button before pointing.
@@ -617,7 +718,11 @@ export default function HandTrackingPanel({ store, hideUI = false }) {
             lastSeenRef.current = now
             if (canvas) drawHand(canvas, metrics, landmarks, metrics.gesture)
             store.set(control)
-            updateStatus(metrics.edge > 0.6 ? 'Bàn tay sắp ra khỏi tầm — kéo về giữa' : GESTURE_HINTS[metrics.gesture])
+            updateStatus(
+              metrics.edge > 0.6
+                ? 'Bàn tay sắp ra khỏi tầm — kéo về giữa'
+                : (GESTURE_HINTS[contextRef.current] ?? GESTURE_HINTS.map)[metrics.gesture],
+            )
           } else if (controlRef.current.active && now - lastSeenRef.current < GRACE_MS) {
             // Hand vanished for a moment: hold the last position and fade the
             // cursor instead of cutting control dead.
@@ -712,7 +817,7 @@ export default function HandTrackingPanel({ store, hideUI = false }) {
       </div>
       )}
 
-      {!hideUI && showGuide && <GestureGuide onClose={dismissGuide} />}
+      {!hideUI && showGuide && <GestureGuide context={context} onClose={dismissGuide} />}
     </>
   )
 }

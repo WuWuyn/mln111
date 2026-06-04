@@ -79,9 +79,8 @@ export default function IntroTimeMachine({ tRef }) {
   })
 
   return (
-    /* Lật ngược tàu ở tư thế gốc (xoay 180° quanh trục bay); barrel roll bên
-       trong cộng thêm lên trên nên vẫn kết thúc đúng tư thế (đã lật) này. */
-    <group ref={groupRef} rotation={[0.5, 0, Math.PI]}>
+    /* Lật theo trục X (chúi/ngẩng 180°) để mũi/đít quay đúng hướng bay. */
+    <group ref={groupRef} rotation={[0.5 + Math.PI, 0, 0]}>
       <group ref={spinRef}>
         <primitive object={object} />
       </group>

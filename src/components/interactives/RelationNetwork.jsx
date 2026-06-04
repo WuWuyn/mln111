@@ -1,18 +1,26 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useHandTargets } from '../../hand/useHandTargets'
 import HandControlBar from './HandControlBar'
 import './RelationNetwork.css'
 
+// Độ nhạy khi "cầm" quả cầu bằng tay: di tay 1 đơn vị (toàn khung camera) →
+// quả cầu đi bao nhiêu phần trăm sân khấu. Kéo tương đối từ điểm bắt đầu cầm.
+const HAND_GRAB_GAIN = 165
+
 const MODES = {
   static: {
-    label: 'Nhìn siêu hình',
+    label: 'Siêu hình',
     message: 'Nhìn sự vật cô lập, tách rời, đứng yên.',
   },
   dialectic: {
-    label: 'Nhìn biện chứng',
+    label: 'Biện chứng',
     message: 'Nhìn sự vật trong mối liên hệ, vận động và phát triển.',
   },
 }
+
+// Trạng thái ban đầu của hệ sao — nút "Tái tạo sao" đưa mọi thứ về đây.
+const PLANET_HOME = { x: 69, y: 42 }
+const TIME_HOME = 2
 
 const PHASES = [
   {
@@ -58,19 +66,105 @@ export default function RelationNetwork({ handStore }) {
   const stageRef = useRef(null)
   const [mode, setMode] = useState('dialectic')
   const [dragging, setDragging] = useState(false)
-  const [planet, setPlanet] = useState({ x: 69, y: 42 })
+  const [handGrab, setHandGrab] = useState(false)
+  const [planet, setPlanet] = useState(PLANET_HOME)
+  const planetRef = useRef(planet)
+  useEffect(() => {
+    planetRef.current = planet
+  }, [planet])
   // `time` là giá trị LIÊN TỤC (0..PHASES.length-1) để thanh trượt mượt và
   // `--phase` nội suy mượt các hiệu ứng. Mốc phase rời rạc lấy bằng làm tròn.
-  const [time, setTime] = useState(2)
+  const [time, setTime] = useState(TIME_HOME)
   const phaseIndex = Math.round(time)
   const phase = PHASES[phaseIndex]
 
   const handTargets = [
-    { key: 'time', kind: 'slider', label: 'Thời gian', get: () => time, set: setTime, min: 0, max: PHASES.length - 1, step: 1 },
+    // "Quả cầu": chọn mục này rồi ☝ trỏ + di tay để KÉO quả cầu 2D (thêm cách di
+    // chuyển ngoài chụm tay). Hook bỏ qua kind 'pad' (không rate/không press) —
+    // việc kéo do effect bên dưới xử lý.
+    { key: 'ball', kind: 'pad', label: 'Quả cầu' },
+    // step MỊN (≈80 nấc trên dải 0..4) để rate-control bằng tay trượt mượt như
+    // trang "Lõi sao biện chứng"; mốc phase rời rạc vẫn lấy bằng làm tròn `time`.
+    { key: 'time', kind: 'slider', label: 'Thời gian', get: () => time, set: setTime, min: 0, max: PHASES.length - 1, step: 0.05 },
     { key: 'static', kind: 'button', label: 'Siêu hình', onPress: () => setMode('static') },
     { key: 'dialectic', kind: 'button', label: 'Biện chứng', onPress: () => setMode('dialectic') },
   ]
-  const hand = useHandTargets(handStore, handTargets)
+  // Khi đang CẦM quả cầu (chụm tay) thì tạm khoá thanh trượt/nút, để cử chỉ chụm
+  // không vô tình kéo "Thời gian".
+  const hand = useHandTargets(handStore, handGrab ? [] : handTargets)
+
+  // ── Cầm quả cầu bằng tay ──────────────────────────────────────────────────
+  // Chụm ngón (pinch = "cầm quả bóng") để bắt quả cầu, di tay để kéo nó tới chỗ
+  // khác minh hoạ phép biện chứng làm lệch quỹ đạo, mở tay để thả. Dùng rawX/rawY
+  // (vị trí tay, luôn cập nhật) và kéo TƯƠNG ĐỐI từ lúc bắt đầu cầm.
+  useEffect(() => {
+    if (!handStore) return undefined
+    const anchor = { active: false, hx: 0, hy: 0, px: 0, py: 0 }
+
+    const unsubscribe = handStore.subscribe((control) => {
+      const grabbing = Boolean(control.active && control.pinch)
+
+      if (grabbing && !anchor.active) {
+        anchor.active = true
+        anchor.hx = control.rawX ?? 0.5
+        anchor.hy = control.rawY ?? 0.5
+        anchor.px = planetRef.current.x
+        anchor.py = planetRef.current.y
+        setHandGrab(true)
+      } else if (!grabbing && anchor.active) {
+        anchor.active = false
+        setHandGrab(false)
+      }
+
+      if (anchor.active) {
+        const nx = clamp(anchor.px + ((control.rawX ?? anchor.hx) - anchor.hx) * HAND_GRAB_GAIN, 12, 88)
+        const ny = clamp(anchor.py + ((control.rawY ?? anchor.hy) - anchor.hy) * HAND_GRAB_GAIN, 14, 86)
+        setPlanet((current) =>
+          Math.abs(current.x - nx) < 0.15 && Math.abs(current.y - ny) < 0.15 ? current : { x: nx, y: ny },
+        )
+      }
+    })
+
+    return unsubscribe
+  }, [handStore])
+
+  // ── Di chuyển quả cầu bằng MỤC "Quả cầu" trên thanh điều khiển tay ───────────
+  // Khi đã chọn mục 'ball' và đang ☝ trỏ (không chụm), di tay để kéo quả cầu 2D
+  // tương đối — cùng cảm giác với chụm tay, nhưng theo lối chọn-mục quen thuộc.
+  const activeKeyRef = useRef(hand.activeKey)
+  useEffect(() => {
+    activeKeyRef.current = hand.activeKey
+  }, [hand.activeKey])
+  useEffect(() => {
+    if (!handStore) return undefined
+    const anchor = { active: false, hx: 0, hy: 0, px: 0, py: 0 }
+
+    const unsubscribe = handStore.subscribe((control) => {
+      const driving = Boolean(
+        control.active && control.mode === 'point' && !control.pinch && activeKeyRef.current === 'ball',
+      )
+
+      if (driving && !anchor.active) {
+        anchor.active = true
+        anchor.hx = control.rawX ?? 0.5
+        anchor.hy = control.rawY ?? 0.5
+        anchor.px = planetRef.current.x
+        anchor.py = planetRef.current.y
+      } else if (!driving && anchor.active) {
+        anchor.active = false
+      }
+
+      if (anchor.active) {
+        const nx = clamp(anchor.px + ((control.rawX ?? anchor.hx) - anchor.hx) * HAND_GRAB_GAIN, 12, 88)
+        const ny = clamp(anchor.py + ((control.rawY ?? anchor.hy) - anchor.hy) * HAND_GRAB_GAIN, 14, 86)
+        setPlanet((current) =>
+          Math.abs(current.x - nx) < 0.15 && Math.abs(current.y - ny) < 0.15 ? current : { x: nx, y: ny },
+        )
+      }
+    })
+
+    return unsubscribe
+  }, [handStore])
   const influence = useMemo(() => {
     const pull = clamp(Math.abs(distanceFromCenter(planet) - 24) / 28, 0, 1)
     return mode === 'dialectic' ? pull : 0
@@ -100,9 +194,16 @@ export default function RelationNetwork({ handStore }) {
     }
   }
 
+  // Đưa hệ sao về trạng thái ban đầu: hành tinh về quỹ đạo gốc, thời gian về mốc
+  // đầu. Tiện khi đã kéo hành tinh đi lung tung và muốn dựng lại hệ từ đầu.
+  const recreateStar = () => {
+    setPlanet(PLANET_HOME)
+    setTime(TIME_HOME)
+  }
+
   return (
     <div
-      className={`widget dialectic-system is-${mode} is-phase-${phaseIndex} ${dragging ? 'is-dragging' : ''}`}
+      className={`widget dialectic-system is-${mode} is-phase-${phaseIndex} ${dragging ? 'is-dragging' : ''} ${handGrab ? 'is-hand-grab' : ''}`}
       style={{
         '--planet-x': `${planet.x}%`,
         '--planet-y': `${planet.y}%`,
@@ -111,7 +212,16 @@ export default function RelationNetwork({ handStore }) {
         '--phase': time,
       }}
     >
-      <div ref={stageRef} className="dialectic-stage">
+      <div
+        ref={stageRef}
+        className="dialectic-stage"
+        onPointerDown={startDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={stopDrag}
+        onPointerCancel={stopDrag}
+        role="application"
+        aria-label="Kéo bất kỳ đâu trong sân khấu để di chuyển quả cầu (hoặc chụm tay để cầm)"
+      >
         <div className="cosmic-dust-cloud" aria-hidden="true" />
         <div className="dialectic-star" aria-hidden="true" />
 
@@ -122,23 +232,26 @@ export default function RelationNetwork({ handStore }) {
         <div className="force-line force-line--b" aria-hidden="true" />
         <div className="force-line force-line--c" aria-hidden="true" />
 
-        <button
-          type="button"
-          className="system-planet system-planet--driver"
-          onPointerDown={startDrag}
-          onPointerMove={moveDrag}
-          onPointerUp={stopDrag}
-          onPointerCancel={stopDrag}
-          aria-label="Kéo hành tinh để thay đổi quỹ đạo"
-        >
+        <div className="system-planet system-planet--driver" aria-hidden="true">
           <span />
-        </button>
+        </div>
         <div className="system-planet system-planet--echo system-planet--echo-a" aria-hidden="true" />
         <div className="system-planet system-planet--echo system-planet--echo-b" aria-hidden="true" />
         <div className="system-planet system-planet--echo system-planet--echo-c" aria-hidden="true" />
         <div className="asteroid-deflect" aria-hidden="true" />
         <div className="life-band" aria-hidden="true" />
         <div className="observer-station" aria-hidden="true" />
+
+        <button
+          type="button"
+          className="star-reset"
+          onClick={recreateStar}
+          onPointerDown={(event) => event.stopPropagation()}
+          title="Đưa hệ sao về trạng thái ban đầu"
+        >
+          <span className="star-reset-ico" aria-hidden="true">⟳</span>
+          Tái tạo sao
+        </button>
 
         <div className="system-readout" role="status">
           <strong>{mode === 'dialectic' ? 'Toàn hệ phản ứng' : 'Chỉ một vật đổi chỗ'}</strong>
@@ -147,7 +260,10 @@ export default function RelationNetwork({ handStore }) {
       </div>
 
       <div className="dialectic-controls">
-        {handStore && <HandControlBar targets={handTargets} {...hand} />}
+        {handStore && <HandControlBar targets={handGrab ? [] : handTargets} {...hand} />}
+        {handStore && (
+          <p className="grab-hint">🤏 Chụm tay để cầm quả cầu · mở tay để thả.</p>
+        )}
 
         <div className="mode-switch" aria-label="Chọn cách nhìn">
           {Object.entries(MODES).map(([id, item]) => (
@@ -159,7 +275,7 @@ export default function RelationNetwork({ handStore }) {
 
         <label className={`time-control ${hand.lockedKey === 'time' ? 'is-hand-locked' : ''}`}>
           <span>
-            Kéo thời gian
+            Thời gian
             <strong>{phase.label}</strong>
           </span>
           <input
@@ -172,11 +288,6 @@ export default function RelationNetwork({ handStore }) {
             aria-label="Dòng thời gian phát triển của hệ sao"
           />
         </label>
-
-        <div className="dialectic-message">
-          <span>{mode === 'dialectic' ? MODES.dialectic.message : MODES.static.message}</span>
-          <p>{phase.message}</p>
-        </div>
       </div>
     </div>
   )

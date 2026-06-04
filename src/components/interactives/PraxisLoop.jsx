@@ -13,8 +13,59 @@ import './PraxisLoop.css'
 // thực). Gợi ý của số đông/uy tín/suy luận đều lệch → chỉ thực tiễn mới đúng.
 
 const TOL = 4 // sai số cho phép quanh lực đúng để được tính "hạ cánh êm"
-const FLOW = ['Giả thuyết', 'Đốt thử', 'Quan sát', 'Điều chỉnh', 'Chân lý']
 const clampVal = (v) => Math.min(94, Math.max(6, v))
+
+// Ba "cố vấn" lệch chuẩn (số đông / uy tín / suy luận). Icon vẽ bằng SVG bo khối,
+// gradient kim loại theo tông riêng — thay cho emoji phẳng để hợp gu sci-fi.
+const ADVISOR_TONE = {
+  crowd: ['#eafaff', '#8fd4ef', '#356f8d'],
+  authority: ['#fff3c6', '#f0cf6e', '#9a7320'],
+  logic: ['#efe8ff', '#a99cff', '#574f9c'],
+}
+
+function AdvisorGlyph({ kind }) {
+  const id = `adv-grad-${kind}`
+  const [c0, c1, c2] = ADVISOR_TONE[kind]
+  return (
+    <svg className="advisor-ico" viewBox="0 0 24 24" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={c0} />
+          <stop offset="0.5" stopColor={c1} />
+          <stop offset="1" stopColor={c2} />
+        </linearGradient>
+      </defs>
+      <g fill={`url(#${id})`} stroke="rgba(8,12,24,0.5)" strokeWidth="0.5" strokeLinejoin="round">
+        {kind === 'crowd' && (
+          <>
+            <circle cx="8.4" cy="9" r="3" />
+            <circle cx="16" cy="10" r="2.5" />
+            <path d="M2.6 20c0-3.4 2.6-5.6 5.8-5.6S14.2 16.6 14.2 20z" />
+            <path d="M14 20c.1-2.7 1.5-4.4 3.8-4.7 2.2.3 3.6 2 3.6 4.7z" opacity="0.9" />
+          </>
+        )}
+        {kind === 'authority' && (
+          <>
+            <path d="M3.6 16.6 2 7.7l5.3 3.7L12 4.2l4.7 7.2L22 7.7l-1.6 8.9z" />
+            <rect x="3.6" y="17" width="16.8" height="2.8" rx="0.9" />
+          </>
+        )}
+        {kind === 'logic' && (
+          <>
+            <path d="M12 1.8l2 6.6 6.6 1.6-6.6 1.6L12 22.2l-2-10.6L3.4 10l6.6-1.6z" />
+            <circle cx="4.4" cy="18.8" r="1.5" />
+            <circle cx="19.8" cy="5.4" r="1.3" />
+          </>
+        )}
+      </g>
+      <g fill="rgba(255,255,255,0.55)">
+        {kind === 'crowd' && <ellipse cx="7.4" cy="7.8" rx="1" ry="1.2" />}
+        {kind === 'authority' && <circle cx="12" cy="8.4" r="1.1" />}
+        {kind === 'logic' && <path d="M12 4.2l.9 3.2h-1.8z" />}
+      </g>
+    </svg>
+  )
+}
 
 export default function PraxisLoop({ handStore }) {
   const [round, setRound] = useState(1) // mỗi lượt: trọng lực ẩn khác nhau
@@ -33,9 +84,9 @@ export default function PraxisLoop({ handStore }) {
       return Math.round(clampVal(truth + sign * mag))
     }
     const advisors = [
-      { icon: '👥', who: 'Số đông', v: guess(round * 13 + 1, round * 7 + 2) },
-      { icon: '🎓', who: 'Uy tín', v: guess(round * 17 + 3, round * 11 + 4) },
-      { icon: '🧠', who: 'Suy luận', v: guess(round * 23 + 5, round * 19 + 6) },
+      { kind: 'crowd', who: 'Số đông', v: guess(round * 13 + 1, round * 7 + 2) },
+      { kind: 'authority', who: 'Uy tín', v: guess(round * 17 + 3, round * 11 + 4) },
+      { kind: 'logic', who: 'Suy luận', v: guess(round * 23 + 5, round * 19 + 6) },
     ]
     return { truth, advisors }
   }, [round])
@@ -88,7 +139,8 @@ export default function PraxisLoop({ handStore }) {
           ? 'Quá yếu'
           : 'Chưa thử'
 
-  const litUpTo = built || landed ? 4 : result ? 3 : run ? 2 : 0
+  // Một dấu trạng thái duy nhất cho bảng console (gộp readout + kết quả + phản hồi).
+  const mark = built ? '★' : landed ? '✓' : result === 'over' ? '↓' : result === 'under' ? '↑' : '?'
 
   // Điều khiển bằng tay: ☝ kéo nhẹ chỉnh lực · ✌/🖐 đổi mục · ☝ bấm nút.
   const handTargets = [
@@ -115,17 +167,27 @@ export default function PraxisLoop({ handStore }) {
       <div className="lab-stage">
         <RocketStage thrust={thrust} run={run} outcome={result} built={built} />
 
-        <div className="lab-readout">
-          <span>Trọng lực</span>
-          <strong>{landed || built ? gravityText : '?'}</strong>
-          <span>Lần thử · {attempts}</span>
-        </div>
-
-        {result && !landed && (
-          <div key={`fb-${run}`} className={`flight-feedback ${result}`} role="status">
-            {result === 'over' ? '↓ Giảm lực' : '↑ Tăng lực'}
+        {/* Bảng console duy nhất — gộp Trọng lực/Lần thử + kết quả + phản hồi
+            ↑/↓ vào một chỗ (theo lối Cosmic Mirror) để sân khấu thoáng, dễ đọc. */}
+        <div
+          key={`console-${run}-${built ? 'b' : 'n'}`}
+          className={`lab-console r-${result ?? 'none'} ${built ? 'is-built' : ''}`}
+          role="status"
+        >
+          <span className="lab-console-mark" aria-hidden="true">{mark}</span>
+          <strong>{resultLabel}</strong>
+          <p>{message}</p>
+          <div className="lab-console-meta">
+            <span>
+              Trọng lực
+              <b>{landed || built ? gravityText : '?'}</b>
+            </span>
+            <span>
+              Lần thử
+              <b>{attempts}</b>
+            </span>
           </div>
-        )}
+        </div>
 
         {/* Thanh điều khiển tay nổi đè MÉP TRÊN khung game — chỉ hiện khi đang
             dùng tay (không đụng khung xương tay ở góc dưới-trái; chuột thì ẩn để
@@ -153,7 +215,7 @@ export default function PraxisLoop({ handStore }) {
                 disabled={landed}
                 title={`${advisor.who} đề xuất ${advisor.v}`}
               >
-                <i>{advisor.icon}</i>
+                <AdvisorGlyph kind={advisor.kind} />
               </button>
             ))}
             <input
@@ -175,11 +237,6 @@ export default function PraxisLoop({ handStore }) {
           Đốt động cơ
         </button>
 
-        <div key={`res-${run}-${resultLabel}`} className={`shot-result r-${result ?? 'none'}`} role="status">
-          <strong>{resultLabel}</strong>
-          <p>{message}</p>
-        </div>
-
         <div className="deck-actions">
           {landed && !built && (
             <button type="button" className="build-btn" onClick={() => setBuilt(true)}>
@@ -192,14 +249,6 @@ export default function PraxisLoop({ handStore }) {
             </button>
           )}
         </div>
-      </div>
-
-      <div className="praxis-flow" aria-label="Vòng nhận thức và thực tiễn">
-        {FLOW.map((item, index) => (
-          <span key={item} className={index <= litUpTo ? 'is-lit' : ''}>
-            {item}
-          </span>
-        ))}
       </div>
     </div>
   )

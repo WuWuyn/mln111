@@ -6,9 +6,11 @@
   --danger: #e46b56;
   --good: #8bd6a5;
   display: grid;
-  grid-template-rows: minmax(17rem, 1fr) auto auto auto;
+  grid-template-rows: minmax(15rem, 1fr) auto;
   gap: 0.7rem;
-  min-height: min(72vh, 44rem);
+  /* Sau khi gộp bảng & bỏ dải "Vòng nhận thức", phần dưới ngắn lại nên hạ
+     chiều cao tổng để sân khấu (hàng 1fr) khỏi phình giãn ra quá cao. */
+  min-height: min(58vh, 36rem);
   color: #eef3ff;
 }
 
@@ -302,66 +304,79 @@
   100% { opacity: 0; transform: translate(-50%, -50%) scale(4.5); }
 }
 
-/* Đồng hồ trọng lực ẩn. */
-.lab-readout {
+/* ── Bảng console trạng thái (gộp readout + kết quả + phản hồi) ──────────────
+   Một bảng nổi duy nhất ở mép phải sân khấu, theo lối Cosmic Mirror: dấu trạng
+   thái + tiêu đề + mô tả + chỉ số. Look (viền/nền/kính) do hud.css cấp qua
+   .hud-shell .lab-console; ở đây chỉ đặt vị trí + bố cục riêng. */
+.lab-console {
   position: absolute;
   right: 0.8rem;
-  bottom: 0.8rem;
+  top: 50%;
   z-index: 4;
+  width: min(13.5rem, 48%);
+  transform: translateY(-50%);
   display: grid;
-  gap: 0.1rem;
-  padding: 0.5rem 0.7rem;
+  gap: 0.32rem;
+  padding: 0.7rem 0.8rem;
+  /* Fallback look khi không nằm trong .hud-shell. */
   border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 0.7rem;
-  background: rgba(7, 9, 21, 0.7);
+  border-radius: 0.8rem;
+  background: rgba(7, 9, 21, 0.72);
   backdrop-filter: blur(0.8rem);
-  text-align: right;
+  animation: resultPop 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.lab-readout span {
+
+.lab-console-mark {
+  justify-self: start;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(121, 212, 239, 0.45);
+  background: rgba(121, 212, 239, 0.14);
   color: var(--cyan);
-  font-size: 0.56rem;
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.lab-console strong { color: #fff6cf; font-size: 0.84rem; }
+.lab-console p { margin: 0; color: rgba(229, 235, 255, 0.78); font-size: 0.7rem; line-height: 1.34; }
+
+.lab-console-meta {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 0.18rem;
+  padding-top: 0.42rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.lab-console-meta span {
+  display: grid;
+  gap: 0.06rem;
+  color: var(--cyan);
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.lab-readout strong {
+.lab-console-meta b {
   color: #fff6cf;
-  font-size: 1.05rem;
+  font-size: 0.92rem;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
-.is-land .lab-readout strong { color: var(--good); animation: readoutReveal 600ms ease both; }
-@keyframes readoutReveal {
-  0% { transform: scale(1.4); filter: blur(3px); opacity: 0; }
-  100% { transform: none; filter: none; opacity: 1; }
-}
 
-/* Phản hồi bay ↑/↓ giữa sân khấu. */
-.flight-feedback {
-  position: absolute;
-  left: 50%;
-  top: 40%;
-  z-index: 5;
-  padding: 0.32rem 0.7rem;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 900;
-  white-space: nowrap;
-  animation: fbPop 1.2s ease-out both;
-}
-.flight-feedback.over { color: #ffd8cf; background: rgba(228, 107, 86, 0.2); border: 1px solid rgba(228, 107, 86, 0.6); }
-.flight-feedback.under { color: #ffe6a6; background: rgba(232, 195, 84, 0.18); border: 1px solid rgba(232, 195, 84, 0.6); }
-@keyframes fbPop {
-  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.7); }
-  20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -70%) scale(0.95); }
-}
+/* Dấu + chỉ số đổi màu theo kết quả. */
+.lab-console.r-over .lab-console-mark { color: #ffd8cf; border-color: rgba(228, 107, 86, 0.6); background: rgba(228, 107, 86, 0.16); }
+.lab-console.r-under .lab-console-mark { color: #ffe6a6; border-color: rgba(232, 195, 84, 0.6); background: rgba(232, 195, 84, 0.16); }
+.lab-console.r-land .lab-console-mark,
+.lab-console.is-built .lab-console-mark { color: var(--good); border-color: rgba(139, 214, 165, 0.6); background: rgba(139, 214, 165, 0.16); }
+.is-land .lab-console-meta b { color: var(--good); }
 
 /* ── Bảng điều khiển lực đẩy ──────────────────────────────────────────────── */
 .thrust-deck {
   display: grid;
-  grid-template-columns: 1.6fr auto 1.5fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 0.6rem;
   padding: 0.6rem 0.7rem;
@@ -408,29 +423,32 @@
   box-shadow: 0 0 0.8rem rgba(232, 195, 84, 0.3);
   transition: width 120ms ease;
 }
+/* Núm tròn to dễ "tóm" — đồng bộ với slider HUD ở các trạm khác. */
 .gauge-needle {
   position: absolute;
-  top: -0.2rem;
-  bottom: -0.2rem;
+  top: 50%;
   left: var(--gauge, 50%);
-  width: 0.22rem;
-  transform: translateX(-50%);
+  width: 1.2rem;
+  height: 1.2rem;
+  transform: translate(-50%, -50%);
+  border: 2px solid #ffffff;
   border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 0 0.6rem rgba(255, 255, 255, 0.9);
+  background: var(--amber);
+  box-shadow: 0 0 0.45rem var(--amber), 0 0 1.2rem rgba(232, 195, 84, 0.5);
   transition: left 120ms ease;
+  pointer-events: none;
 }
 
 /* Gợi ý của số đông/uy tín/suy luận (đều lệch) đặt trên thước. */
 .advisor-tick {
   position: absolute;
-  top: -1.15rem;
+  top: -1.45rem;
   left: var(--at, 50%);
   transform: translateX(-50%);
   display: grid;
   place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.6rem;
+  height: 1.6rem;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
@@ -440,7 +458,11 @@
 }
 .advisor-tick:nth-of-type(2) { animation-delay: 0.5s; }
 .advisor-tick:nth-of-type(3) { animation-delay: 1s; }
-.advisor-tick i { font-size: 0.8rem; font-style: normal; }
+.advisor-ico {
+  width: 1.05rem;
+  height: 1.05rem;
+  filter: drop-shadow(0 1px 1.2px rgba(0, 0, 0, 0.55));
+}
 .advisor-tick::after {
   content: "";
   position: absolute;
@@ -474,15 +496,15 @@
   grid-auto-flow: column;
   align-items: center;
   gap: 0.4rem;
-  min-height: 2.4rem;
-  padding: 0 1rem;
+  min-height: var(--btn-h-md);
+  padding: 0 var(--btn-pad-x);
   border: 1px solid rgba(232, 195, 84, 0.5);
-  border-radius: 999px;
+  border-radius: var(--btn-radius);
   color: #fff6cf;
   background: rgba(232, 195, 84, 0.12);
   font: inherit;
-  font-size: 0.78rem;
-  font-weight: 900;
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
   cursor: pointer;
   box-shadow: 0 0 1.2rem rgba(232, 195, 84, 0.15);
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
@@ -503,23 +525,6 @@
   50% { box-shadow: 0 0 1.7rem rgba(232, 195, 84, 0.5); border-color: rgba(232, 195, 84, 0.8); }
 }
 
-.shot-result {
-  display: grid;
-  gap: 0.12rem;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0.7rem;
-  background: rgba(255, 255, 255, 0.04);
-  animation: resultPop 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.shot-result strong { color: #fff6cf; font-size: 0.82rem; }
-.shot-result p { margin: 0; color: rgba(229, 235, 255, 0.78); font-size: 0.68rem; line-height: 1.3; }
-.shot-result.r-over { border-color: rgba(228, 107, 86, 0.5); }
-.shot-result.r-over strong { color: #ffd8cf; }
-.shot-result.r-under { border-color: rgba(232, 195, 84, 0.5); }
-.shot-result.r-under strong { color: #ffe6a6; }
-.shot-result.r-land { border-color: rgba(139, 214, 165, 0.55); background: rgba(139, 214, 165, 0.08); }
-.shot-result.r-land strong { color: var(--good); }
 @keyframes resultPop {
   from { opacity: 0; transform: translateY(0.4rem) scale(0.97); }
   to { opacity: 1; transform: none; }
@@ -529,61 +534,20 @@
 .build-btn,
 .next-btn {
   flex: 1;
-  min-height: 2.1rem;
+  min-height: var(--btn-h-sm);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 0.7rem;
   color: rgba(246, 248, 255, 0.9);
   background: rgba(255, 255, 255, 0.05);
   font: inherit;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: var(--btn-font-sm);
+  font-weight: var(--btn-weight);
   cursor: pointer;
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 .build-btn { border-color: rgba(139, 214, 165, 0.4); background: rgba(139, 214, 165, 0.1); color: #d8ffe2; }
 .build-btn:hover, .next-btn:hover { border-color: rgba(232, 195, 84, 0.55); }
 .build-btn:active, .next-btn:active { transform: translateY(1px) scale(0.99); }
-
-/* ── Dải vòng nhận thức ↔ thực tiễn ───────────────────────────────────────── */
-.praxis-flow {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.34rem;
-}
-.praxis-flow span {
-  position: relative;
-  overflow: hidden;
-  min-height: 2rem;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 999px;
-  color: rgba(226, 232, 255, 0.58);
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 0.64rem;
-  font-weight: 900;
-}
-.praxis-flow span.is-lit {
-  border-color: rgba(232, 195, 84, 0.35);
-  color: #fff4bd;
-  background: rgba(232, 195, 84, 0.08);
-}
-.praxis-flow span.is-lit::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 20%, rgba(255, 244, 189, 0.45) 50%, transparent 80%);
-  transform: translateX(-120%);
-  animation: flowSheen 2.4s ease-in-out infinite;
-}
-.praxis-flow span.is-lit:last-child { animation: flowGoal 1.4s ease-in-out infinite; }
-@keyframes flowSheen {
-  0%, 55% { transform: translateX(-120%); }
-  100% { transform: translateX(120%); }
-}
-@keyframes flowGoal {
-  50% { border-color: rgba(139, 214, 165, 0.7); color: #d8ffe2; }
-}
 
 @media (max-width: 720px) {
   .thrust-deck { grid-template-columns: 1fr; }
@@ -592,7 +556,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lab-stars, .lab-comet, .lander-rig, .flame, .pad-ring, .advisor-tick,
-  .fire-btn:not(:disabled), .praxis-flow span.is-lit::after, .praxis-flow span.is-lit:last-child {
+  .fire-btn:not(:disabled) {
     animation: none !important;
   }
   .is-over .lander-rig { top: -28%; }

@@ -379,13 +379,6 @@
   text-transform: uppercase;
 }
 
-/* Praxis flow chips: mono step ticker. */
-.hud-shell .praxis-flow span {
-  font-family: var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 /* ── Reduced motion ──────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .hud-rec-dot { animation: none; }

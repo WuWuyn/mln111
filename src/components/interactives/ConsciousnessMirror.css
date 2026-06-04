@@ -68,7 +68,7 @@
   color: #9fe8ff;
   background: rgba(6, 12, 24, 0.62);
   font-size: 0.62rem;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -311,7 +311,7 @@
 .mirror-scan-handle span::before {
   color: #130d04;
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 900;
   content: '↔';
 }
 
@@ -374,12 +374,52 @@
   animation: mirrorPlanDraw 1.8s ease-in-out infinite;
 }
 
+/* Con robot: thân kim loại + 2 mắt phát sáng (::nền), ăng-ten (::before),
+   bánh xích (::after). */
 .mirror-robot {
-  width: 1.25rem;
-  aspect-ratio: 1;
-  border-radius: 0.32rem;
-  background: linear-gradient(135deg, #eaf7ff, #7edcff);
-  box-shadow: 0 0 1rem rgba(126, 220, 255, 0.42);
+  width: 1.5rem;
+  height: 1.35rem;
+  border-radius: 0.42rem 0.42rem 0.3rem 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background:
+    radial-gradient(circle at 36% 44%, #102234 0 0.19rem, transparent 0.2rem),
+    radial-gradient(circle at 64% 44%, #102234 0 0.19rem, transparent 0.2rem),
+    radial-gradient(circle at 36% 44%, #7efcff 0 0.09rem, transparent 0.1rem),
+    radial-gradient(circle at 64% 44%, #7efcff 0 0.09rem, transparent 0.1rem),
+    linear-gradient(150deg, #eef7ff, #9fd0e6 52%, #46637a);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 0.8rem rgba(126, 220, 255, 0.45);
+}
+
+/* Ăng-ten + đầu bi vàng phát sáng. */
+.mirror-robot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.46rem;
+  width: 0.24rem;
+  height: 0.46rem;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 50% 20%, #ffe07a 0 0.1rem, transparent 0.11rem),
+    linear-gradient(#cfe6f2, #cfe6f2) 50% 70% / 0.06rem 0.32rem no-repeat;
+  filter: drop-shadow(0 0 0.22rem rgba(255, 224, 122, 0.85));
+}
+
+/* Bánh xích / bệ di chuyển rộng hơn thân. */
+.mirror-robot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.16rem;
+  width: 1.62rem;
+  height: 0.44rem;
+  transform: translateX(-50%);
+  border-radius: 0.26rem;
+  background:
+    radial-gradient(circle at 24% 50%, rgba(255, 255, 255, 0.35) 0 0.08rem, transparent 0.1rem),
+    radial-gradient(circle at 76% 50%, rgba(255, 255, 255, 0.35) 0 0.08rem, transparent 0.1rem),
+    linear-gradient(180deg, #3a4a5c, #131c28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .mirror-robot--mind {
@@ -393,14 +433,40 @@
   animation: mirrorRobotLand 3.2s ease-in-out infinite;
 }
 
+/* Trạm đo: chảo radar (::before) trên cột + bệ (::after). */
 .mirror-station {
   right: 24%;
   top: 28%;
-  width: 1.8rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mirror-station::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1.15rem;
   height: 0.72rem;
-  border-radius: 999px;
-  background: rgba(255, 209, 122, 0.8);
-  box-shadow: 0 0 1rem rgba(255, 209, 122, 0.38);
+  transform: translateX(-50%) rotate(-18deg);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: radial-gradient(circle at 40% 34%, #fff4d2, #ffd17a 56%, #b9842f);
+  box-shadow: 0 0 0.7rem rgba(255, 209, 122, 0.55);
+}
+
+.mirror-station::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 1rem;
+  height: 0.95rem;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(#d2e2f0, #aac1d4) 50% 6% / 0.13rem 0.62rem no-repeat,
+    linear-gradient(135deg, #9fb6c8, #36495d) 50% 100% / 1rem 0.36rem no-repeat;
+  filter: drop-shadow(0 0 0.5rem rgba(126, 220, 255, 0.28));
 }
 
 .mirror-status {
@@ -430,7 +496,7 @@
   border-radius: 50%;
   color: #120d04;
   background: #ffd17a;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .mirror-status strong {
@@ -466,7 +532,7 @@
 .mirror-step,
 .mirror-action,
 .mirror-tool {
-  min-height: 2.55rem;
+  min-height: var(--btn-h-md);
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 14px;
   color: #eaf2ff;
@@ -517,7 +583,7 @@
 .mirror-drag-brief {
   display: grid;
   align-content: center;
-  min-height: 2.55rem;
+  min-height: var(--btn-h-md);
   padding: 0.38rem 0.7rem;
   border: 1px solid rgba(255, 209, 122, 0.22);
   border-radius: 14px;
@@ -537,11 +603,11 @@
 }
 
 .mirror-action {
-  padding: 0 0.85rem;
+  padding: 0 var(--btn-pad-x);
   color: #160f05;
   background: linear-gradient(135deg, #fff1a8, #ffd17a);
-  font-size: 0.78rem;
-  font-weight: 900;
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
 }
 
 .mirror-action--ghost {
@@ -567,9 +633,9 @@
 }
 
 .mirror-tool {
-  min-height: 2.25rem;
-  font-size: 0.72rem;
-  font-weight: 850;
+  min-height: var(--btn-h-sm);
+  font-size: var(--btn-font-sm);
+  font-weight: var(--btn-weight);
 }
 
 @keyframes mirrorStarDrift {
@@ -983,7 +1049,7 @@
   background: linear-gradient(135deg, #eaf7ff, #7edcff);
   box-shadow: 0 0 1rem rgba(126, 220, 255, 0.34);
   font-size: 0.75rem;
-  font-weight: 950;
+  font-weight: 900;
   transform: translate(-50%, -50%);
 }
 
@@ -1023,7 +1089,7 @@
   box-shadow: 0 0.85rem 1.8rem rgba(0, 0, 0, 0.28);
   font: inherit;
   font-size: 0.74rem;
-  font-weight: 950;
+  font-weight: 900;
   cursor: pointer;
   transition: transform 150ms ease, filter 150ms ease;
 }

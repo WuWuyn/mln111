@@ -3,6 +3,9 @@
 export default function HandControlBar({ targets, handActive, activeIndex, rateDir, selectTarget }) {
   const activeTarget = targets[activeIndex] ?? null
   const isSlider = activeTarget?.kind === 'slider'
+  // Gợi ý cho cử chỉ ☝ theo loại mục đang chọn.
+  const pointHint =
+    activeTarget?.kind === 'slider' ? '☝ kéo chỉnh' : activeTarget?.kind === 'pad' ? '☝ kéo di chuyển' : '☝ bấm'
 
   return (
     <div className={`hand-ctl ${handActive ? 'is-live' : ''}`}>
@@ -16,7 +19,7 @@ export default function HandControlBar({ targets, handActive, activeIndex, rateD
       ) : (
         <div className="hand-ctl-text">
           <strong>{activeTarget?.label ?? '—'}</strong>
-          <span>✌ đổi mục · {isSlider ? '☝ kéo chỉnh' : '☝ bấm'} · ✊ nghỉ</span>
+          <span>✌ đổi mục · {pointHint} · ✊ nghỉ</span>
         </div>
       )}
 
