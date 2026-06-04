@@ -243,6 +243,136 @@
   background: rgba(255, 90, 90, 0.18);
 }
 
+.guide-icon-button {
+  display: grid;
+  flex: none;
+  width: 2.55rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(126, 220, 255, 0.28);
+  border-radius: 999px;
+  color: #9fe7ff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035)),
+    rgba(8, 18, 32, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0.8rem 1.6rem rgba(0, 0, 0, 0.22);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.guide-icon-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(126, 220, 255, 0.7);
+  color: #ffffff;
+  background: rgba(126, 220, 255, 0.2);
+}
+
+.guide-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.8rem, 3vw, 1.5rem);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(126, 220, 255, 0.12), transparent 24rem),
+    rgba(2, 4, 11, 0.68);
+  backdrop-filter: blur(14px);
+  animation: overlayFade 180ms ease both;
+}
+
+.guide-modal-panel {
+  width: min(38rem, 100%);
+  max-height: min(78svh, 34rem);
+  overflow: auto;
+  padding: clamp(1.05rem, 3vw, 1.45rem);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+}
+
+.guide-modal-panel::before {
+  display: block;
+  height: 0.18rem;
+  margin: -0.25rem 0 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7edcff, rgba(255, 209, 122, 0.75), transparent);
+  content: '';
+}
+
+.guide-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.guide-modal-eyebrow {
+  margin: 0 0 0.35rem;
+  color: #7edcff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.guide-modal-head h3 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.guide-modal-close {
+  display: grid;
+  flex: none;
+  width: 2.25rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.guide-modal-list {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #d7e0f6;
+  line-height: 1.55;
+}
+
+.guide-modal-list li::marker {
+  color: #ffd17a;
+  font-weight: 900;
+}
+
 /* ── Planet detail page ───────────────────────────────────────────────────── */
 .detail-head {
   display: flex;
@@ -1990,6 +2120,202 @@
   justify-content: center;
 }
 
+/* Quick quiz shown when a shootable asteroid breaks in game mode. */
+.asteroid-quiz {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.8rem, 3vw, 1.4rem);
+  pointer-events: auto;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 209, 122, 0.14), transparent 26rem),
+    rgba(2, 4, 11, 0.38);
+  backdrop-filter: blur(4px);
+}
+
+.asteroid-quiz-card {
+  width: min(42rem, 100%);
+  max-height: min(86svh, 42rem);
+  overflow: auto;
+  padding: clamp(1.05rem, 3vw, 1.45rem);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  color: #f7f9ff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 209, 122, 0.08);
+  animation: overlayRise 260ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+
+.asteroid-quiz-card::before {
+  display: block;
+  height: 0.18rem;
+  margin: -0.25rem 0 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffd17a, rgba(126, 220, 255, 0.7), transparent);
+  content: '';
+}
+
+.asteroid-quiz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.asteroid-quiz-kicker {
+  margin: 0 0 0.35rem;
+  color: #ffd17a;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.asteroid-quiz-head h2 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: clamp(1.2rem, 3vw, 1.65rem);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.asteroid-quiz-close {
+  display: grid;
+  flex: none;
+  width: 2.35rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.asteroid-quiz-prompt {
+  margin: 0 0 1rem;
+  color: #fff;
+  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.asteroid-quiz-options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.asteroid-quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 3.15rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  color: #eaf2ff;
+  background: rgba(255, 255, 255, 0.045);
+  font: inherit;
+  font-size: 0.94rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.asteroid-quiz-option:not(:disabled):hover {
+  transform: translateX(0.18rem);
+  border-color: rgba(126, 220, 255, 0.5);
+  background: rgba(39, 114, 170, 0.18);
+}
+
+.asteroid-quiz-option span {
+  display: grid;
+  flex: none;
+  width: 1.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.asteroid-quiz-option.is-correct {
+  border-color: rgba(69, 216, 143, 0.72);
+  background: rgba(69, 216, 143, 0.16);
+  color: #d5ffe9;
+}
+
+.asteroid-quiz-option.is-correct span {
+  background: rgba(69, 216, 143, 0.72);
+  color: #04130b;
+}
+
+.asteroid-quiz-option.is-wrong {
+  border-color: rgba(255, 113, 93, 0.74);
+  background: rgba(255, 113, 93, 0.14);
+  color: #ffd0c4;
+}
+
+.asteroid-quiz-option.is-muted {
+  opacity: 0.46;
+}
+
+.asteroid-quiz-feedback {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+  padding: 0.9rem 1rem;
+  border-left: 3px solid;
+  border-radius: 12px;
+}
+
+.asteroid-quiz-feedback.is-correct {
+  border-color: #45d88f;
+  background: rgba(69, 216, 143, 0.1);
+}
+
+.asteroid-quiz-feedback.is-wrong {
+  border-color: #ff715d;
+  background: rgba(255, 113, 93, 0.09);
+}
+
+.asteroid-quiz-feedback strong {
+  color: #fff;
+}
+
+.asteroid-quiz-feedback p {
+  margin: 0;
+  color: #d7e0f6;
+  line-height: 1.55;
+}
+
+.asteroid-quiz-feedback .primary-action {
+  justify-self: start;
+  min-height: 2.8rem;
+  margin-top: 0.25rem;
+}
+
 /* ── Daily-life overlay ───────────────────────────────────────────────────── */
 .life-grid {
   display: grid;
@@ -2330,7 +2656,7 @@
   .experience-nav {
     right: 0.6rem;
     left: 0.6rem;
-    bottom: 4.6rem;
+    bottom: 3.65rem;
     max-width: none;
     overflow-x: auto;
     justify-content: flex-start;
@@ -2343,5 +2669,31 @@
 
   .nav-pill {
     flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .asteroid-quiz {
+    align-items: end;
+    padding: 0.7rem;
+  }
+
+  .asteroid-quiz-card {
+    max-height: 74svh;
+    border-radius: 16px;
+  }
+
+  .asteroid-quiz-head {
+    gap: 0.7rem;
+  }
+
+  .asteroid-quiz-option {
+    min-height: 3rem;
+    padding: 0.68rem 0.74rem;
+    font-size: 0.86rem;
+  }
+
+  .asteroid-quiz-feedback .primary-action {
+    width: 100%;
   }
 }

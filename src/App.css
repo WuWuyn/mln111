@@ -732,11 +732,23 @@ p {
   position: absolute;
   right: clamp(1rem, 3vw, 2rem);
   top: clamp(5.8rem, 10vw, 7rem);
-  z-index: 7;
+  z-index: 12;
   width: min(25rem, calc(100% - 2rem));
   max-height: calc(100svh - 8rem);
   padding: 1.15rem;
   overflow: auto;
+  overflow-wrap: anywhere;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(126, 220, 255, 0.34) transparent;
+}
+
+.info-panel::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.info-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(126, 220, 255, 0.34);
 }
 
 .panel-top {
@@ -769,6 +781,7 @@ p {
   color: #fff;
   font-size: 2.6rem;
   line-height: 0.98;
+  text-wrap: balance;
 }
 
 .panel-type {
@@ -802,6 +815,7 @@ p {
 
 .concept-strip strong {
   color: #fff;
+  line-height: 1.25;
 }
 
 .reopen-panel {
@@ -889,16 +903,6 @@ p {
   transform: none;
 }
 
-.game-score {
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
-  background: rgba(4, 9, 22, 0.66);
-  backdrop-filter: blur(18px);
-  color: #ffd17a;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
 .game-hint {
   position: absolute;
   left: 50%;
@@ -917,14 +921,27 @@ p {
 
 @media (max-width: 640px) {
   .space-game-controls {
-    right: 0.5rem;
+    right: 0.6rem;
+    left: 0.6rem;
     top: auto;
-    bottom: 8.5rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    bottom: 6.4rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .game-toggle,
+  .game-reset {
+    min-width: 0;
+    width: 100%;
+    min-height: 2.45rem;
+    padding-inline: 0.65rem;
+    font-size: 0.74rem;
+    text-align: center;
   }
 
   .game-hint {
+    top: 4.8rem;
     width: calc(100% - 1rem);
     font-size: 0.82rem;
     text-align: center;
@@ -1100,10 +1117,27 @@ p {
     padding: 0.8rem;
   }
 
+  .experience-copy .eyebrow {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+  }
+
+  .experience-copy h1 {
+    font-size: 1.02rem;
+  }
+
   .hud-bar {
+    left: 0.5rem;
+    bottom: 0.5rem;
     width: calc(100% - 1rem);
     overflow-x: auto;
     justify-content: flex-start;
+    transform: none;
+    scrollbar-width: none;
+  }
+
+  .hud-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .hand-tracking-panel {
@@ -1269,7 +1303,44 @@ p {
   .info-panel {
     right: 0.6rem;
     bottom: 3.7rem;
-    max-height: 47svh;
+    left: 0.6rem;
+    width: auto;
+    max-height: 46svh;
+    padding: 0.82rem;
+  }
+
+  .info-panel .eyebrow {
+    font-size: 0.62rem;
+  }
+
+  .info-panel h2 {
+    margin-top: 0.5rem;
+    font-size: clamp(1.45rem, 9vw, 2rem);
+    line-height: 1.02;
+  }
+
+  .info-panel p,
+  .info-panel li {
+    font-size: 0.84rem;
+    line-height: 1.42;
+  }
+
+  .info-panel ul {
+    gap: 0.42rem;
+    padding-left: 1rem;
+  }
+
+  .concept-strip {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+  }
+
+  .concept-strip span {
+    font-size: 0.68rem;
+  }
+
+  .concept-strip strong {
+    font-size: 0.95rem;
   }
 }
 

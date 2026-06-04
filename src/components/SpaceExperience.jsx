@@ -1,7 +1,8 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { planets } from '../data/cosmos'
+import { challengeQuestions } from '../data/learning'
 import BadgeResult from './overlays/BadgeResult'
 import LifeApplication from './overlays/LifeApplication'
 import PlanetDetail from './overlays/PlanetDetail'
@@ -56,6 +57,80 @@ function addUnique(list, id) {
   return list.includes(id) ? list : [...list, id]
 }
 
+function shuffleQuestionIndexes(lastQuestionIndex) {
+  const indexes = challengeQuestions.map((_, index) => index)
+
+  for (let i = indexes.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[indexes[i], indexes[j]] = [indexes[j], indexes[i]]
+  }
+
+  if (indexes.length > 1 && indexes[0] === lastQuestionIndex) {
+    ;[indexes[0], indexes[1]] = [indexes[1], indexes[0]]
+  }
+
+  return indexes
+}
+
+function ShotQuiz({ quiz, onClose }) {
+  const [picked, setPicked] = useState(null)
+  const question = challengeQuestions[quiz.questionIndex % challengeQuestions.length]
+  const answered = picked !== null
+  const isCorrect = answered && picked === question.answer
+
+  const choose = (value) => {
+    if (answered) return
+    setPicked(value)
+  }
+
+  return (
+    <div className="asteroid-quiz" role="dialog" aria-modal="true" aria-labelledby="asteroid-quiz-title">
+      <div className="asteroid-quiz-card">
+        <header className="asteroid-quiz-head">
+          <div>
+            <p className="asteroid-quiz-kicker">{quiz.kicker}</p>
+            <h2 id="asteroid-quiz-title">{quiz.title}</h2>
+          </div>
+          <button type="button" className="asteroid-quiz-close" onClick={onClose} aria-label="Đóng quiz">
+            ×
+          </button>
+        </header>
+
+        <p className="asteroid-quiz-prompt">{question.prompt}</p>
+        <div className="asteroid-quiz-options">
+          {question.options.map((option) => {
+            const isAnswer = option.value === question.answer
+            const isPicked = option.value === picked
+            const cls = answered ? (isAnswer ? 'is-correct' : isPicked ? 'is-wrong' : 'is-muted') : ''
+            return (
+              <button
+                key={option.value}
+                type="button"
+                className={`asteroid-quiz-option ${cls}`}
+                onClick={() => choose(option.value)}
+                disabled={answered}
+              >
+                <span>{option.value.toUpperCase()}</span>
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {answered && (
+          <div className={`asteroid-quiz-feedback ${isCorrect ? 'is-correct' : 'is-wrong'}`}>
+            <strong>{isCorrect ? 'Chính xác' : 'Chưa đúng'}</strong>
+            <p>{question.explain}</p>
+            <button type="button" className="primary-action" onClick={onClose}>
+              Tiếp tục bắn
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function runSceneTransition(update) {
   const canTransition =
     typeof document !== 'undefined' &&
@@ -79,18 +154,36 @@ export default function SpaceExperience({ onBack, handControlStore }) {
   const [progress, setProgress] = useState({ visited: [], passed: [], challengeScore: null })
   const [gameMode, setGameMode] = useState(false)
   const [destroyed, setDestroyed] = useState([])
+  const [shotQuiz, setShotQuiz] = useState(null)
   const [resetSignal, setResetSignal] = useState(0)
+  const questionBag = useRef({ remaining: [], last: null })
+
+  const nextQuestionIndex = useCallback(() => {
+    if (questionBag.current.remaining.length === 0) {
+      questionBag.current.remaining = shuffleQuestionIndexes(questionBag.current.last)
+    }
+
+    const next = questionBag.current.remaining.shift() ?? 0
+    questionBag.current.last = next
+    return next
+  }, [])
 
   const destroyPlanet = useCallback((id) => {
     setDestroyed((prev) => (prev.includes(id) ? prev : [...prev, id]))
-  }, [])
+    const planet = id === 'central' ? null : planets.find((item) => item.id === id)
+    setShotQuiz({
+      key: `planet-${id}-${Date.now()}`,
+      questionIndex: nextQuestionIndex(),
+      kicker: planet ? `Hành tinh ${planet.name}` : 'Lõi trung tâm',
+      title: 'Hành tinh vỡ, quiz xuất hiện',
+    })
+  }, [nextQuestionIndex])
 
   const resetGame = useCallback(() => {
     setDestroyed([])
+    setShotQuiz(null)
     setResetSignal((n) => n + 1)
   }, [])
-
-  const totalTargets = planets.length + 1
 
   useEffect(() => {
     const sync = () => setActiveView(getViewFromHash())
@@ -154,6 +247,15 @@ export default function SpaceExperience({ onBack, handControlStore }) {
     }))
   }, [])
 
+  const handleAsteroidDestroy = useCallback((index) => {
+    setShotQuiz({
+      key: `asteroid-${index}-${Date.now()}`,
+      questionIndex: nextQuestionIndex(),
+      kicker: `Mảnh tri thức #${index + 1}`,
+      title: 'Thiên thạch vỡ, quiz xuất hiện',
+    })
+  }, [nextQuestionIndex])
+
   return (
     <section className="experience-page">
       {activeView === null && (
@@ -206,10 +308,11 @@ export default function SpaceExperience({ onBack, handControlStore }) {
               setSelectedPlanet={selectPlanet}
               onOpenExperience={openExperience}
               handControlStore={handControlStore}
-              overlayOpen={Boolean(activeView)}
+              overlayOpen={Boolean(activeView) || panelVisible}
               gameMode={gameMode}
               destroyed={destroyed}
               onDestroyPlanet={destroyPlanet}
+              onDestroyAsteroid={handleAsteroidDestroy}
               resetKey={resetSignal}
             />
           </Suspense>
@@ -225,9 +328,6 @@ export default function SpaceExperience({ onBack, handControlStore }) {
           </button>
           {gameMode && (
             <>
-              <span className="game-score">
-                Đã phá {destroyed.length}/{totalTargets}
-              </span>
               <button type="button" className="game-reset" onClick={resetGame}>
                 Khôi phục
               </button>
@@ -235,7 +335,15 @@ export default function SpaceExperience({ onBack, handControlStore }) {
           )}
         </div>
 
-        {gameMode && <p className="game-hint">Nhắm vào một hành tinh rồi bấm để bắn đá.</p>}
+        {gameMode && <p className="game-hint">Nhắm vào thiên thạch hoặc hành tinh rồi bấm để bắn. Mục tiêu vỡ sẽ mở quiz nhanh.</p>}
+
+        {gameMode && shotQuiz && (
+          <ShotQuiz
+            key={shotQuiz.key}
+            quiz={shotQuiz}
+            onClose={() => setShotQuiz(null)}
+          />
+        )}
 
         <div className="hud-bar">
           <div>

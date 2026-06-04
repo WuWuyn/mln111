@@ -122,6 +122,7 @@ export default function Scene({
   gameMode = false,
   destroyed = [],
   onDestroyPlanet,
+  onDestroyAsteroid,
   resetKey = 0,
 }) {
   const controlsRef = useRef()
@@ -170,6 +171,7 @@ export default function Scene({
         planets={planets}
         destroyed={destroyed}
         onDestroy={onDestroyPlanet}
+        onAsteroidDestroy={onDestroyAsteroid}
         asteroidStore={asteroidStore}
       />
       <OrbitControls

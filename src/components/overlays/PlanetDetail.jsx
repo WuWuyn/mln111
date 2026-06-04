@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { planetPalette, planets } from '../../data/cosmos'
 import PlanetWidget from '../interactives'
+import GuidanceModal from './GuidanceModal'
 import MiniQuiz from './MiniQuiz'
 import OverlayShell from './OverlayShell'
 import './PlanetDetail.css'
@@ -42,6 +44,7 @@ function isVisualFirst(widget) {
 }
 
 export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }) {
+  const [guideOpen, setGuideOpen] = useState(false)
   const colors = planetPalette[planet.color] ?? planetPalette.cyan
   const index = planets.findIndex((item) => item.id === planet.id)
   const prev = planets[(index - 1 + planets.length) % planets.length]
@@ -61,9 +64,20 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
           <h2 className="detail-title">{copy.title}</h2>
           <p className="detail-type">{copy.kicker}</p>
         </div>
-        <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng trang">
-          ×
-        </button>
+        <div className="detail-head-actions">
+          <button
+            type="button"
+            className="guide-icon-button"
+            onClick={() => setGuideOpen(true)}
+            aria-label="Mở hướng dẫn tương tác"
+            title="Hướng dẫn"
+          >
+            ?
+          </button>
+          <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng trang">
+            ×
+          </button>
+        </div>
       </header>
 
       <div className={`detail-body ${isVisualFirst(planet.widget) ? 'detail-body--visual-first' : ''}`}>
@@ -131,6 +145,18 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass }
           <span className="detail-nav-label">{next.name}</span>
         </button>
       </footer>
+
+      {guideOpen && (
+        <GuidanceModal
+          title={copy.title}
+          items={[
+            copy.prompt,
+            'Thử kéo, bấm hoặc thay đổi các nút điều khiển trong mô hình để quan sát phản hồi.',
+            'Sau khi hiểu cơ chế, mở mini quiz ở góc màn hình để tự kiểm tra nhanh.',
+          ]}
+          onClose={() => setGuideOpen(false)}
+        />
+      )}
     </OverlayShell>
   )
 }

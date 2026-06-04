@@ -180,7 +180,7 @@ function Explosion({ data, onDone }) {
   )
 }
 
-export default function GameShooter({ enabled, planets, destroyed, onDestroy, asteroidStore }) {
+export default function GameShooter({ enabled, planets, destroyed, onDestroy, onAsteroidDestroy, asteroidStore }) {
   const { camera, gl } = useThree()
   const livePositions = useRef([])
   const nextId = useRef(0)
@@ -228,6 +228,7 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy, as
   const handleHitAsteroid = useCallback(
     (index, hitPos) => {
       asteroidStore.current.destroyed.add(index)
+      onAsteroidDestroy?.(index)
       const id = nextId.current++
       // Smaller, dusty burst for the little rocks.
       setExplosions((prev) => [
@@ -235,7 +236,7 @@ export default function GameShooter({ enabled, planets, destroyed, onDestroy, as
         { id, position: hitPos.toArray(), color: '#b8a890', scale: 0.5 },
       ])
     },
-    [asteroidStore],
+    [asteroidStore, onAsteroidDestroy],
   )
 
   // Fire on a deliberate tap (not a camera-orbit drag): small movement, quick.

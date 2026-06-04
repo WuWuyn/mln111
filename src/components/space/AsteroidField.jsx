@@ -15,7 +15,7 @@ import { seededRandom } from './random'
  * live world position into `store.current.live` so GameShooter can test
  * collisions, and we hide (scale → 0) any index in `store.current.destroyed`.
  */
-const COUNT = 120
+const ASTEROID_COUNT = 120
 const INNER_RADIUS = 14
 const OUTER_RADIUS = 52
 const TWO_PI = Math.PI * 2
@@ -28,9 +28,9 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
 
   // Per-asteroid orbital parameters, computed once.
   const rocks = useMemo(() => {
-    const items = new Array(COUNT)
+    const items = new Array(ASTEROID_COUNT)
 
-    for (let i = 0; i < COUNT; i += 1) {
+    for (let i = 0; i < ASTEROID_COUNT; i += 1) {
       const r = i * 7
       const t = Math.sqrt(seededRandom(r + 1)) // bias outward, keep core clear
       const radius = INNER_RADIUS + t * (OUTER_RADIUS - INNER_RADIUS)
@@ -75,7 +75,7 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
   // Slightly varied per-instance colour so the belt isn't a flat grey mass.
   useLayoutEffect(() => {
     const color = new THREE.Color()
-    for (let i = 0; i < COUNT; i += 1) {
+    for (let i = 0; i < ASTEROID_COUNT; i += 1) {
       const shade = 0.45 + seededRandom(i * 7 + 11) * 0.4
       color.setRGB(shade, shade * 0.95, shade * 0.88)
       mesh.current.setColorAt(i, color)
@@ -87,7 +87,7 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
     const elapsed = state.clock.elapsedTime
     const destroyed = asteroidStore?.destroyed
 
-    for (let i = 0; i < COUNT; i += 1) {
+    for (let i = 0; i < ASTEROID_COUNT; i += 1) {
       const rock = rocks[i]
       const angle = rock.angle + elapsed * rock.orbitSpeed
 
@@ -121,7 +121,7 @@ export default function AsteroidField({ store, resetKey = 0, active = false }) {
   })
 
   return (
-    <instancedMesh ref={mesh} args={[undefined, undefined, COUNT]} castShadow={false}>
+    <instancedMesh ref={mesh} args={[undefined, undefined, ASTEROID_COUNT]} castShadow={false}>
       {/* dodecahedron with detail 0 reads as a chunky, faceted space rock */}
       <dodecahedronGeometry args={[1, 0]} />
       <meshStandardMaterial roughness={0.92} metalness={0.08} flatShading vertexColors={false} />

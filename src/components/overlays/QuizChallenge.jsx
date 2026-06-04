@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { challengeQuestions } from '../../data/learning'
+import GuidanceModal from './GuidanceModal'
 import OverlayShell from './OverlayShell'
 import './QuizChallenge.css'
 
 export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
+  const [guideOpen, setGuideOpen] = useState(false)
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState(null)
   const [correctCount, setCorrectCount] = useState(0)
@@ -54,9 +56,20 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
             <p className="overlay-eyebrow">Hoàn thành thực nghiệm</p>
             <h2>Kết quả của bạn</h2>
           </div>
-          <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng">
-            ×
-          </button>
+          <div className="quiz-head-actions">
+            <button
+              type="button"
+              className="guide-icon-button"
+              onClick={() => setGuideOpen(true)}
+              aria-label="Mở hướng dẫn quiz"
+              title="Hướng dẫn"
+            >
+              ?
+            </button>
+            <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng">
+              ×
+            </button>
+          </div>
         </header>
         <div className="quiz-result">
           <div className="quiz-score-ring" style={{ '--p': score }}>
@@ -78,6 +91,17 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
             </button>
           </div>
         </div>
+        {guideOpen && (
+          <GuidanceModal
+            title="Cách làm quiz vận dụng"
+            items={[
+              'Đọc tình huống trước, sau đó chọn phương án thể hiện đúng tinh thần duy vật biện chứng.',
+              'Sau khi chọn, hệ thống sẽ hiện đáp án đúng và giải thích ngắn.',
+              'Bấm câu tiếp theo để đi hết bộ câu hỏi, rồi nhận kết quả cuối.',
+            ]}
+            onClose={() => setGuideOpen(false)}
+          />
+        )}
       </OverlayShell>
     )
   }
@@ -92,9 +116,20 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
             <span className="quiz-total"> / {total}</span>
           </h2>
         </div>
-        <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng">
-          ×
-        </button>
+        <div className="quiz-head-actions">
+          <button
+            type="button"
+            className="guide-icon-button"
+            onClick={() => setGuideOpen(true)}
+            aria-label="Mở hướng dẫn quiz"
+            title="Hướng dẫn"
+          >
+            ?
+          </button>
+          <button type="button" className="overlay-close" onClick={onClose} aria-label="Đóng">
+            ×
+          </button>
+        </div>
       </header>
 
       <div className="quiz-progress" aria-hidden="true">
@@ -144,6 +179,18 @@ export default function QuizChallenge({ onClose, onComplete, onGoBadge }) {
           </div>
         )}
       </div>
+
+      {guideOpen && (
+        <GuidanceModal
+          title="Cách làm quiz vận dụng"
+          items={[
+            'Đọc tình huống trước, sau đó chọn phương án thể hiện đúng tinh thần duy vật biện chứng.',
+            'Sau khi chọn, hệ thống sẽ hiện đáp án đúng và giải thích ngắn.',
+            'Bấm câu tiếp theo để đi hết bộ câu hỏi, rồi nhận kết quả cuối.',
+          ]}
+          onClose={() => setGuideOpen(false)}
+        />
+      )}
     </OverlayShell>
   )
 }

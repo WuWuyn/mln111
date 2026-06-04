@@ -1018,3 +1018,537 @@
     bottom: 22%;
   }
 }
+
+/* Final title/modal guard: keep experiment chrome compact and non-overlapping. */
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(0.9rem, 2vw, 1.35rem);
+  padding-right: 0;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+  max-width: min(55rem, calc(100vw - 8rem));
+  margin-bottom: 0.42rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1.45rem, 3.1vw, 2.35rem);
+  font-weight: 950;
+  line-height: 0.98;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+  max-width: min(50rem, calc(100vw - 9rem));
+  padding: 0.23rem 0.68rem;
+  font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+  line-height: 1.2;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding-top: 0.2rem;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+.content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+  width: 2.65rem;
+  height: 2.65rem;
+  margin-top: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+  left: clamp(0.8rem, 1.8vw, 1.25rem);
+  right: auto;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-body {
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head > div:first-child {
+    padding-right: 5.6rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title,
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+    max-width: 100%;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions {
+    position: absolute;
+    top: 0.45rem;
+    right: 0;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+  .content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+    left: 0.6rem;
+    right: auto;
+  }
+}
+
+/* High-end visual pass: compact editorial header, modal-safe quiz trigger. */
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(0.9rem, 2vw, 1.35rem);
+  padding: clamp(0.45rem, 1svh, 0.7rem) 0 clamp(0.5rem, 1.2svh, 0.75rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head > div:first-child {
+  min-width: 0;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head .overlay-eyebrow {
+  margin: 0 0 0.36rem;
+  font-size: clamp(0.56rem, 1.4vw, 0.68rem);
+  letter-spacing: 0.18em;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+  max-width: min(55rem, calc(100vw - 8rem));
+  margin: 0 0 0.42rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1.45rem, 3.1vw, 2.35rem);
+  font-weight: 950;
+  line-height: 0.98;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+  max-width: min(50rem, calc(100vw - 9rem));
+  padding: 0.23rem 0.68rem;
+  font-size: clamp(0.58rem, 1.2vw, 0.68rem);
+  line-height: 1.2;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.65rem;
+  padding-top: 0.2rem;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+.content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+  width: 2.65rem;
+  height: 2.65rem;
+  margin-top: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+  left: clamp(0.8rem, 1.8vw, 1.25rem);
+  right: auto;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-body {
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head > div:first-child {
+    padding-right: 5.6rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title,
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+    max-width: 100%;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions {
+    position: absolute;
+    top: 0.45rem;
+    right: 0;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+  .content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+    left: 0.6rem;
+    right: auto;
+  }
+}
+
+/* Full-screen experiment pass: the interactive model owns the page; help lives in a modal. */
+.content-page.overlay-panel--detail .detail-head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.content-page.overlay-panel--detail .detail-head > div:first-child {
+  min-width: 0;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .overlay-close,
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button {
+  margin-top: 0;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) {
+  padding: clamp(0.65rem, 1.8vw, 1.25rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .content-page-inner {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "stage";
+  gap: clamp(0.55rem, 1.2svh, 0.85rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  grid-area: head;
+  width: 100%;
+  padding: clamp(0.45rem, 1svh, 0.7rem) clamp(3.4rem, 5vw, 4.2rem) clamp(0.5rem, 1.2svh, 0.75rem) 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first {
+  grid-area: stage;
+  align-self: stretch;
+  justify-self: stretch;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(0.55rem, 1.2vw, 0.9rem);
+  border-radius: 18px;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .detail-interactive > .widget {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-universe,
+.content-page.overlay-panel--detail .detail-body--visual-first .mirror-redesign,
+.content-page.overlay-panel--detail .detail-body--visual-first .dialectic-system,
+.content-page.overlay-panel--detail .detail-body--visual-first .dialectic-core,
+.content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(0.55rem, 1.2svh, 0.85rem);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .silent-scene,
+.content-page.overlay-panel--detail .detail-body--visual-first .mirror-stage,
+.content-page.overlay-panel--detail .detail-body--visual-first .mirror-stage--lens,
+.content-page.overlay-panel--detail .detail-body--visual-first .dialectic-stage,
+.content-page.overlay-panel--detail .detail-body--visual-first .core-stage,
+.content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab-stage {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-controls,
+.content-page.overlay-panel--detail .detail-body--visual-first .mirror-controls,
+.content-page.overlay-panel--detail .detail-body--visual-first .dialectic-controls,
+.content-page.overlay-panel--detail .detail-body--visual-first .core-controls,
+.content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab-controls,
+.content-page.overlay-panel--detail .detail-body--visual-first .praxis-flow {
+  flex: none;
+  max-height: min(28svh, 12rem);
+  overflow: auto;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first .matter-insight,
+.content-page.overlay-panel--detail .detail-body--visual-first .mirror-status,
+.content-page.overlay-panel--detail .detail-body--visual-first .system-readout,
+.content-page.overlay-panel--detail .detail-body--visual-first .core-readout,
+.content-page.overlay-panel--detail .detail-body--visual-first .lab-console,
+.content-page.overlay-panel--detail .detail-body--visual-first .widget-readout {
+  max-width: min(22rem, calc(100% - 1.2rem));
+  max-height: min(30svh, 10rem);
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+  position: fixed;
+  right: clamp(0.8rem, 1.8vw, 1.25rem);
+  bottom: clamp(0.8rem, 1.8vw, 1.25rem);
+  z-index: 30;
+  width: min(24rem, calc(100vw - 1.6rem));
+  max-height: min(34rem, calc(100svh - 1.6rem));
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz:not(.is-open) {
+  width: 3rem;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open {
+  inset: 0;
+  right: auto;
+  bottom: auto;
+  display: grid;
+  place-items: center;
+  width: auto;
+  max-height: none;
+  padding: clamp(0.8rem, 3vw, 1.4rem);
+  border: 0;
+  border-radius: 0;
+  background: rgba(2, 4, 11, 0.58);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-toggle {
+  position: absolute;
+  right: clamp(0.9rem, 2vw, 1.3rem);
+  top: clamp(0.9rem, 2vw, 1.3rem);
+  width: 2.6rem;
+  min-height: 2.6rem;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-kicker,
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-toggle-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-body {
+  width: min(38rem, 100%);
+  max-height: min(78svh, 38rem);
+  overflow: auto;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  border: 1px solid rgba(126, 220, 255, 0.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(126, 220, 255, 0.12), transparent 16rem),
+    rgba(5, 9, 20, 0.94);
+  box-shadow:
+    0 2rem 5rem rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) {
+    padding: 0.55rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    padding-right: 0;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions {
+    gap: 0.45rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+  .content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-type {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+    right: 0.6rem;
+    bottom: 0.6rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first .matter-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .mirror-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .dialectic-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .core-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .praxis-lab-controls,
+  .content-page.overlay-panel--detail .detail-body--visual-first .praxis-flow {
+    max-height: min(34svh, 14rem);
+  }
+}
+
+/* High-end final lock: keep experiment title, actions, and modals from colliding. */
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+  display: grid;
+  grid-area: head;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(0.9rem, 2vw, 1.35rem);
+  width: 100%;
+  padding: clamp(0.45rem, 1svh, 0.7rem) 0 clamp(0.5rem, 1.2svh, 0.75rem);
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head > div:first-child {
+  min-width: 0;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head .overlay-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: clamp(0.56rem, 1.1vw, 0.68rem);
+  line-height: 1;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+  max-width: min(54rem, calc(100vw - 8rem));
+  margin: 0 0 0.36rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1.42rem, 3vw, 2.25rem);
+  font-weight: 950;
+  line-height: 0.98;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+  max-width: min(48rem, calc(100vw - 9rem));
+  padding: 0.24rem 0.7rem;
+  font-size: clamp(0.58rem, 1.05vw, 0.68rem);
+  line-height: 1.2;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.65rem;
+  padding-top: 0.18rem;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+.content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+  width: 2.65rem;
+  height: 2.65rem;
+  margin-top: 0;
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+  left: clamp(0.8rem, 1.8vw, 1.25rem);
+  right: auto;
+  bottom: clamp(0.8rem, 1.8vw, 1.25rem);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open {
+  background:
+    radial-gradient(circle at 50% 34%, rgba(126, 220, 255, 0.13), transparent 24rem),
+    rgba(2, 4, 11, 0.68);
+  backdrop-filter: blur(14px);
+}
+
+.content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz.is-open .mini-quiz-body {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at 12% 0%, rgba(126, 220, 255, 0.13), transparent 16rem),
+    rgba(5, 9, 20, 0.96);
+  box-shadow:
+    0 2.4rem 6rem rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(126, 220, 255, 0.08);
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: clamp(0.45rem, 1svh, 0.65rem) 0 clamp(0.45rem, 1.2svh, 0.65rem);
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head > div:first-child {
+    padding-right: 5.45rem;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title,
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-type {
+    max-width: 100%;
+  }
+
+  .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
+    font-size: clamp(1.26rem, 6.6vw, 1.82rem);
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions {
+    position: absolute;
+    top: 0.42rem;
+    right: 0;
+    gap: 0.45rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+  .content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .content-page.overlay-panel--detail .detail-body--visual-first + .mini-quiz {
+    left: 0.6rem;
+    right: auto;
+    bottom: 0.6rem;
+  }
+}

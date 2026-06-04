@@ -23,9 +23,20 @@
 
 /* ── Header ───────────────────────────────────────────────────────────────── */
 .content-page.overlay-panel--quiz .overlay-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 0;
   padding-bottom: 1.1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.content-page.overlay-panel--quiz .quiz-head-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .content-page.overlay-panel--quiz .overlay-head h2 .quiz-total {
@@ -530,5 +541,69 @@
 
   .content-page.overlay-panel--quiz .quiz-prompt {
     font-size: clamp(1.2rem, 2vw, 1.5rem);
+  }
+}
+
+/* High-end modal/header pass: compact quiz title chrome with resilient actions. */
+.content-page.overlay-panel--quiz .overlay-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: clamp(0.9rem, 2vw, 1.25rem);
+}
+
+.content-page.overlay-panel--quiz .overlay-head > div:first-child {
+  min-width: 0;
+}
+
+.content-page.overlay-panel--quiz .overlay-head h2 {
+  max-width: min(44rem, calc(100vw - 8rem));
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.content-page.overlay-panel--quiz .quiz-head-actions {
+  align-items: center;
+  padding-top: 0.1rem;
+}
+
+.content-page.overlay-panel--quiz .quiz-head-actions .guide-icon-button,
+.content-page.overlay-panel--quiz .quiz-head-actions .overlay-close {
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-top: 0;
+}
+
+@media (max-width: 560px) {
+  .content-page.overlay-panel--quiz .overlay-head {
+    grid-template-columns: minmax(0, 1fr);
+    position: relative;
+  }
+
+  .content-page.overlay-panel--quiz .overlay-head > div:first-child {
+    padding-right: 5.35rem;
+  }
+
+  .content-page.overlay-panel--quiz .overlay-head h2 {
+    max-width: 100%;
+    font-size: clamp(1.28rem, 7vw, 1.85rem);
+  }
+
+  .content-page.overlay-panel--quiz .quiz-head-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    gap: 0.45rem;
+  }
+
+  .content-page.overlay-panel--quiz .quiz-head-actions .guide-icon-button,
+  .content-page.overlay-panel--quiz .quiz-head-actions .overlay-close {
+    width: 2.35rem;
+    height: 2.35rem;
   }
 }
