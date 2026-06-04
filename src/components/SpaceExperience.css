@@ -56,7 +56,7 @@
   background: linear-gradient(135deg, #fff2a6, #ff9a33 60%, #f0491c);
   box-shadow: 0 14px 40px rgba(241, 76, 27, 0.26);
   font: inherit;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -95,7 +95,7 @@
   backdrop-filter: blur(14px);
   font: inherit;
   font-size: 0.82rem;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -199,7 +199,8 @@
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 3.4vw, 2.3rem);
-  line-height: 1.02;
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-display);
 }
 
 .overlay-eyebrow {
@@ -207,7 +208,7 @@
   color: #7edcff;
   font-size: 0.74rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -215,7 +216,7 @@
   max-width: 52rem;
   margin: 0 0 1.4rem;
   color: #cbd5ee;
-  line-height: 1.6;
+  line-height: var(--lh-body);
 }
 
 .overlay-close {
@@ -260,7 +261,7 @@
     0 0.8rem 1.6rem rgba(0, 0, 0, 0.22);
   font: inherit;
   font-size: 1.05rem;
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1;
   cursor: pointer;
   transition:
@@ -329,7 +330,7 @@
   color: #7edcff;
   font-size: 0.7rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -398,13 +399,14 @@
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(1.9rem, 4vw, 2.9rem);
-  line-height: 0.98;
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-display);
 }
 
 .detail-type {
   margin: 0;
   color: var(--accent, #ffd17a);
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .detail-body {
@@ -441,14 +443,14 @@
   color: #9fc3ff;
   font-size: 0.78rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
 .detail-block p {
   margin: 0;
   color: #d7e0f6;
-  line-height: 1.66;
+  line-height: var(--lh-body);
 }
 
 .detail-define {
@@ -603,7 +605,7 @@
   color: #7edcff;
   font-size: 0.72rem;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -811,7 +813,7 @@
   color: #150d08;
   background: linear-gradient(135deg, #fff2a6, #ff9a33 70%);
   font: inherit;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition:
     transform 150ms ease,
@@ -1206,7 +1208,7 @@
     0 0 1.4rem rgba(255, 209, 122, 0.42);
   font: inherit;
   font-size: 1.12rem;
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1;
   cursor: pointer;
   animation: knowledgePulse 2.2s ease-in-out infinite;
@@ -1282,7 +1284,7 @@
   border-radius: 50%;
   color: #140e05;
   background: #ffd17a;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .matter-insight strong {
@@ -1323,7 +1325,7 @@
   color: #ffd17a !important;
   font-size: 0.72rem !important;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -1351,7 +1353,7 @@
   background: rgba(255, 255, 255, 0.06);
   font: inherit;
   font-size: 0.88rem;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 }
@@ -1403,8 +1405,8 @@
   display: block;
   color: #ffd17a;
   font-size: 0.68rem;
-  font-weight: 950;
-  letter-spacing: 0.13em;
+  font-weight: 900;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -1495,7 +1497,7 @@
   border-radius: 50%;
   color: #110c04;
   background: rgba(255, 209, 122, 0.9);
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .matter-layer-dot strong,
@@ -2200,7 +2202,7 @@
   color: #ffd17a;
   font-size: 0.72rem;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -2209,7 +2211,7 @@
   color: #fff;
   font-family: var(--font-sans);
   font-size: clamp(1.2rem, 3vw, 1.65rem);
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1.1;
   letter-spacing: 0;
 }
@@ -2421,7 +2423,7 @@
   max-width: 36rem;
   margin: 0;
   color: #cbd5ee;
-  line-height: 1.6;
+  line-height: var(--lh-body);
 }
 
 .badge-score {
@@ -2968,7 +2970,7 @@
 .knowledge-pulse span {
   color: #7edcff;
   font-size: 0.72rem;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0.1em;
   line-height: 1;
   text-transform: uppercase;
@@ -3087,7 +3089,7 @@
   color: #fff;
   font-family: var(--font-sans);
   font-size: clamp(1.2rem, 2.8vw, 1.65rem);
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1.05;
 }
 
@@ -3152,7 +3154,7 @@
     0 0 1.2rem color-mix(in srgb, var(--hud-accent) 16%, transparent);
   font-family: var(--font-mono);
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -3183,7 +3185,7 @@
 .asteroid-quiz-kicker {
   font-family: var(--font-mono);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -3208,4 +3210,84 @@
 .mini-quiz-toggle {
   font-family: var(--font-mono);
   letter-spacing: 0.08em;
+}
+
+/* Mũi tên báo hiệu khi "lướt tay" chuyển trang — lóe lên rồi mờ dần. */
+.swipe-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 80;
+  transform: translate(-50%, -50%);
+  font-size: clamp(3rem, 9vw, 6rem);
+  line-height: 1;
+  color: var(--hud-accent, #7edcff);
+  text-shadow: 0 0 24px currentColor, 0 0 48px currentColor;
+  pointer-events: none;
+  animation: swipe-flash-pop 0.65s ease-out forwards;
+}
+
+@keyframes swipe-flash-pop {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.swipe-flash.to-next { animation-name: swipe-flash-next; }
+.swipe-flash.to-prev { animation-name: swipe-flash-prev; }
+
+@keyframes swipe-flash-next {
+  0% { opacity: 0; transform: translate(-90%, -50%); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-10%, -50%); }
+}
+
+@keyframes swipe-flash-prev {
+  0% { opacity: 0; transform: translate(-10%, -50%); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-90%, -50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-flash { animation: swipe-flash-pop 0.65s ease-out forwards; }
+}
+
+/* Nút trợ giúp cử chỉ tay nằm cuối thanh trên, đẩy về sát mép phải. */
+.topbar-help {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+/* Header ban do toi gian: chi con MOT nut back noi rieng o goc tren-trai. Bo
+   het nen/vien/blur cua "thanh" de no khong con la mot header che khong gian —
+   nut back tu no da co kieu rieng (.icon-action). */
+.experience-topbar--bare {
+  /* App.css dat .experience-topbar la position:relative (trong luong) -> no day
+     canvas xuong, tao "khoang den" tren cung. Tra lai absolute de no NOI len tren
+     ban do, khong chiem chieu cao. */
+  position: absolute;
+  top: clamp(0.9rem, 2vw, 1.4rem);
+  left: clamp(0.9rem, 2vw, 1.4rem);
+  width: auto;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.experience-topbar--bare::before {
+  display: none;
+}
+
+/* 3 nut dieu huong = mot dao noi gon o GIUA-TREN, tach han khoi nut back.
+   Chi canh giua o desktop; <=820px giu nguyen layout strip o day da co. */
+@media (min-width: 821px) {
+  .experience-nav {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: calc(100% - 1.2rem);
+  }
 }

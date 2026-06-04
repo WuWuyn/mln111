@@ -3,11 +3,16 @@
   --tier-accent: #ffd86a;
   --tier-deep: #7a4f12;
   --tier-glow: rgba(255, 200, 90, 0.45);
+  /* Token spacing & viền dùng chung cho mọi khối — thoáng & nhất quán. */
+  --badge-line: rgba(255, 255, 255, 0.1);
+  --badge-radius: 12px;
+  --badge-pad-y: clamp(0.55rem, 1.25svh, 0.8rem);
+  --badge-pad-x: clamp(0.85rem, 1.7vw, 1.12rem);
   height: 100svh;
   max-height: 100svh;
   overflow: hidden;
   font-family: var(--font-sans);
-  padding: clamp(0.65rem, 1.5vw, 1rem);
+  padding: clamp(0.85rem, 1.9vw, 1.4rem);
   color: #f7f9ff;
   background:
     radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--tier-accent) 14%, transparent), transparent 42%),
@@ -40,7 +45,7 @@
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
-  gap: clamp(0.42rem, 1svh, 0.68rem);
+  gap: clamp(0.6rem, 1.35svh, 0.95rem);
   margin: 0 auto;
   overflow: hidden;
 }
@@ -51,8 +56,8 @@
   align-items: center;
   gap: 1rem;
   margin: 0;
-  padding-bottom: clamp(0.38rem, 0.9svh, 0.55rem);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  padding-bottom: clamp(0.5rem, 1.1svh, 0.75rem);
+  border-bottom: 1px solid var(--badge-line);
 }
 
 .content-page.overlay-panel--badge .badge-head > div {
@@ -64,7 +69,7 @@
   color: #8fdfff;
   font-size: clamp(0.62rem, 1.2svh, 0.72rem);
   font-weight: 900;
-  letter-spacing: 0.17em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -73,9 +78,9 @@
   font-family: var(--font-display);
   font-size: clamp(1.7rem, 4.6svh, 2.6rem);
   font-weight: 800;
-  line-height: 0.98;
+  line-height: var(--lh-display);
   color: #fbfdff;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--track-display);
   text-shadow: 0 0 26px var(--tier-glow);
 }
 
@@ -85,14 +90,23 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* Khu vực chính: rail trái (ladder + tiến trình + gợi ý) | huy hiệu trung tâm. */
+.content-page.overlay-panel--badge .badge-main {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(12rem, 23%, 15.5rem) minmax(0, 1fr);
+  gap: clamp(0.6rem, 1.4vw, 1rem);
+  align-items: stretch;
+}
+
 .content-page.overlay-panel--badge .badge-hero {
   position: relative;
   min-height: 0;
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: clamp(0.2rem, 0.7svh, 0.4rem);
-  padding: clamp(0.85rem, 2.1svh, 1.25rem) clamp(1.1rem, 2.6vw, 1.6rem);
+  gap: clamp(0.55rem, 1.5svh, 0.95rem);
+  padding: clamp(1.05rem, 2.5svh, 1.5rem) clamp(1.3rem, 3vw, 1.9rem);
   /* Khung vát góc kiểu hextech: nền là viền vàng, ::before là ruột tối. */
   clip-path: polygon(
     20px 0,
@@ -254,8 +268,8 @@
 .content-page.overlay-panel--badge .badge-banner {
   display: grid;
   justify-items: center;
-  gap: 0.12rem;
-  margin-top: 0.5rem;
+  gap: 0.2rem;
+  margin-top: clamp(0.7rem, 1.9svh, 1.15rem);
 }
 
 .content-page.overlay-panel--badge .badge-banner-metal {
@@ -276,8 +290,8 @@
   font-family: var(--font-display);
   font-size: clamp(1.7rem, 5.2svh, 3rem);
   font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: 0.01em;
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-display);
   text-shadow: 0 0 24px var(--tier-glow);
 }
 
@@ -302,8 +316,8 @@
   justify-content: center;
   gap: 0.44rem;
   min-width: min(18rem, 100%);
-  margin-top: 0.16rem;
-  padding: 0.33rem clamp(0.85rem, 2vw, 1.2rem);
+  margin-top: 0.34rem;
+  padding: 0.46rem clamp(1rem, 2.2vw, 1.35rem);
   border: 1px solid color-mix(in srgb, var(--tier-accent) 32%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--tier-accent) 8%, transparent);
@@ -376,14 +390,14 @@
 .content-page.overlay-panel--badge .badge-progress-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.42fr);
-  gap: clamp(0.45rem, 1vw, 0.7rem);
+  gap: clamp(0.55rem, 1.2vw, 0.85rem);
   align-items: stretch;
 }
 
 .content-page.overlay-panel--badge .badge-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.45rem, 1vw, 0.7rem);
+  gap: clamp(0.55rem, 1.2vw, 0.85rem);
   min-width: 0;
 }
 
@@ -392,9 +406,9 @@
   min-height: clamp(3.55rem, 8.2svh, 4.6rem);
   display: grid;
   place-items: center;
-  gap: 0.12rem;
-  padding: 0.5rem 0.65rem;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  gap: 0.18rem;
+  padding: var(--badge-pad-y) var(--badge-pad-x);
+  border: 1px solid var(--badge-line);
   border-top: 2px solid color-mix(in srgb, var(--tier-accent) 45%, transparent);
   clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
   background: linear-gradient(180deg, rgba(11, 14, 28, 0.72), rgba(5, 7, 17, 0.66));
@@ -406,7 +420,7 @@
   font-family: var(--font-display);
   font-size: clamp(1.3rem, 3.5svh, 1.85rem);
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .content-page.overlay-panel--badge .badge-stat:nth-child(2) strong {
@@ -420,33 +434,165 @@
 .content-page.overlay-panel--badge .badge-stat span {
   color: rgba(220, 229, 255, 0.58);
   font-size: clamp(0.58rem, 1.25svh, 0.7rem);
-  font-weight: 850;
+  font-weight: 800;
   line-height: 1.18;
 }
 
+/* Gợi ý: ô nhỏ ở góc dưới rail trái. */
 .content-page.overlay-panel--badge .badge-hint {
-  min-height: 100%;
-  display: flex;
-  align-items: center;
   margin: 0;
-  padding: 0.36rem 0.78rem;
+  padding: var(--badge-pad-y) var(--badge-pad-x);
   border: 1px solid rgba(126, 220, 255, 0.18);
   border-left: 3px solid rgba(126, 220, 255, 0.58);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--badge-radius) var(--badge-radius) 0;
   background: rgba(126, 220, 255, 0.055);
   color: rgba(220, 229, 255, 0.82);
-  font-size: clamp(0.72rem, 1.55svh, 0.86rem);
+  font-size: clamp(0.66rem, 1.4svh, 0.8rem);
   font-weight: 700;
-  line-height: 1.26;
+  line-height: 1.28;
 }
 
 .content-page.overlay-panel--badge .badge-hint strong {
   color: #ffd84d;
 }
 
+/* ── Rail trái: ladder hạng + thanh tiến trình + gợi ý ────────────────────── */
+.content-page.overlay-panel--badge .badge-rail {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: clamp(0.5rem, 1.1svh, 0.8rem);
+}
+
+.content-page.overlay-panel--badge .badge-ladder {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: clamp(0.34rem, 0.8svh, 0.5rem);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  padding: clamp(0.34rem, 0.8svh, 0.5rem) clamp(0.5rem, 1vw, 0.72rem);
+  border: 1px solid var(--badge-line);
+  border-radius: var(--badge-radius);
+  background: rgba(8, 12, 24, 0.5);
+  opacity: 0.5;
+  transition: opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-item.is-reached {
+  opacity: 0.82;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-item.is-current {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--row-accent) 60%, transparent);
+  background: color-mix(in srgb, var(--row-accent) 13%, rgba(8, 12, 24, 0.62));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--row-accent) 28%, transparent),
+    0 10px 24px rgba(0, 0, 0, 0.34);
+}
+
+.content-page.overlay-panel--badge .badge-ladder-rank {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--row-accent) 22%, transparent);
+  color: var(--row-accent);
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-text {
+  min-width: 0;
+  display: grid;
+  gap: 0.05rem;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-text strong {
+  color: #eef4ff;
+  font-size: clamp(0.72rem, 1.45svh, 0.84rem);
+  font-weight: 800;
+  line-height: 1.08;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.content-page.overlay-panel--badge .badge-ladder-text small {
+  color: rgba(220, 229, 255, 0.55);
+  font-size: clamp(0.55rem, 1.15svh, 0.65rem);
+  font-weight: 700;
+}
+
+.content-page.overlay-panel--badge .badge-progress {
+  display: grid;
+  gap: 0.36rem;
+  margin: 0;
+  padding: var(--badge-pad-y) var(--badge-pad-x);
+  border: 1px solid var(--badge-line);
+  border-radius: var(--badge-radius);
+  background: rgba(8, 12, 24, 0.45);
+}
+
+.content-page.overlay-panel--badge .badge-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: #b7c8ff;
+  font-size: clamp(0.56rem, 1.18svh, 0.66rem);
+  font-weight: 900;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+}
+
+.content-page.overlay-panel--badge .badge-progress-head strong {
+  color: var(--tier-accent);
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  letter-spacing: 0;
+}
+
+.content-page.overlay-panel--badge .badge-progress-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.content-page.overlay-panel--badge .badge-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--tier-deep), var(--tier-accent));
+  box-shadow: 0 0 12px var(--tier-glow);
+  transition: width 0.5s ease;
+}
+
+.content-page.overlay-panel--badge .badge-progress-note {
+  margin: 0;
+  color: rgba(220, 229, 255, 0.62);
+  font-size: clamp(0.6rem, 1.25svh, 0.7rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.content-page.overlay-panel--badge .badge-progress-note strong {
+  color: var(--tier-accent);
+}
+
 .content-page.overlay-panel--badge .badge-name {
   display: grid;
-  gap: 0.22rem;
+  gap: 0.34rem;
   margin: 0;
 }
 
@@ -454,16 +600,16 @@
   color: #b7c8ff;
   font-size: clamp(0.58rem, 1.25svh, 0.68rem);
   font-weight: 900;
-  letter-spacing: 0.13em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
 .content-page.overlay-panel--badge .badge-name input {
   width: 100%;
-  min-height: clamp(2.05rem, 4.8svh, 2.45rem);
-  padding: 0 0.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 8px;
+  min-height: clamp(2.2rem, 5svh, 2.6rem);
+  padding: 0 1.05rem;
+  border: 1px solid var(--badge-line);
+  border-radius: var(--badge-radius);
   background: rgba(4, 8, 18, 0.62);
   color: #f8fafc;
   font: inherit;
@@ -482,17 +628,17 @@
 .content-page.overlay-panel--badge .badge-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.45rem, 1vw, 0.7rem);
+  gap: clamp(0.55rem, 1.2vw, 0.85rem);
 }
 
 .content-page.overlay-panel--badge .badge-actions .primary-action,
 .content-page.overlay-panel--badge .badge-actions .ghost-action {
   min-width: 0;
-  min-height: clamp(2.18rem, 5svh, 2.6rem);
+  min-height: clamp(2.4rem, 5.4svh, 2.85rem);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: clamp(0.7rem, 1.7vw, 1rem);
+  padding-inline: clamp(0.85rem, 1.9vw, 1.15rem);
   /* Cắt góc trên-phải & dưới-trái kiểu nút hextech. */
   border-radius: 0;
   clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
@@ -536,9 +682,9 @@
 .content-page.overlay-panel--badge .badge-share-msg {
   justify-self: center;
   margin: 0;
-  padding: 0.42rem 0.75rem;
+  padding: var(--badge-pad-y) var(--badge-pad-x);
   border: 1px solid rgba(143, 223, 255, 0.24);
-  border-radius: 8px;
+  border-radius: var(--badge-radius);
   background: rgba(143, 223, 255, 0.07);
   color: #8fdfff;
   font-size: 0.74rem;
@@ -579,13 +725,318 @@
     max-width: 100%;
   }
 
-  .content-page.overlay-panel--badge .badge-progress-row,
+  /* Rail xuống dưới huy hiệu; ladder thành lưới ngang để khỏi chiếm chiều cao. */
+  .content-page.overlay-panel--badge .badge-main {
+    grid-template-columns: 1fr;
+    gap: clamp(0.55rem, 1.2svh, 0.8rem);
+  }
+
+  .content-page.overlay-panel--badge .badge-rail {
+    grid-template-rows: none;
+    grid-auto-flow: row;
+  }
+
+  .content-page.overlay-panel--badge .badge-ladder {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
   .content-page.overlay-panel--badge .badge-stats,
   .content-page.overlay-panel--badge .badge-actions {
     grid-template-columns: 1fr;
   }
 
   .content-page.overlay-panel--badge .badge-blurb {
+    display: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SKIN HEXTECH (kiểu League of Legends) — khung vàng kim loại, nền xanh teal sâu,
+   hoa văn lục giác, chip hạng vát góc, thanh tiến trình vàng–lam, nút hextech.
+   Đặt cuối file nên ghi đè các quy tắc cùng độ ưu tiên ở trên.
+   ════════════════════════════════════════════════════════════════════════════ */
+.content-page.overlay-panel--badge {
+  --hex-gold-bright: #f0e6d2;
+  --hex-gold: #c8aa6e;
+  --hex-gold-mid: #c89b3c;
+  --hex-gold-deep: #785a28;
+  --hex-blue: #091428;
+  --hex-blue-soft: #0a323c;
+  --hex-cyan: #0ac8b9;
+  background:
+    radial-gradient(circle at 50% -8%, rgba(200, 170, 110, 0.16), transparent 46%),
+    radial-gradient(circle at 50% 120%, rgba(10, 200, 185, 0.1), transparent 50%),
+    linear-gradient(180deg, #0a1a2c 0%, #071521 55%, #04131c 100%);
+}
+
+/* Hoa văn lục giác mờ phủ toàn trang. */
+.content-page.overlay-panel--badge::before {
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='96' viewBox='0 0 56 96'%3E%3Cg fill='none' stroke='%23c8aa6e' stroke-opacity='0.14' stroke-width='1'%3E%3Cpath d='M28 1 L54 16 L54 48 L28 63 L2 48 L2 16 Z'/%3E%3Cpath d='M28 49 L54 64 L54 96 M28 49 L2 64 L2 96'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 56px 96px;
+  mix-blend-mode: normal;
+}
+
+/* Tiêu đề: vạch gạch dưới vàng hextech. */
+.content-page.overlay-panel--badge .badge-head {
+  border-bottom: 1px solid color-mix(in srgb, var(--hex-gold) 38%, transparent);
+}
+.content-page.overlay-panel--badge .overlay-eyebrow {
+  color: var(--hex-gold);
+}
+.content-page.overlay-panel--badge .badge-head h2 {
+  color: var(--hex-gold-bright);
+  text-shadow: 0 0 22px rgba(200, 170, 110, 0.45);
+}
+
+/* Khung huy hiệu: viền vàng kim loại (nền), ruột xanh teal sâu + lục giác. */
+.content-page.overlay-panel--badge .badge-hero {
+  background: linear-gradient(160deg, var(--hex-gold-bright), var(--hex-gold) 26%, var(--hex-gold-deep) 70%, #3a2c12);
+}
+.content-page.overlay-panel--badge .badge-hero::before {
+  background:
+    radial-gradient(circle at 50% 4%, rgba(10, 200, 185, 0.12), transparent 44%),
+    radial-gradient(circle at 50% 0%, rgba(200, 170, 110, 0.16), transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='76' viewBox='0 0 44 76'%3E%3Cg fill='none' stroke='%23c8aa6e' stroke-opacity='0.10' stroke-width='1'%3E%3Cpath d='M22 1 L42 12 L42 38 L22 49 L2 38 L2 12 Z'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 44px 76px,
+    linear-gradient(160deg, #0a2230 0%, #071a26 60%, #051019 100%);
+  box-shadow:
+    inset 0 0 60px rgba(10, 200, 185, 0.1),
+    inset 0 0 0 1px rgba(200, 170, 110, 0.25);
+}
+.content-page.overlay-panel--badge .badge-corner {
+  border-color: var(--hex-gold-bright);
+  filter: drop-shadow(0 0 5px rgba(200, 170, 110, 0.6));
+}
+
+/* Banner kim loại & viên điểm: tông vàng hextech + viền lam ngọc. */
+.content-page.overlay-panel--badge .badge-banner-metal {
+  background: color-mix(in srgb, var(--hex-gold) 18%, transparent);
+  color: var(--hex-gold-bright);
+}
+.content-page.overlay-panel--badge .badge-title {
+  color: var(--hex-gold-bright);
+  text-shadow: 0 0 24px rgba(200, 170, 110, 0.5);
+}
+.content-page.overlay-panel--badge .badge-score {
+  border: 1px solid color-mix(in srgb, var(--hex-gold) 45%, transparent);
+  background: linear-gradient(180deg, rgba(9, 20, 40, 0.7), rgba(7, 26, 38, 0.7));
+  box-shadow: inset 0 0 18px rgba(10, 200, 185, 0.12);
+}
+.content-page.overlay-panel--badge .badge-score-num {
+  color: var(--hex-gold-bright);
+}
+
+/* Ladder hạng: hàng vát viền vàng, hạng hiện tại phát sáng vàng–lam. */
+.content-page.overlay-panel--badge .badge-ladder-item {
+  border: 1px solid color-mix(in srgb, var(--hex-gold) 24%, transparent);
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background: linear-gradient(180deg, rgba(10, 26, 42, 0.78), rgba(6, 18, 28, 0.72));
+}
+.content-page.overlay-panel--badge .badge-ladder-item.is-reached {
+  border-color: color-mix(in srgb, var(--hex-gold) 42%, transparent);
+}
+.content-page.overlay-panel--badge .badge-ladder-item.is-current {
+  border-color: var(--hex-gold);
+  background: linear-gradient(180deg, rgba(200, 170, 110, 0.16), rgba(7, 26, 38, 0.78));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--hex-gold) 50%, transparent),
+    0 0 18px rgba(200, 170, 110, 0.3),
+    inset 0 0 22px rgba(10, 200, 185, 0.1);
+}
+.content-page.overlay-panel--badge .badge-ladder-rank {
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 28%, 100% 100%, 0 100%, 0 28%);
+  background: linear-gradient(180deg, var(--hex-gold-bright), var(--hex-gold-deep));
+  color: #0a1422;
+}
+.content-page.overlay-panel--badge .badge-ladder-text strong {
+  color: var(--hex-gold-bright);
+}
+
+/* Khối tiến trình + chỉ số: viền vàng, đỉnh accent vàng. */
+.content-page.overlay-panel--badge .badge-progress,
+.content-page.overlay-panel--badge .badge-stat {
+  border: 1px solid color-mix(in srgb, var(--hex-gold) 26%, transparent);
+  background: linear-gradient(180deg, rgba(10, 26, 42, 0.7), rgba(6, 18, 28, 0.66));
+}
+.content-page.overlay-panel--badge .badge-stat {
+  border-top: 2px solid var(--hex-gold);
+}
+.content-page.overlay-panel--badge .badge-stat strong,
+.content-page.overlay-panel--badge .badge-stat:nth-child(2) strong,
+.content-page.overlay-panel--badge .badge-stat:nth-child(3) strong {
+  color: var(--hex-gold-bright);
+}
+.content-page.overlay-panel--badge .badge-progress-head strong {
+  color: var(--hex-gold-bright);
+}
+.content-page.overlay-panel--badge .badge-progress-track {
+  border: 1px solid rgba(200, 170, 110, 0.28);
+  background: rgba(4, 12, 20, 0.7);
+}
+.content-page.overlay-panel--badge .badge-progress-fill {
+  background: linear-gradient(90deg, var(--hex-cyan), var(--hex-gold) 70%, var(--hex-gold-bright));
+  box-shadow: 0 0 12px rgba(200, 170, 110, 0.55);
+}
+.content-page.overlay-panel--badge .badge-progress-note strong {
+  color: var(--hex-gold-bright);
+}
+
+/* Gợi ý: callout lam ngọc hextech. */
+.content-page.overlay-panel--badge .badge-hint {
+  border-color: rgba(10, 200, 185, 0.28);
+  border-left-color: var(--hex-cyan);
+  background: rgba(10, 200, 185, 0.07);
+}
+.content-page.overlay-panel--badge .badge-hint strong {
+  color: var(--hex-gold-bright);
+}
+
+/* Ô nhập tên: nền tối hextech, viền vàng, focus lam ngọc. */
+.content-page.overlay-panel--badge .badge-name span {
+  color: var(--hex-gold);
+}
+.content-page.overlay-panel--badge .badge-name input {
+  border: 1px solid color-mix(in srgb, var(--hex-gold) 30%, transparent);
+  border-radius: 0;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  background: rgba(5, 14, 22, 0.72);
+}
+.content-page.overlay-panel--badge .badge-name input:focus-visible {
+  outline-color: var(--hex-cyan);
+}
+
+/* Nút hextech: ghost = viền vàng nền tối; primary = vàng kim loại chữ navy. */
+.content-page.overlay-panel--badge .badge-actions .ghost-action {
+  border: 1px solid color-mix(in srgb, var(--hex-gold) 45%, transparent);
+  background: linear-gradient(180deg, rgba(10, 26, 42, 0.7), rgba(6, 18, 28, 0.66));
+  color: var(--hex-gold-bright);
+}
+.content-page.overlay-panel--badge .badge-actions .ghost-action:hover {
+  border-color: var(--hex-gold);
+  background: linear-gradient(180deg, rgba(200, 170, 110, 0.16), rgba(7, 26, 38, 0.7));
+  box-shadow: 0 0 16px rgba(200, 170, 110, 0.28);
+}
+.content-page.overlay-panel--badge .badge-actions .primary-action {
+  border: 1px solid var(--hex-gold-bright);
+  color: #0a1422;
+  background: linear-gradient(160deg, var(--hex-gold-bright), var(--hex-gold) 48%, var(--hex-gold-deep));
+  box-shadow: 0 12px 32px rgba(200, 170, 110, 0.32);
+}
+.content-page.overlay-panel--badge .badge-actions .primary-action:hover {
+  border-color: #fff;
+  box-shadow: 0 16px 44px rgba(200, 170, 110, 0.46);
+}
+
+/* ── Banner chúc mừng khi đạt 100/100 (ribbon vàng hextech) ───────────────── */
+.content-page.overlay-panel--badge .badge-congrats {
+  position: absolute;
+  top: clamp(3.4rem, 9svh, 4.8rem);
+  left: 50%;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  max-width: min(34rem, calc(100% - 2rem));
+  padding: clamp(0.55rem, 1.35svh, 0.85rem) clamp(1.6rem, 3vw, 2.1rem);
+  pointer-events: none;
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
+  background: linear-gradient(160deg, var(--hex-gold-bright, #f0e6d2), var(--hex-gold, #c8aa6e) 46%, var(--hex-gold-deep, #785a28));
+  color: #1a1206;
+  box-shadow:
+    0 18px 48px rgba(200, 170, 110, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+  animation: badgeCongratsPop 560ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.content-page.overlay-panel--badge .badge-congrats-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 18%, rgba(255, 255, 255, 0.6) 50%, transparent 82%);
+  transform: translateX(-130%);
+  animation: badgeCongratsShine 2.6s ease-in-out 0.5s infinite;
+}
+
+.content-page.overlay-panel--badge .badge-congrats-icon {
+  position: relative;
+  font-size: clamp(1.3rem, 3.4svh, 1.8rem);
+  filter: drop-shadow(0 2px 4px rgba(90, 60, 10, 0.5));
+}
+
+.content-page.overlay-panel--badge .badge-congrats-text {
+  position: relative;
+  display: grid;
+  gap: 0.06rem;
+  text-align: left;
+}
+
+.content-page.overlay-panel--badge .badge-congrats-text strong {
+  font-family: var(--font-display);
+  font-size: clamp(0.92rem, 2svh, 1.15rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.content-page.overlay-panel--badge .badge-congrats-text span {
+  font-size: clamp(0.68rem, 1.45svh, 0.82rem);
+  font-weight: 700;
+  color: rgba(26, 18, 6, 0.82);
+}
+
+.content-page.overlay-panel--badge .badge-congrats-close {
+  position: relative;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: 0.2rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(26, 18, 6, 0.18);
+  color: #1a1206;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.content-page.overlay-panel--badge .badge-congrats-close:hover {
+  background: rgba(26, 18, 6, 0.34);
+}
+
+@keyframes badgeCongratsPop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes badgeCongratsShine {
+  0% {
+    transform: translateX(-130%);
+  }
+  55%,
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content-page.overlay-panel--badge .badge-congrats {
+    animation: none;
+    transform: translateX(-50%);
+  }
+  .content-page.overlay-panel--badge .badge-congrats-glow {
     display: none;
   }
 }

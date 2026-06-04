@@ -3,6 +3,7 @@ import { planetPalette, planets } from '../../data/cosmos'
 import { quizBankByPlanet } from '../../data/quizBank'
 import PlanetWidget from '../interactives'
 import GuidanceModal from './GuidanceModal'
+import HandWidgetCursor from './HandWidgetCursor'
 import MiniQuiz from './MiniQuiz'
 import OverlayShell from './OverlayShell'
 import './PlanetDetail.css'
@@ -61,12 +62,8 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
     <OverlayShell variant="overlay-panel--detail" onClose={onClose}>
       <header className="detail-head" style={{ '--accent': colors[1], '--accent-soft': colors[0] }}>
         <div className="detail-title-stack">
-          <p className="overlay-eyebrow">Trạm tương tác</p>
           <h2 className="detail-title">{copy.title}</h2>
-          <div className="detail-title-meta">
-            <span className="detail-type">{copy.kicker}</span>
-            <span className="detail-stage-tag">{planet.concept}</span>
-          </div>
+          <span className="detail-type">{planet.concept}</span>
         </div>
         <div className="detail-head-actions">
           <button
@@ -78,6 +75,32 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
           >
             ← Bản đồ
           </button>
+
+          {/* Chuyển trạm ngay trong trang thực nghiệm — nút bấm nên điều khiển
+              bằng tay (pinch/dwell) hoặc chuột đều được. */}
+          <div className="detail-stations" role="group" aria-label="Chuyển trạm thực nghiệm">
+            <button
+              type="button"
+              className="station-nav"
+              onClick={() => onNavigate?.(prev)}
+              aria-label={`Trạm trước: ${prev.name}`}
+              title={`Trạm trước: ${prev.name}`}
+            >
+              ‹
+            </button>
+            <span className="station-count" aria-hidden="true">
+              {index + 1}/{planets.length}
+            </span>
+            <button
+              type="button"
+              className="station-nav"
+              onClick={() => onNavigate?.(next)}
+              aria-label={`Trạm sau: ${next.name}`}
+              title={`Trạm sau: ${next.name}`}
+            >
+              ›
+            </button>
+          </div>
           <MiniQuiz
             key={planet.id}
             quizzes={quizBankByPlanet[planet.id] ?? [planet.miniQuiz]}
@@ -133,7 +156,6 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
         </div>
 
         <aside className="detail-interactive">
-          <p className="overlay-eyebrow">Mô hình tương tác</p>
           <PlanetWidget widget={planet.widget} handStore={handControlStore} />
         </aside>
       </div>
@@ -167,12 +189,15 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
           title={copy.title}
           items={[
             copy.prompt,
-            'Thử kéo, bấm hoặc thay đổi các nút điều khiển trong mô hình để quan sát phản hồi.',
-            'Sau khi hiểu cơ chế, mở mini quiz ở hàng nút trên cùng để tự kiểm tra nhanh.',
+            'Bằng tay: ✌ đổi mục · ☝ chỉnh hoặc bấm · ✊ nghỉ.',
+            'Mở mini quiz ở góc trên để tự kiểm tra nhanh.',
           ]}
           onClose={() => setGuideOpen(false)}
         />
       )}
+
+      {/* Điều khiển bằng tay cho mô hình: ☝️ rê con trỏ, ✌️ để bấm. */}
+      {handControlStore && <HandWidgetCursor store={handControlStore} />}
     </OverlayShell>
   )
 }

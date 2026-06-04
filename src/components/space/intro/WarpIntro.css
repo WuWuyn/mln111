@@ -74,7 +74,7 @@
 
 .warp-intro__skip {
   position: absolute;
-  top: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
   right: clamp(1rem, 3vw, 2.2rem);
   pointer-events: auto;
   padding: 0.5rem 1.1rem;

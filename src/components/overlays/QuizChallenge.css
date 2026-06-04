@@ -339,7 +339,7 @@
   background: linear-gradient(135deg, #fff2a6, #ff9a33 60%, #f0491c);
   box-shadow: 0 10px 32px rgba(241, 76, 27, 0.22);
   font: inherit;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -431,7 +431,7 @@
 .content-page.overlay-panel--quiz .quiz-score-label {
   font-size: 0.72rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
   color: #7edcff;
   margin: -0.6rem 0 0;
@@ -561,7 +561,7 @@
   margin: 0;
   font-family: var(--font-sans);
   font-size: clamp(1.45rem, 3vw, 2.2rem);
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
   text-wrap: balance;

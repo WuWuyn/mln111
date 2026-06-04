@@ -181,6 +181,11 @@ function readMetrics(landmarks) {
     palmX: 1 - (indexBase.x + pinkyBase.x + wrist.x) / 3,
     palmY: (indexBase.y + pinkyBase.y + wrist.y) / 3,
     handScale: clamp((palmWidth + palmDepth + handOpen * 0.55 - 0.2) / 0.3, 0, 1),
+    // Khoảng cách đầu ngón cái↔trỏ chuẩn hoá theo bề ngang lòng bàn tay — bất
+    // biến với khoảng cách tới camera. Đây là tín hiệu "pinch" dùng cho các
+    // widget thực nghiệm: chỉ dựa trên 2 landmark rõ nét nên rất ổn định, không
+    // phải đoán "ngón duỗi hay cụp" như việc đếm ngón.
+    pinchRatio: palmWidth > 1e-4 ? handOpen / palmWidth : 1,
     rollRaw: angleBetween(indexBase, pinkyBase),
     edge: edgeProximity(landmarks),
     fingers,
@@ -192,6 +197,11 @@ function readMetrics(landmarks) {
 // zoom range, plus a small deadzone so a steady open palm doesn't creep the zoom.
 const ZOOM_ROLL_GAIN = 0.85
 const ROLL_DEADZONE = 0.05
+
+// Pinch (ngón cái chạm trỏ) dùng cho các widget thực nghiệm. Hysteresis: bấm khi
+// tỉ lệ < ENGAGE, nhả khi > RELEASE — khoảng đệm để không nhấp nháy ở ranh giới.
+const PINCH_ENGAGE = 0.5
+const PINCH_RELEASE = 0.72
 
 // Smallest signed angle from b to a, handling the ±π wrap of atan2.
 function angularDelta(a, b) {
@@ -241,6 +251,19 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
   const pointing = gesture === 'point'
   const navigating = gesture === 'navigate'
 
+  // Pinch với hysteresis (trạng thái giữ trong runtime). Độc lập hoàn toàn với
+  // việc phân loại cử chỉ point/navigate ở trên.
+  if (runtime.pinching) {
+    if (metrics.pinchRatio > PINCH_RELEASE) runtime.pinching = false
+  } else if (metrics.pinchRatio < PINCH_ENGAGE) {
+    runtime.pinching = true
+  }
+
+  // Con trỏ "tự do" cho widget: LUÔN cập nhật mỗi frame (không cần giữ pose),
+  // nhưng ĐÓNG BĂNG khi đang pinch để cú bấm/kéo không làm con trỏ trượt đi.
+  const cursorX = runtime.pinching && wasActive ? previous.cursorX ?? fx : fx
+  const cursorY = runtime.pinching && wasActive ? previous.cursorY ?? fy : fy
+
   return {
     active: true,
     fade: 1,
@@ -261,6 +284,11 @@ function createControl(metrics, previous, calibration, filters, t, runtime) {
     rotationY: navigating ? fRotY : base.rotationY,
     roll: 0,
     zoom: navigating ? fZoom : base.zoom,
+    // ── Kênh riêng cho widget thực nghiệm (bản đồ 3D không dùng) ──
+    cursorX,
+    cursorY,
+    pinch: runtime.pinching,
+    pinchRatio: metrics.pinchRatio,
   }
 }
 
@@ -347,6 +375,7 @@ const GESTURE_GUIDE = [
   { icon: '✌️', title: 'Hai ngón', text: 'Khi đã giữ được hành tinh, giơ hai ngón để mở phần thực nghiệm của nó.' },
   { icon: '🖐️', title: 'Xòe bàn tay', text: 'Di tay để xoay camera; vặn cổ tay như vặn nút âm lượng để phóng to / thu nhỏ.' },
   { icon: '✊', title: 'Nắm tay', text: 'Nắm tay để thả hành tinh đang giữ, rồi trỏ chọn hành tinh khác.' },
+  { icon: '👋', title: 'Lướt bàn tay', text: 'Xòe tay rồi lướt nhanh sang trái/phải để chuyển trang: Khám phá · Thực nghiệm · Hồ sơ.' },
 ]
 
 function CameraIcon() {
@@ -406,6 +435,7 @@ export default function HandTrackingPanel({ store, hideUI = false }) {
     stableGesture: 'idle',
     pendingGesture: 'idle',
     pendingCount: 0,
+    pinching: false,
   })
   // Tighter ranges than a 1:1 mapping → higher gain, so the hand stays near the
   // centre of the frame and never has to reach the edge to point anywhere.

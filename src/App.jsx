@@ -1,4 +1,5 @@
 import { lazy, startTransition, Suspense, useCallback, useEffect, useState } from 'react'
+import BackgroundMusic from './components/BackgroundMusic'
 import GenshinCursor from './components/GenshinCursor'
 import HandPointer from './components/HandPointer'
 import HandTrackingPanel from './components/HandTrackingPanel'
@@ -94,6 +95,7 @@ function App() {
       {/* Kept mounted across content sub-pages so the camera/permission persists
           when a planet's experiment opens — only its on-screen UI is hidden. */}
       <HandTrackingPanel store={handControlStore} hideUI={onBadgePage} />
+      <BackgroundMusic hideUI={onContentPage} />
       <GenshinCursor />
     </main>
   )

@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
+import { useHandTargets } from '../../hand/useHandTargets'
+import HandControlBar from './HandControlBar'
 import './ConsciousnessMirror.css'
 
 // Ba vùng cần phản ánh trong "vũ trụ thật". Bán kính đủ rộng để dễ trúng khi
@@ -16,14 +18,17 @@ const PLAN_TOOLS = [
   { id: 'station', label: 'Trạm đo', glyph: 'T' },
 ]
 
+// Vị trí đặt sẵn khi điều khiển bằng tay (không cần rê con trỏ để chấm điểm).
+const PLAN_PRESET = {
+  probe: { x: 38, y: 46 },
+  station: { x: 64, y: 60 },
+}
+
 const REFLECTION_MESSAGES = {
-  reflect: 'Ý thức bắt đầu từ sự phản ánh thế giới vật chất. Rê kính lúp để soi từng vùng của vũ trụ thật.',
-  verify:
-    'Phản ánh chưa đủ. Nhận thức là quá trình soi đi soi lại hiện thực ngày càng sâu — hãy soi nốt vùng còn tối.',
-  ready:
-    'Vũ trụ trong ý thức đã phản ánh đủ. Giờ dùng ý thức để lập kế hoạch: đặt Robot, Trạm đo và vẽ đường bay.',
-  create:
-    'Ý thức phản ánh thế giới, nhưng qua thực tiễn nó định hướng con người cải biến chính thế giới ấy.',
+  reflect: 'Bật kính lúp, soi từng vùng của vũ trụ thật.',
+  verify: 'Soi nốt vùng còn tối để phản ánh đủ.',
+  ready: 'Đã phản ánh đủ — đặt Robot, Trạm đo, vẽ đường bay.',
+  create: 'Ý thức định hướng con người cải biến thế giới.',
 }
 
 function clamp(value, min, max) {
@@ -68,12 +73,12 @@ function statusFor({ corrected, scannedCount, planItems, orbitOn, executed }) {
   return { mark: '?', title: 'Soi vũ trụ thật', body: REFLECTION_MESSAGES.reflect }
 }
 
-export default function ConsciousnessMirror() {
+export default function ConsciousnessMirror({ handStore }) {
   const realRef = useRef(null)
   const mindRef = useRef(null)
   const [lens, setLens] = useState({ x: 30, y: 56 })
   const [scanned, setScanned] = useState([])
-  const [draggingLens, setDraggingLens] = useState(false)
+  const [scanning, setScanning] = useState(false)
   const [tool, setTool] = useState(null)
   const [planItems, setPlanItems] = useState({ probe: null, station: null })
   const [orbitOn, setOrbitOn] = useState(false)
@@ -88,8 +93,9 @@ export default function ConsciousnessMirror() {
     [corrected, scanned.length, planItems, orbitOn, executed],
   )
 
-  // ── Kính lúp: rê để phản ánh hiện thực (pointer-capture trên một núm to,
-  //    đáng tin với mọi con trỏ). ────────────────────────────────────────────
+  // ── Kính lúp: bật "soi" rồi DI con trỏ (chuột hoặc tay) trên vũ trụ thật.
+  //    Dùng pointermove thuần (không pointer-capture) nên điều khiển bằng tay
+  //    cũng chạy: lớp cầu nối hand→DOM chỉ cần bắn pointermove là soi được. ──
   const scanAt = (event) => {
     const point = pointPercent(event, realRef.current)
     if (!point) return
@@ -98,22 +104,13 @@ export default function ConsciousnessMirror() {
     setScanned((parts) => Array.from(new Set([...parts, ...findScannedParts(point)])))
   }
 
-  const startLens = (event) => {
-    event.preventDefault()
-    setDraggingLens(true)
-    event.currentTarget.setPointerCapture(event.pointerId)
-    scanAt(event)
+  const toggleScan = () => {
+    setExecuted(false)
+    setScanning((on) => !on)
   }
 
-  const moveLens = (event) => {
-    if (draggingLens) scanAt(event)
-  }
-
-  const stopLens = (event) => {
-    setDraggingLens(false)
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
+  const scanOnMove = (event) => {
+    if (scanning) scanAt(event)
   }
 
   // ── Kế hoạch trong ý thức: bấm công cụ để chọn, bấm vào vũ trụ ý thức để
@@ -155,15 +152,54 @@ export default function ConsciousnessMirror() {
     setExecuted(false)
   }
 
+  // ── Điều khiển bằng tay (không con trỏ): soi lần lượt từng vùng bằng nút, đặt
+  //    Robot/Trạm đo vào vị trí định sẵn. ✌ đổi mục · ☝ bấm · ✊ nghỉ. ──────────
+  const scanNext = () => {
+    const next = HOTSPOTS.find((spot) => !scanned.includes(spot.id))
+    if (!next) return
+    setLens({ x: next.x, y: next.y })
+    setScanning(true)
+    setExecuted(false)
+    setScanned((parts) => Array.from(new Set([...parts, next.id])))
+  }
+
+  const placePreset = (id) => {
+    if (!corrected) return
+    setPlanItems((items) => ({ ...items, [id]: PLAN_PRESET[id] }))
+    setTool(null)
+    setExecuted(false)
+  }
+
+  const handTargets = [
+    {
+      key: 'scan',
+      kind: 'button',
+      label: corrected ? 'Đã soi đủ' : `Soi vùng (${scanned.length}/${HOTSPOTS.length})`,
+      onPress: scanNext,
+      disabled: corrected,
+    },
+    { key: 'probe', kind: 'button', label: planItems.probe ? 'Robot ✓' : 'Đặt Robot', onPress: () => placePreset('probe'), disabled: !corrected },
+    { key: 'station', kind: 'button', label: planItems.station ? 'Trạm đo ✓' : 'Đặt Trạm đo', onPress: () => placePreset('station'), disabled: !corrected },
+    { key: 'orbit', kind: 'button', label: orbitOn ? 'Đường bay ✓' : 'Vẽ đường bay', onPress: toggleOrbit, disabled: !corrected },
+    { key: 'execute', kind: 'button', label: 'Thực hiện', onPress: execute, disabled: !readyToExecute },
+    { key: 'reset', kind: 'button', label: 'Soi lại', onPress: reset, disabled: scanned.length === 0 },
+  ]
+  const hand = useHandTargets(handStore, handTargets)
+
   return (
     <div
       className={`widget consciousness-mirror mirror-redesign ${corrected ? 'is-corrected' : ''} ${
         executed ? 'is-executed' : ''
-      } ${draggingLens ? 'is-dragging-lens' : ''} ${tool ? 'is-arming' : ''}`}
+      } ${scanning ? 'is-scanning' : ''} ${tool ? 'is-arming' : ''}`}
       style={{ '--clarity': clarity, '--lens-x': `${lens.x}%`, '--lens-y': `${lens.y}%` }}
     >
       <div className="mirror-stage mirror-stage--lens">
-        <section ref={realRef} className="mirror-world mirror-world--real" aria-label="Vũ trụ thật">
+        <section
+          ref={realRef}
+          className={`mirror-world mirror-world--real ${scanning ? 'is-scanning' : ''}`}
+          aria-label="Vũ trụ thật"
+          onPointerMove={scanOnMove}
+        >
           <span className="mirror-panel-label">Vũ trụ thật</span>
           <div className="mirror-star" aria-hidden="true" />
           <div className="mirror-orbit mirror-orbit--real" aria-hidden="true" />
@@ -191,11 +227,9 @@ export default function ConsciousnessMirror() {
           <button
             type="button"
             className="mirror-lens"
-            onPointerDown={startLens}
-            onPointerMove={moveLens}
-            onPointerUp={stopLens}
-            onPointerCancel={stopLens}
-            aria-label="Kéo kính lúp để soi vũ trụ thật"
+            onClick={toggleScan}
+            aria-pressed={scanning}
+            aria-label={scanning ? 'Tắt soi vũ trụ thật' : 'Bật soi vũ trụ thật'}
           >
             <span />
           </button>
@@ -272,6 +306,8 @@ export default function ConsciousnessMirror() {
           )}
         </div>
       </div>
+
+      {handStore && <HandControlBar targets={handTargets} {...hand} />}
     </div>
   )
 }

@@ -194,6 +194,7 @@ export default function Scene({
   onDestroyAsteroid,
   resetKey = 0,
   formState = 'shown',
+  lockHand = false,
 }) {
   const controlsRef = useRef()
   const appearRef = useRef({ p: formState === 'shown' ? 1 : 0 })
@@ -260,14 +261,18 @@ export default function Scene({
         minPolarAngle={Math.PI * 0.2}
       />
       <AdaptiveDpr pixelated />
-      <HandCameraRig store={handControlStore} controlsRef={controlsRef} />
-      <HandPointerSelector
-        store={handControlStore}
-        latchStore={latchStore}
-        selectedPlanet={selectedPlanet}
-        onSelect={setSelectedPlanet}
-        onOpenExperience={onOpenExperience}
-      />
+      {/* Khi mở trang chi tiết, tay điều khiển widget — không cho điều khiển
+          camera/chọn hành tinh của scene 3D bên dưới nữa. */}
+      {!lockHand && <HandCameraRig store={handControlStore} controlsRef={controlsRef} />}
+      {!lockHand && (
+        <HandPointerSelector
+          store={handControlStore}
+          latchStore={latchStore}
+          selectedPlanet={selectedPlanet}
+          onSelect={setSelectedPlanet}
+          onOpenExperience={onOpenExperience}
+        />
+      )}
       <EffectComposer>
         <Bloom
           mipmapBlur

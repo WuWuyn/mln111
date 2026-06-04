@@ -68,7 +68,7 @@
   color: #9fe8ff;
   background: rgba(6, 12, 24, 0.62);
   font-size: 0.62rem;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -311,7 +311,7 @@
 .mirror-scan-handle span::before {
   color: #130d04;
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 900;
   content: '↔';
 }
 
@@ -430,7 +430,7 @@
   border-radius: 50%;
   color: #120d04;
   background: #ffd17a;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .mirror-status strong {
@@ -569,7 +569,7 @@
 .mirror-tool {
   min-height: 2.25rem;
   font-size: 0.72rem;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 @keyframes mirrorStarDrift {
@@ -819,7 +819,7 @@
   box-shadow: 0 0 1.8rem rgba(126, 220, 255, 0.42);
 }
 
-.mirror-redesign.is-dragging-lens .mirror-lens,
+.mirror-redesign.is-scanning .mirror-lens,
 .mirror-lens:hover {
   filter: brightness(1.12);
   box-shadow:
@@ -828,8 +828,15 @@
     0 1.1rem 2.3rem rgba(0, 0, 0, 0.36);
 }
 
-.mirror-redesign.is-dragging-lens .mirror-lens {
-  cursor: grabbing;
+/* Đang soi: kính lúp sáng + nhịp, vùng vũ trụ thật chuyển con trỏ ngắm. */
+.mirror-redesign.is-scanning .mirror-lens {
+  cursor: crosshair;
+  border-color: rgba(111, 240, 171, 0.9);
+  animation: mirrorToolArm 1.1s ease-in-out infinite;
+}
+
+.mirror-world--real.is-scanning {
+  cursor: crosshair;
 }
 
 .mirror-redesign .mirror-planet--mind,
@@ -993,7 +1000,7 @@
   background: linear-gradient(135deg, #eaf7ff, #7edcff);
   box-shadow: 0 0 1rem rgba(126, 220, 255, 0.34);
   font-size: 0.75rem;
-  font-weight: 950;
+  font-weight: 900;
   transform: translate(-50%, -50%);
 }
 
@@ -1033,7 +1040,7 @@
   box-shadow: 0 0.85rem 1.8rem rgba(0, 0, 0, 0.28);
   font: inherit;
   font-size: 0.74rem;
-  font-weight: 950;
+  font-weight: 900;
   cursor: pointer;
   transition: transform 150ms ease, filter 150ms ease;
 }

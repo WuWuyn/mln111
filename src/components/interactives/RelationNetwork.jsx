@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
+import { useHandTargets } from '../../hand/useHandTargets'
+import HandControlBar from './HandControlBar'
 import './RelationNetwork.css'
 
 const MODES = {
@@ -52,13 +54,20 @@ function distanceFromCenter(point) {
   return Math.hypot(point.x - 50, point.y - 52)
 }
 
-export default function RelationNetwork() {
+export default function RelationNetwork({ handStore }) {
   const stageRef = useRef(null)
   const [mode, setMode] = useState('dialectic')
   const [dragging, setDragging] = useState(false)
   const [planet, setPlanet] = useState({ x: 69, y: 42 })
   const [time, setTime] = useState(2)
   const phase = PHASES[time]
+
+  const handTargets = [
+    { key: 'time', kind: 'slider', label: 'Thời gian', get: () => time, set: setTime, min: 0, max: PHASES.length - 1, step: 1 },
+    { key: 'static', kind: 'button', label: 'Siêu hình', onPress: () => setMode('static') },
+    { key: 'dialectic', kind: 'button', label: 'Biện chứng', onPress: () => setMode('dialectic') },
+  ]
+  const hand = useHandTargets(handStore, handTargets)
   const influence = useMemo(() => {
     const pull = clamp(Math.abs(distanceFromCenter(planet) - 24) / 28, 0, 1)
     return mode === 'dialectic' ? pull : 0
@@ -135,6 +144,8 @@ export default function RelationNetwork() {
       </div>
 
       <div className="dialectic-controls">
+        {handStore && <HandControlBar targets={handTargets} {...hand} />}
+
         <div className="mode-switch" aria-label="Chọn cách nhìn">
           {Object.entries(MODES).map(([id, item]) => (
             <button key={id} type="button" className={mode === id ? 'is-active' : ''} onClick={() => setMode(id)}>
@@ -143,7 +154,7 @@ export default function RelationNetwork() {
           ))}
         </div>
 
-        <label className="time-control">
+        <label className={`time-control ${hand.lockedKey === 'time' ? 'is-hand-locked' : ''}`}>
           <span>
             Kéo thời gian
             <strong>{phase.label}</strong>

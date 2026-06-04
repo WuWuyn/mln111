@@ -71,14 +71,20 @@ function resolveProfile(score) {
 export default function BadgeResult({ progress, onClose, onReplay }) {
   const [name, setName] = useState('')
   const [shareMsg, setShareMsg] = useState('')
+  const [congratsDismissed, setCongratsDismissed] = useState(false)
   const canvasRef = useRef(null)
 
   const score = useMemo(() => computeScore(progress), [progress])
+  const perfect = score === 100
   const badge = resolveProfile(score)
   const traveller = name.trim() || 'Nhà du hành'
   const challengeDone = progress.challengeScore !== null && progress.challengeScore !== undefined
   const shotAnswered = progress.shotAnswered ?? 0
   const shotCorrect = progress.shotCorrect ?? 0
+  // Ladder hiển thị từ hạng cao xuống thấp; nextTier là mốc kế tiếp phải vượt.
+  const ladderTiers = profileTiers
+  const nextTier = [...profileTiers].reverse().find((tier) => tier.min > score) ?? null
+  const toNext = nextTier ? nextTier.min - score : 0
 
   const drawCertificate = () => {
     const canvas = canvasRef.current ?? document.createElement('canvas')
@@ -180,6 +186,27 @@ export default function BadgeResult({ progress, onClose, onReplay }) {
 
   return (
     <OverlayShell variant={`overlay-panel--badge tier-${badge.id}`} onClose={onClose} style={tierStyle}>
+      {perfect && !congratsDismissed && (
+        <div className="badge-congrats" role="status">
+          <span className="badge-congrats-glow" aria-hidden="true" />
+          <span className="badge-congrats-icon" aria-hidden="true">
+            🏆
+          </span>
+          <div className="badge-congrats-text">
+            <strong>Chúc mừng!</strong>
+            <span>Bạn đã đạt 100/100 điểm hành trình tuyệt đối.</span>
+          </div>
+          <button
+            type="button"
+            className="badge-congrats-close"
+            onClick={() => setCongratsDismissed(true)}
+            aria-label="Đóng lời chúc mừng"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <header className="overlay-head badge-head">
         <div>
           <p className="overlay-eyebrow">Hồ sơ hành trình</p>
@@ -190,60 +217,104 @@ export default function BadgeResult({ progress, onClose, onReplay }) {
         </button>
       </header>
 
-      <div className="badge-hero" data-tier={badge.id}>
-        <span className="badge-corner badge-corner--tl" aria-hidden="true" />
-        <span className="badge-corner badge-corner--tr" aria-hidden="true" />
-        <span className="badge-corner badge-corner--bl" aria-hidden="true" />
-        <span className="badge-corner badge-corner--br" aria-hidden="true" />
+      <div className="badge-main">
+        <aside className="badge-rail">
+          <div className="badge-ladder" role="list" aria-label="Các hạng hồ sơ">
+            {ladderTiers.map((tier) => {
+              const reached = score >= tier.min
+              const current = tier.id === badge.id
+              return (
+                <div
+                  key={tier.id}
+                  role="listitem"
+                  className={`badge-ladder-item ${current ? 'is-current' : ''} ${reached ? 'is-reached' : ''}`}
+                  style={{ '--row-accent': tier.accent }}
+                >
+                  <span className="badge-ladder-rank">{tier.rank}</span>
+                  <span className="badge-ladder-text">
+                    <strong>{tier.title}</strong>
+                    <small>
+                      {tier.metal} · từ {tier.min}đ
+                    </small>
+                  </span>
+                </div>
+              )
+            })}
+          </div>
 
-        <div className="badge-crest" data-tier={badge.id}>
-          <span className="badge-crest-halo" aria-hidden="true" />
-          <RankCrest glyph={badge.emblem} accent={badge.accent} deep={badge.deep} uid={badge.id} />
-          <span className="badge-crest-rank">{badge.rank}</span>
-        </div>
+          <div className="badge-progress" aria-label="Thanh tiến trình">
+            <div className="badge-progress-head">
+              <span>Tiến trình</span>
+              <strong>{score}/100</strong>
+            </div>
+            <div className="badge-progress-track">
+              <span className="badge-progress-fill" style={{ width: `${score}%` }} />
+            </div>
+            <p className="badge-progress-note">
+              {nextTier ? (
+                <>
+                  Còn <strong>{toNext}</strong> điểm để lên {nextTier.title}.
+                </>
+              ) : (
+                'Đã đạt hạng cao nhất.'
+              )}
+            </p>
+          </div>
 
-        <div className="badge-banner">
-          <span className="badge-banner-metal">{badge.metal}</span>
-          <h3 className="badge-title">{badge.title}</h3>
-        </div>
+          <p className="badge-hint">
+            {challengeDone ? (
+              <>
+                Quiz bắn phá: đúng <strong>{shotCorrect}</strong>/<strong>{shotAnswered}</strong> câu đã mở.
+              </>
+            ) : (
+              'Gợi ý: bật chế độ bắn phá ở bản đồ vũ trụ để mở quiz nhanh và nâng điểm hành trình.'
+            )}
+          </p>
+        </aside>
 
-        <p className="badge-blurb">{badge.blurb}</p>
+        <div className="badge-hero" data-tier={badge.id}>
+          <span className="badge-corner badge-corner--tl" aria-hidden="true" />
+          <span className="badge-corner badge-corner--tr" aria-hidden="true" />
+          <span className="badge-corner badge-corner--bl" aria-hidden="true" />
+          <span className="badge-corner badge-corner--br" aria-hidden="true" />
 
-        <div className="badge-score">
-          <span className="badge-score-num">{score}</span>
-          <span className="badge-score-unit">/100 điểm hành trình</span>
+          <div className="badge-crest" data-tier={badge.id}>
+            <span className="badge-crest-halo" aria-hidden="true" />
+            <RankCrest glyph={badge.emblem} accent={badge.accent} deep={badge.deep} uid={badge.id} />
+            <span className="badge-crest-rank">{badge.rank}</span>
+          </div>
+
+          <div className="badge-banner">
+            <span className="badge-banner-metal">{badge.metal}</span>
+            <h3 className="badge-title">{badge.title}</h3>
+          </div>
+
+          <p className="badge-blurb">{badge.blurb}</p>
+
+          <div className="badge-score">
+            <span className="badge-score-num">{score}</span>
+            <span className="badge-score-unit">/100 điểm hành trình</span>
+          </div>
         </div>
       </div>
 
-      <div className="badge-progress-row">
-        <div className="badge-stats">
-          <div className="badge-stat">
-            <strong>
-              {progress.visited.length}/{planets.length}
-            </strong>
-            <span>Điểm triết học đã khám phá</span>
-          </div>
-          <div className="badge-stat">
-            <strong>
-              {progress.passed.length}/{planets.length}
-            </strong>
-            <span>Mini quiz trả lời đúng</span>
-          </div>
-          <div className="badge-stat">
-            <strong>{challengeDone ? `${progress.challengeScore}%` : '-'}</strong>
-            <span>Điểm quiz bắn phá</span>
-          </div>
+      <div className="badge-stats">
+        <div className="badge-stat">
+          <strong>
+            {progress.visited.length}/{planets.length}
+          </strong>
+          <span>Điểm triết học đã khám phá</span>
         </div>
-
-        <p className="badge-hint">
-          {challengeDone ? (
-            <>
-              Quiz bắn phá: đúng <strong>{shotCorrect}</strong>/<strong>{shotAnswered}</strong> câu đã mở.
-            </>
-          ) : (
-            'Gợi ý: bật chế độ bắn phá ở bản đồ vũ trụ để mở quiz nhanh và nâng điểm hành trình.'
-          )}
-        </p>
+        <div className="badge-stat">
+          <strong>
+            {progress.passed.length}/{planets.length}
+          </strong>
+          <span>Mini quiz trả lời đúng</span>
+        </div>
+        <div className="badge-stat">
+          <strong>{challengeDone ? `${progress.challengeScore}%` : '-'}</strong>
+          <span>Điểm quiz bắn phá</span>
+        </div>
       </div>
 
       <label className="badge-name">

@@ -74,7 +74,7 @@
 /* Chapter eyebrow inside header */
 .content-page.overlay-panel--detail .detail-head .overlay-eyebrow {
   color: var(--accent, #7edcff);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--track-eyebrow);
   margin-bottom: 0.5rem;
   opacity: 0.9;
 }
@@ -85,8 +85,8 @@
   font-family: var(--font-display);
   font-size: clamp(1.75rem, 3.8vw, 2.75rem);
   font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: -0.01em;
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-display);
   color: #fff;
   /* Subtle accent underline that fades right */
   text-shadow:
@@ -137,6 +137,124 @@
   color: #fff;
 }
 
+/* ── Header: hàng tiêu đề + cụm nút gọn, không chồng chéo ─────────────────── */
+.content-page.overlay-panel--detail .detail-head {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.content-page.overlay-panel--detail .detail-title-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0; /* cho phép tiêu đề co lại thay vì đẩy tràn */
+  flex: 1 1 16rem;
+}
+
+.content-page.overlay-panel--detail .detail-title {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Cụm nút phải: một hàng, tự xuống dòng khi hẹp, kích thước đồng đều */
+.content-page.overlay-panel--detail .detail-head-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button,
+.content-page.overlay-panel--detail .detail-head-actions .detail-back-map {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.3rem;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e7eeff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.content-page.overlay-panel--detail .detail-head-actions .guide-icon-button:hover,
+.content-page.overlay-panel--detail .detail-head-actions .detail-back-map:hover {
+  border-color: color-mix(in srgb, var(--accent, #7edcff) 55%, transparent);
+  background: color-mix(in srgb, var(--accent, #7edcff) 12%, rgba(255, 255, 255, 0.06));
+}
+
+.content-page.overlay-panel--detail .detail-stations {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.16rem 0.28rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.content-page.overlay-panel--detail .station-nav {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e7eeff;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.content-page.overlay-panel--detail .station-nav:hover {
+  background: color-mix(in srgb, var(--accent, #7edcff) 32%, transparent);
+}
+
+.content-page.overlay-panel--detail .station-count {
+  min-width: 2.3rem;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: rgba(231, 238, 255, 0.85);
+}
+
+/* Đồng bộ chiều cao nút đóng với hàng nút */
+.content-page.overlay-panel--detail .detail-head-actions .overlay-close {
+  width: 2.3rem;
+  height: 2.3rem;
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+
+/* Pill khái niệm: cho phép xuống dòng + giới hạn bề rộng để câu dài (vd Ý thức)
+   không kéo tràn header. */
+.content-page.overlay-panel--detail .detail-type {
+  max-width: min(100%, 32ch);
+  white-space: normal;
+  line-height: 1.25;
+  text-align: left;
+}
+
+/* Chống tràn phòng thủ: mọi đoạn chữ trong trang thực nghiệm tự ngắt từ dài,
+   không bao giờ đẩy tràn khung. */
+.content-page.overlay-panel--detail p,
+.content-page.overlay-panel--detail .hand-ctl-text span,
+.content-page.overlay-panel--detail .hand-ctl-seg {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 /* ── Body: two-column on wide, stacked on narrow ─────────────────────────── */
 .content-page.overlay-panel--detail .detail-body {
   display: grid;
@@ -177,7 +295,7 @@
   color: #9fc3ff;
   font-size: 0.72rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
 }
 
@@ -197,14 +315,14 @@
 .content-page.overlay-panel--detail .detail-block p {
   margin: 0;
   color: rgba(220, 229, 255, 0.88);
-  line-height: 1.58;
+  line-height: var(--lh-body);
   font-size: 0.94rem;
 }
 
 .content-page.overlay-panel--detail .detail-define {
   color: #f0f4ff !important;
   font-size: 0.99rem !important;
-  line-height: 1.58 !important;
+  line-height: var(--lh-body) !important;
   font-style: normal;
 }
 
@@ -350,7 +468,7 @@
   margin-bottom: 1.1rem;
   color: var(--accent, #7edcff);
   font-size: 0.72rem;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--track-eyebrow);
 }
 
 .content-page.overlay-panel--detail .detail-interactive > .overlay-eyebrow::before,
@@ -1033,8 +1151,8 @@
   margin-bottom: 0.42rem;
   font-family: var(--font-sans);
   font-size: clamp(1.45rem, 3.1vw, 2.35rem);
-  font-weight: 950;
-  line-height: 0.98;
+  font-weight: 900;
+  line-height: var(--lh-display);
   letter-spacing: 0;
   text-wrap: balance;
 }
@@ -1127,7 +1245,7 @@
 .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-head .overlay-eyebrow {
   margin: 0 0 0.36rem;
   font-size: clamp(0.56rem, 1.4vw, 0.68rem);
-  letter-spacing: 0.18em;
+  letter-spacing: var(--track-eyebrow);
 }
 
 .content-page.overlay-panel--detail:has(.detail-body--visual-first) .detail-title {
@@ -1135,8 +1253,8 @@
   margin: 0 0 0.42rem;
   font-family: var(--font-sans);
   font-size: clamp(1.45rem, 3.1vw, 2.35rem);
-  font-weight: 950;
-  line-height: 0.98;
+  font-weight: 900;
+  line-height: var(--lh-display);
   letter-spacing: 0;
   text-wrap: balance;
 }
@@ -1457,8 +1575,8 @@
   margin: 0 0 0.36rem;
   font-family: var(--font-sans);
   font-size: clamp(1.42rem, 3vw, 2.25rem);
-  font-weight: 950;
-  line-height: 0.98;
+  font-weight: 900;
+  line-height: var(--lh-display);
   letter-spacing: 0;
   text-wrap: balance;
 }
@@ -1585,8 +1703,8 @@
   color: #ffffff;
   font-family: var(--font-sans);
   font-size: clamp(1.55rem, 3.4vw, 3.15rem);
-  font-weight: 950;
-  line-height: 0.9;
+  font-weight: 900;
+  line-height: 1.08;
   letter-spacing: 0;
   text-shadow: 0 0 2rem color-mix(in srgb, var(--accent, #7edcff) 24%, transparent);
 }
@@ -1640,7 +1758,7 @@
   padding: 0 0.86rem;
   border-radius: 999px;
   font-size: 0.74rem;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1881,4 +1999,130 @@
   border-color: rgba(126, 220, 255, 0.75);
   background: rgba(126, 220, 255, 0.2);
   transform: translateY(-1px);
+}
+
+/* ── Bộ chuyển trạm trong trang thực nghiệm (‹ 2/5 ›) ─────────────────────── */
+.content-page.overlay-panel--detail .detail-stations {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid rgba(126, 220, 255, 0.32);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(6, 12, 24, 0.55);
+}
+
+.content-page.overlay-panel--detail .station-nav {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid rgba(126, 220, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(126, 220, 255, 0.08);
+  color: #d8f4ff;
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.content-page.overlay-panel--detail .station-nav:hover {
+  border-color: rgba(126, 220, 255, 0.8);
+  background: rgba(126, 220, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.content-page.overlay-panel--detail .station-nav:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.content-page.overlay-panel--detail .station-count {
+  min-width: 2.4rem;
+  text-align: center;
+  color: rgba(220, 229, 255, 0.78);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .content-page.overlay-panel--detail .station-nav {
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 1.15rem;
+  }
+
+  .content-page.overlay-panel--detail .station-count {
+    min-width: 2rem;
+    font-size: 0.72rem;
+  }
+}
+
+/* ── Con trỏ điều khiển bằng tay trong trang thực nghiệm ──────────────────── */
+.hand-widget-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin: -1.2rem 0 0 -1.2rem;
+  border: 2px solid rgba(126, 220, 255, 0.8);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(126, 220, 255, 0.28), transparent 62%);
+  box-shadow: 0 0 1.2rem rgba(126, 220, 255, 0.45);
+  pointer-events: none;
+  transition: opacity 140ms ease, border-color 140ms ease, transform 120ms ease;
+  will-change: left, top;
+}
+
+.hand-widget-cursor::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 50%;
+  background: #eaf7ff;
+  box-shadow: 0 0 0.5rem rgba(126, 220, 255, 0.9);
+  transform: translate(-50%, -50%);
+}
+
+/* Vòng tròn DWELL: đầy dần theo --dwell (0..1) khi giữ con trỏ yên trên một nút. */
+.hand-widget-cursor::before {
+  content: '';
+  position: absolute;
+  inset: -0.28rem;
+  border-radius: 50%;
+  background: conic-gradient(rgba(126, 220, 255, 0.95) calc(var(--dwell, 0) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 0.26rem), #000 calc(100% - 0.24rem));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 0.26rem), #000 calc(100% - 0.24rem));
+}
+
+/* Pinch (đang bấm/kéo): phình + đổi vàng. */
+.hand-widget-cursor.is-pinch {
+  border-color: rgba(255, 209, 122, 0.95);
+  background: radial-gradient(circle, rgba(255, 209, 122, 0.35), transparent 60%);
+  box-shadow: 0 0 1.6rem rgba(255, 209, 122, 0.6);
+  transform: scale(0.86);
+}
+
+/* Nhịp xác nhận mỗi khi có một cú bấm (pinch hoặc dwell hoàn tất). */
+.hand-widget-cursor.did-click {
+  animation: hand-cursor-click 280ms ease-out;
+}
+
+@keyframes hand-cursor-click {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 241, 168, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 1.1rem rgba(255, 241, 168, 0);
+  }
 }

@@ -327,7 +327,7 @@ p {
   padding: 0 1.45rem;
   border-radius: 999px;
   font: inherit;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition:
     transform 180ms ease,
@@ -492,7 +492,8 @@ p {
   color: #fff;
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 2.6vw, 1.9rem);
-  line-height: 1.05;
+  line-height: var(--lh-display);
+  letter-spacing: var(--track-display);
 }
 
 .space-experience {
@@ -666,7 +667,7 @@ p {
   backdrop-filter: blur(14px);
   font: inherit;
   font-size: 0.82rem;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -714,6 +715,91 @@ p {
 .hand-control-mini.is-on {
   border-color: rgba(126, 220, 255, 0.55);
   background: rgba(39, 114, 170, 0.32);
+}
+
+/* Background-music toggle: a small floating equalizer button, bottom-right
+   (mirrors the hand-control cluster on the left). */
+.bg-music-toggle {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 46;
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 1px solid rgba(126, 220, 255, 0.26);
+  border-radius: 999px;
+  color: #eaf2ff;
+  background: rgba(4, 9, 22, 0.74);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.bg-music-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(126, 220, 255, 0.55);
+  background: rgba(39, 114, 170, 0.24);
+}
+
+.bg-music-toggle.is-playing {
+  border-color: rgba(126, 220, 255, 0.5);
+  background: rgba(39, 114, 170, 0.3);
+}
+
+.bg-music-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.16rem;
+  height: 1.1rem;
+}
+
+.bg-music-bars i {
+  width: 0.18rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: currentColor;
+  /* Paused: flat low bars. Playing: animate (overridden below). */
+  transition: height 160ms ease;
+}
+
+.bg-music-toggle.is-playing .bg-music-bars i {
+  animation: musicBars 900ms ease-in-out infinite;
+}
+
+.bg-music-toggle.is-playing .bg-music-bars i:nth-child(1) {
+  animation-delay: -200ms;
+}
+.bg-music-toggle.is-playing .bg-music-bars i:nth-child(2) {
+  animation-delay: -500ms;
+}
+.bg-music-toggle.is-playing .bg-music-bars i:nth-child(3) {
+  animation-delay: -100ms;
+}
+.bg-music-toggle.is-playing .bg-music-bars i:nth-child(4) {
+  animation-delay: -350ms;
+}
+
+@keyframes musicBars {
+  0%,
+  100% {
+    height: 0.3rem;
+  }
+  50% {
+    height: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-music-toggle.is-playing .bg-music-bars i {
+    animation: none;
+    height: 0.7rem;
+  }
 }
 
 /* First-run gesture cheat sheet. */
@@ -799,7 +885,7 @@ p {
   color: #fff;
   background: rgba(39, 114, 170, 0.34);
   font: inherit;
-  font-weight: 850;
+  font-weight: 800;
   cursor: pointer;
   transition: background 160ms ease, transform 160ms ease;
 }
@@ -942,14 +1028,14 @@ p {
   margin: 0.75rem 0 0.45rem;
   color: #fff;
   font-size: 2.6rem;
-  line-height: 0.98;
+  line-height: var(--lh-display);
   text-wrap: balance;
 }
 
 .panel-type {
   margin-bottom: 1rem;
   color: #ffd17a;
-  font-weight: 850;
+  font-weight: 800;
 }
 
 .info-panel ul {
@@ -970,7 +1056,7 @@ p {
 .concept-strip span {
   color: #7edcff;
   font-size: 0.78rem;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -1308,6 +1394,11 @@ p {
     width: 8.5rem;
   }
 
+  .bg-music-toggle {
+    right: 0.5rem;
+    bottom: 3.6rem;
+  }
+
   .space-label {
     min-width: 7.2rem;
     font-size: 0.74rem;
@@ -1576,7 +1667,7 @@ p {
 .experience-copy h1 {
   font-family: var(--font-sans);
   font-size: clamp(1rem, 2vw, 1.35rem);
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
 }

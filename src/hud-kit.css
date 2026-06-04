@@ -18,8 +18,24 @@
   --hud-line: color-mix(in srgb, var(--hud-accent) 42%, transparent);
   --hud-glow: color-mix(in srgb, var(--hud-accent) 60%, transparent);
   --hud-ink: #dff1ff;
-  --hud-dim: rgba(178, 205, 240, 0.62);
+  /* Chữ phụ (mờ): nâng độ rõ để đạt tương phản dễ đọc trên nền tối (AA). */
+  --hud-dim: rgba(192, 214, 244, 0.78);
   --hud-panel: rgba(4, 10, 20, 0.72);
+
+  /* ── Type system tokens ──────────────────────────────────────────────────
+     Một thang chữ thống nhất cho toàn bộ giao diện. Trọng số chỉ dùng các mức
+     thực sự được nạp (400/500/600/700/800/900) — KHÔNG dùng 850/950 vì font
+     không có các face đó nên trình duyệt làm đậm giả lệch nét.
+       --lh-display: leading TỐI THIỂU an toàn cho tiêu đề serif tiếng Việt.
+         Dấu chồng (ề, ộ, ữ, ậ…) bị cắt ngọn khi line-height < ~1.1, nên mọi
+         tiêu đề display phải dùng mức này thay vì 0.9–1.05.
+       --track-eyebrow: letter-spacing chuẩn cho nhãn mono in hoa. */
+  --weight-strong: 800;
+  --weight-max: 900;
+  --lh-display: 1.12;
+  --lh-body: 1.6;
+  --track-eyebrow: 0.16em;
+  --track-display: -0.005em;
 }
 
 /* ── Keyframes (shared) ──────────────────────────────────────────────────── */
@@ -114,7 +130,7 @@
 .overlay-eyebrow {
   font-family: var(--font-mono);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: var(--track-eyebrow);
 }
 
 .eyebrow {

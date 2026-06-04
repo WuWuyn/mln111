@@ -1,264 +1,215 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useHandTargets } from '../../hand/useHandTargets'
+import { seededRandom } from '../space/random'
+import HandControlBar from './HandControlBar'
 import './PraxisLoop.css'
 
-const DATA_POINTS = [
-  { id: 'water', label: 'Tín hiệu nước', value: 'cao', risk: false },
-  { id: 'temperature', label: 'Nhiệt độ ổn định', value: '18C', risk: false },
-  { id: 'storm', label: 'Bão từ mạnh', value: 'cấp 7', risk: true },
-  { id: 'terrain', label: 'Địa hình chưa rõ', value: 'thiếu', risk: true },
-  { id: 'atmosphere', label: 'Khí quyển dày', value: 'dày', risk: false },
-]
+// "Trạm Thực tiễn" — THỰC TIỄN LÀ TIÊU CHUẨN CỦA CHÂN LÝ.
+// Trò chơi "hạ cánh bằng thử – sai": trọng lực hành tinh BỊ ẨN nên không thể
+// tính ra lực đẩy đúng bằng suy nghĩ suông. Người chơi chỉnh lực rồi ĐỐT ĐỘNG CƠ
+// (kiểm nghiệm); thực tiễn trả lời quá mạnh / quá yếu / hạ cánh êm. Cứ điều
+// chỉnh theo phản hồi thật là hội tụ tới chân lý — rồi xây trạm (cải biến hiện
+// thực). Gợi ý của số đông/uy tín/suy luận đều lệch → chỉ thực tiễn mới đúng.
 
-const SAFE_ZONE = { x: 32, y: 58, radius: 12 }
+const TOL = 4 // sai số cho phép quanh lực đúng để được tính "hạ cánh êm"
+const FLOW = ['Giả thuyết', 'Đốt thử', 'Quan sát', 'Điều chỉnh', 'Chân lý']
+const clampVal = (v) => Math.min(94, Math.max(6, v))
 
-// Ba điểm đáp định sẵn — bấm là chọn ngay, không cần rê chuột trúng quả cầu.
-// Chỉ "An toàn" nằm trong vùng xanh; hai điểm còn lại để thực tiễn bác bỏ.
-const LANDING_ZONES = [
-  { id: 'safe', label: 'Vùng an toàn', x: 32, y: 58 },
-  { id: 'storm', label: 'Cạnh bão từ', x: 70, y: 30 },
-  { id: 'unknown', label: 'Vùng chưa rõ', x: 56, y: 74 },
-]
-
-const FLOW = ['Hiện thực', 'Nhận thức', 'Giả thuyết', 'Kiểm nghiệm', 'Điều chỉnh', 'Nhận thức mới']
-
-function hasCoreEvidence(items) {
-  return items.includes('water') && items.includes('temperature') && items.includes('storm')
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value))
-}
-
-function pointOnElement(event, element) {
-  const rect = element?.getBoundingClientRect()
-  if (!rect) return null
-  return {
-    x: clamp(((event.clientX - rect.left) / rect.width) * 100, 12, 88),
-    y: clamp(((event.clientY - rect.top) / rect.height) * 100, 15, 84),
-  }
-}
-
-function isInsideSafeZone(point) {
-  return Math.hypot(point.x - SAFE_ZONE.x, point.y - SAFE_ZONE.y) <= SAFE_ZONE.radius
-}
-
-export default function PraxisLoop() {
-  const planetRef = useRef(null)
-  const [selectedData, setSelectedData] = useState(['water'])
-  const [landingPoint, setLandingPoint] = useState({ x: SAFE_ZONE.x, y: SAFE_ZONE.y })
-  const [landingZone, setLandingZone] = useState('safe')
-  const [placingLanding, setPlacingLanding] = useState(false)
-  const [run, setRun] = useState(0)
-  const [tested, setTested] = useState(false)
+export default function PraxisLoop({ handStore }) {
+  const [round, setRound] = useState(1) // mỗi lượt: trọng lực ẩn khác nhau
+  const [thrust, setThrust] = useState(50) // lực đẩy hiện tại (0..100)
+  const [run, setRun] = useState(0) // khoá animation mỗi lần đốt
+  const [result, setResult] = useState(null) // 'over' | 'under' | 'land' | null
+  const [attempts, setAttempts] = useState(0)
   const [built, setBuilt] = useState(false)
 
-  const enoughData = hasCoreEvidence(selectedData)
-  const hypothesisReady = enoughData
-  const safePlan = hypothesisReady && isInsideSafeZone(landingPoint)
-  const failed = tested && !safePlan
-  const succeeded = tested && safePlan
-
-  const message = useMemo(() => {
-    if (built) return 'Nhận thức đúng quay lại cải biến hiện thực: trạm nghiên cứu đã được dựng trên vùng an toàn.'
-    if (succeeded) return 'Giả thuyết được xác nhận qua thực tiễn. Dữ liệu thật làm bản đồ rõ hơn.'
-    if (failed && !enoughData) return 'Thực tiễn bác bỏ: giả thuyết còn thiếu dữ liệu cốt lõi. Bổ sung rồi phóng lại.'
-    if (failed) return 'Thực tiễn bác bỏ: điểm đáp rơi vào vùng nguy hiểm. Chọn lại vùng an toàn rồi phóng lại.'
-    if (!enoughData) return 'Nhận thức ban đầu chưa đầy đủ. Bấm thêm dữ liệu (nước, nhiệt độ, bão từ) vào giả thuyết.'
-    return 'Ý thức đã dự kiến được một kế hoạch. Chọn điểm đáp rồi phóng robot để kiểm nghiệm.'
-  }, [built, enoughData, failed, succeeded])
-
-  const toggleData = (id) => {
-    setSelectedData((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))
-    setTested(false)
-    setBuilt(false)
-  }
-
-  const dropData = (event) => {
-    event.preventDefault()
-    const id = event.dataTransfer.getData('text/plain')
-    if (id) {
-      setSelectedData((current) => (current.includes(id) ? current : [...current, id]))
-      setTested(false)
-      setBuilt(false)
+  // Lực đẩy đúng (ẩn) + ba gợi ý lệch của số đông/uy tín/suy luận.
+  const scenario = useMemo(() => {
+    const truth = Math.round(clampVal(28 + seededRandom(round * 91 + 17) * 44))
+    const guess = (s1, s2) => {
+      const mag = TOL + 7 + seededRandom(s1) * 15 // luôn lệch quá ngưỡng -> sai
+      const sign = seededRandom(s2) > 0.5 ? 1 : -1
+      return Math.round(clampVal(truth + sign * mag))
     }
-  }
+    const advisors = [
+      { icon: '👥', who: 'Số đông', v: guess(round * 13 + 1, round * 7 + 2) },
+      { icon: '🎓', who: 'Uy tín', v: guess(round * 17 + 3, round * 11 + 4) },
+      { icon: '🧠', who: 'Suy luận', v: guess(round * 23 + 5, round * 19 + 6) },
+    ]
+    return { truth, advisors }
+  }, [round])
 
-  const pickZone = (zone) => {
-    setLandingZone(zone.id)
-    setLandingPoint({ x: zone.x, y: zone.y })
-    setTested(false)
-    setBuilt(false)
-  }
+  const landed = result === 'land'
 
-  const launchProbe = () => {
+  const fire = () => {
+    if (landed) return
+    const diff = thrust - scenario.truth
+    setResult(Math.abs(diff) <= TOL ? 'land' : diff > 0 ? 'over' : 'under')
     setRun((value) => value + 1)
-    setTested(true)
+    setAttempts((value) => value + 1)
+  }
+
+  // Chỉnh lực = quay lại trạng thái "đang ngắm" (xoá kết quả lần trước).
+  const adjust = (value) => {
+    if (landed) return
+    setThrust(value)
+    setResult(null)
+  }
+
+  const newRound = () => {
+    setRound((value) => value + 1)
+    setThrust(50)
+    setRun(0)
+    setResult(null)
+    setAttempts(0)
     setBuilt(false)
   }
 
-  const adjust = () => {
-    setSelectedData(['water', 'temperature', 'storm'])
-    setLandingZone('safe')
-    setLandingPoint({ x: SAFE_ZONE.x, y: SAFE_ZONE.y })
-    setTested(false)
-    setBuilt(false)
-  }
+  const gravityText = `g≈${(scenario.truth / 8).toFixed(1)}`
 
-  // Vẫn cho phép tự rê điểm đáp trực tiếp trên hành tinh (nâng cao), nhưng các
-  // nút "chọn vùng" mới là đường đi chắc chắn.
-  const updateLandingPoint = (event) => {
-    const point = pointOnElement(event, planetRef.current)
-    if (!point) return
-    setLandingPoint(point)
-    setLandingZone(isInsideSafeZone(point) ? 'safe' : 'custom')
-    setTested(false)
-    setBuilt(false)
-  }
+  const message = built
+    ? 'Trạm đã dựng — tri thức quay lại cải biến hiện thực.'
+    : landed
+      ? `Hạ cánh êm! Thực tiễn xác nhận lực đúng (${gravityText}).`
+      : result === 'over'
+        ? 'Quá mạnh — tàu vọt lên. Giảm lực rồi đốt lại.'
+        : result === 'under'
+          ? 'Quá yếu — tàu rơi vỡ. Tăng lực rồi đốt lại.'
+          : 'Chỉnh lực rồi “Đốt động cơ” để thực tiễn trả lời.'
 
-  const startLandingPlacement = (event) => {
-    event.preventDefault()
-    setPlacingLanding(true)
-    event.currentTarget.setPointerCapture(event.pointerId)
-    updateLandingPoint(event)
-  }
+  const resultLabel = built
+    ? 'Đã cải biến'
+    : landed
+      ? 'Hạ cánh êm'
+      : result === 'over'
+        ? 'Quá mạnh'
+        : result === 'under'
+          ? 'Quá yếu'
+          : 'Chưa thử'
 
-  const moveLandingPlacement = (event) => {
-    if (placingLanding) updateLandingPoint(event)
-  }
+  const litUpTo = built || landed ? 4 : result ? 3 : run ? 2 : 0
 
-  const stopLandingPlacement = (event) => {
-    setPlacingLanding(false)
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    }
-  }
+  // Điều khiển bằng tay: ☝ kéo nhẹ chỉnh lực · ✌/🖐 đổi mục · ☝ bấm nút.
+  const handTargets = [
+    { key: 'thrust', kind: 'slider', label: `Lực đẩy ${thrust}`, get: () => thrust, set: adjust, min: 0, max: 100, step: 1, disabled: landed },
+    { key: 'fire', kind: 'button', label: 'Đốt động cơ', onPress: fire, disabled: landed },
+    { key: 'build', kind: 'button', label: 'Xây trạm', onPress: () => setBuilt(true), disabled: !landed || built },
+    { key: 'next', kind: 'button', label: 'Lượt khác', onPress: newRound },
+  ]
+  const hand = useHandTargets(handStore, handTargets)
+
+  const rootClass = [
+    'widget praxis-lab',
+    result ? 'firing' : '',
+    result === 'over' ? 'is-over' : '',
+    result === 'under' ? 'is-under' : '',
+    landed ? 'is-land' : '',
+    built ? 'is-built' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <div
-      className={`widget praxis-lab ${placingLanding ? 'is-placing' : ''} ${tested ? 'has-tested' : ''} ${failed ? 'is-failed' : ''} ${succeeded ? 'is-succeeded' : ''} ${built ? 'is-built' : ''}`}
-      style={{ '--zone-x': `${landingPoint.x}%`, '--zone-y': `${landingPoint.y}%`, '--safe-x': `${SAFE_ZONE.x}%`, '--safe-y': `${SAFE_ZONE.y}%` }}
-    >
-      <div className="praxis-lab-stage">
+    <div className={rootClass} style={{ '--thrust': thrust / 100, '--gauge': `${thrust}%` }}>
+      <div className="lab-stage">
         <div className="lab-stars" aria-hidden="true" />
-        <div className="orbital-station" aria-hidden="true">
-          <span className="station-core" />
-          <span className="station-wing station-wing--left" />
-          <span className="station-wing station-wing--right" />
-          <span className="station-dish" />
+        <div className="lab-comet" aria-hidden="true" />
+
+        {/* Mặt đất hành tinh + bệ đáp + cờ + xanh hoá khi cải biến */}
+        <div className="lab-ground" aria-hidden="true">
+          <span className="green-wash" />
+          <span className="land-pad" />
+          <span className="pad-ring" />
+          <span className="flag" />
         </div>
 
-        <div
-          ref={planetRef}
-          className="praxis-planet"
-          role="application"
-          aria-label="Bản đồ hành tinh. Kéo điểm đáp để lập kế hoạch kiểm nghiệm."
-          onPointerDown={startLandingPlacement}
-          onPointerMove={moveLandingPlacement}
-          onPointerUp={stopLandingPlacement}
-          onPointerCancel={stopLandingPlacement}
-        >
-          <span className="planet-cloud planet-cloud--one" />
-          <span className="planet-cloud planet-cloud--two" />
-          <span className="magnetic-storm" />
-          <span className="water-signal" />
-          <span className="terrain-scan" />
-          <span className="safe-landing-field" />
-          <span className="landing-marker" />
-          <span className="field-station" />
+        {/* Tàu đổ bộ — re-mount mỗi lần đốt để chạy lại animation */}
+        <div key={run} className="lander" aria-hidden="true">
+          <span className="lander-rig">
+            <span className="lander-body" />
+            <span className="lander-leg lander-leg--l" />
+            <span className="lander-leg lander-leg--r" />
+            <span className="flame" />
+            <span className="dust" />
+            <span className="crash-burst" />
+          </span>
         </div>
 
-        <button type="button" className="probe-launch-pad" onClick={launchProbe} aria-label="Phóng robot thăm dò">
-          <span className="probe-mini" />
-          <strong>Phóng robot</strong>
+        <div className="lab-readout">
+          <span>Trọng lực</span>
+          <strong>{landed || built ? gravityText : '?'}</strong>
+          <span>Lần thử · {attempts}</span>
+        </div>
+
+        {result && !landed && (
+          <div key={`fb-${run}`} className={`flight-feedback ${result}`} role="status">
+            {result === 'over' ? '↓ Giảm lực' : '↑ Tăng lực'}
+          </div>
+        )}
+      </div>
+
+      <div className="thrust-deck">
+        <div className="thrust-gauge">
+          <span className="gauge-label">Lực đẩy</span>
+          <div className="gauge-track">
+            <span className="gauge-fill" />
+            <span className="gauge-needle" />
+            {scenario.advisors.map((advisor) => (
+              <button
+                key={advisor.who}
+                type="button"
+                className="advisor-tick"
+                style={{ '--at': `${advisor.v}%` }}
+                onClick={() => adjust(advisor.v)}
+                disabled={landed}
+                title={`${advisor.who} đề xuất ${advisor.v}`}
+              >
+                <i>{advisor.icon}</i>
+              </button>
+            ))}
+            <input
+              className="gauge-input"
+              type="range"
+              min="0"
+              max="100"
+              value={thrust}
+              onChange={(event) => adjust(Number(event.target.value))}
+              disabled={landed}
+              aria-label="Lực đẩy"
+            />
+          </div>
+          <span className="gauge-value">{thrust}</span>
+        </div>
+
+        <button type="button" className="fire-btn" onClick={fire} disabled={landed}>
+          <span className="fire-ico" aria-hidden="true" />
+          Đốt động cơ
         </button>
 
-        <div key={run} className="probe-flight" aria-hidden="true">
-          <span className="probe-body" />
-          <span className="probe-trail" />
+        <div key={`res-${run}-${resultLabel}`} className={`shot-result r-${result ?? 'none'}`} role="status">
+          <strong>{resultLabel}</strong>
+          <p>{message}</p>
         </div>
 
-        <div className="lab-console lab-console--radar">
-          <span>Radar</span>
-          <div className="radar-screen" aria-hidden="true">
-            <i />
-          </div>
+        <div className="deck-actions">
+          {landed && !built && (
+            <button type="button" className="build-btn" onClick={() => setBuilt(true)}>
+              Xây trạm
+            </button>
+          )}
+          {(landed || built) && (
+            <button type="button" className="next-btn" onClick={newRound}>
+              Lượt khác
+            </button>
+          )}
         </div>
-
       </div>
 
-      <div className="praxis-lab-controls">
-        <section className="praxis-panel data-panel">
-          <span className="panel-kicker">1 · Dữ liệu hiện thực</span>
-          <div className="data-bank">
-            {DATA_POINTS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                draggable
-                className={`data-chip ${selectedData.includes(item.id) ? 'is-used' : ''} ${item.risk ? 'is-risk' : ''}`}
-                onDragStart={(event) => event.dataTransfer.setData('text/plain', item.id)}
-                onClick={() => toggleData(item.id)}
-              >
-                <span>{item.label}</span>
-                <small>{item.value}</small>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="praxis-panel hypothesis-panel" onDragOver={(event) => event.preventDefault()} onDrop={dropData}>
-          <span className="panel-kicker">2 · Giả thuyết</span>
-          <div className="hypothesis-dock">
-            {selectedData.map((id) => {
-              const item = DATA_POINTS.find((data) => data.id === id)
-              return item ? <span key={id} className={item.risk ? 'is-risk' : ''}>{item.label}</span> : null
-            })}
-          </div>
-          <div className={`hypothesis-statement ${hypothesisReady ? 'is-ready' : ''}`}>
-            <small>Giả thuyết</small>
-            <strong>{hypothesisReady ? 'Điểm đáp an toàn nếu tránh bão từ.' : 'Chưa đủ dữ liệu để kết luận.'}</strong>
-          </div>
-        </section>
-
-        <section className="praxis-panel zone-panel">
-          <span className="panel-kicker">3 · Điểm đáp</span>
-          <div className="zone-picker">
-            {LANDING_ZONES.map((zone) => (
-              <button
-                key={zone.id}
-                type="button"
-                className={`${landingZone === zone.id ? 'is-active' : ''} ${zone.id === 'safe' ? 'is-safe' : 'is-risk'}`}
-                onClick={() => pickZone(zone)}
-              >
-                {zone.label}
-              </button>
-            ))}
-          </div>
-          <p>Bấm chọn vùng đáp, hoặc tự kéo điểm đáp trên hành tinh. Chỉ vùng an toàn mới qua được thực tiễn.</p>
-        </section>
-
-        <section className="praxis-panel action-panel">
-          <span className="panel-kicker">4 · Kết quả</span>
-          <div className="action-result" role="status">
-            <strong>{built ? 'Đã cải biến' : succeeded ? 'Hạ cánh thành công' : failed ? 'Cần điều chỉnh' : 'Chưa kiểm nghiệm'}</strong>
-            <p>{message}</p>
-          </div>
-          {failed && (
-            <button type="button" className="adjust-plan" onClick={adjust}>
-              Điều chỉnh theo dữ liệu thật
-            </button>
-          )}
-          {(succeeded || built) && (
-            <button type="button" className="build-station" disabled={!succeeded} onClick={() => setBuilt(true)}>
-              Xây trạm nghiên cứu
-            </button>
-          )}
-        </section>
-      </div>
+      {handStore && <HandControlBar targets={handTargets} {...hand} />}
 
       <div className="praxis-flow" aria-label="Vòng nhận thức và thực tiễn">
         {FLOW.map((item, index) => (
-          <span key={item} className={index <= (built ? 5 : succeeded ? 4 : tested ? 3 : enoughData ? 2 : 1) ? 'is-lit' : ''}>
+          <span key={item} className={index <= litUpTo ? 'is-lit' : ''}>
             {item}
           </span>
         ))}

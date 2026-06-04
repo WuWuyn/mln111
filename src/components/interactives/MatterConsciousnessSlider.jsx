@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useHandTargets } from '../../hand/useHandTargets'
+import HandControlBar from './HandControlBar'
 
 const COGNITION_LAYERS = [
   {
@@ -27,17 +29,17 @@ const INSIGHTS = {
   silent: {
     stage: 'Quá trình',
     title: 'Ý thức vắng mặt',
-    body: 'Hành tinh vẫn quay. Vật chất không biến mất khi ta ngừng quan sát.',
+    body: 'Vật chất vẫn vận động khi ta ngừng quan sát.',
   },
   observer: {
     stage: 'Lớp quan sát',
     title: 'Lớp quan sát',
-    body: 'Nhãn và số liệu giúp ta quan sát, nhưng không thay thế hiện thực khách quan.',
+    body: 'Nhãn, số liệu giúp quan sát — không thay được hiện thực.',
   },
   reality: {
     stage: 'Lớp hiện thực',
     title: 'Lớp hiện thực',
-    body: 'Chuyển động, va chạm và lực hút thuộc về thế giới khách quan.',
+    body: 'Vận động, va chạm, lực hút là khách quan.',
   },
 }
 
@@ -47,7 +49,7 @@ function layerFor(value) {
   }, COGNITION_LAYERS[0])
 }
 
-export default function MatterConsciousnessSlider() {
+export default function MatterConsciousnessSlider({ handStore }) {
   const [observerOn, setObserverOn] = useState(true)
   const [cognition, setCognition] = useState(28)
   const [activeInsight, setActiveInsight] = useState('observer')
@@ -70,6 +72,12 @@ export default function MatterConsciousnessSlider() {
     setCognition(value)
     setActiveInsight('layer')
   }
+
+  const handTargets = [
+    { key: 'cognition', kind: 'slider', label: 'Nhận thức', get: () => cognition, set: updateCognition, min: 0, max: 100, step: 1 },
+    { key: 'observer', kind: 'button', label: observerOn ? 'Tắt soi' : 'Bật soi', onPress: toggleObserver },
+  ]
+  const hand = useHandTargets(handStore, handTargets)
 
   return (
     <div className={`widget widget-matter silent-universe ${observerOn ? 'is-observed' : 'is-silent'}`}>
@@ -119,6 +127,8 @@ export default function MatterConsciousnessSlider() {
       </div>
 
       <div className="matter-controls matter-controls--minimal">
+        {handStore && <HandControlBar targets={handTargets} {...hand} />}
+
         <button
           type="button"
           className={`observer-toggle ${observerOn ? 'is-on' : ''}`}
@@ -129,7 +139,7 @@ export default function MatterConsciousnessSlider() {
           {observerOn ? 'Xóa người quan sát' : 'Bật người quan sát'}
         </button>
 
-        <label className="widget-control cognition-control">
+        <label className={`widget-control cognition-control ${hand.lockedKey === 'cognition' ? 'is-hand-locked' : ''}`}>
           <span className="widget-control-label">
             Mức độ nhận thức
             <strong>{layer.label}</strong>

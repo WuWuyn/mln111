@@ -25,6 +25,9 @@ const CENTRAL_RADIUS = 2.1
 const raycaster = new THREE.Raycaster()
 const ndc = new THREE.Vector2()
 const steer = new THREE.Vector3()
+// Missiles model +Y as the nose; reused temporaries for per-frame aiming.
+const MISSILE_UP = new THREE.Vector3(0, 1, 0)
+const velDir = new THREE.Vector3()
 
 // Same formula as Scene.setPlanetPosition: a point at (distance,0,0) rotated by
 // the orbit angle around Y.
@@ -55,6 +58,7 @@ function findTargetPos(targetId, livePositions, asteroidStore) {
 
 function Projectile({ data, livePositions, asteroidStore, onHitPlanet, onHitAsteroid, onExpire }) {
   const mesh = useRef()
+  const flame = useRef()
   const pos = useRef(new THREE.Vector3().fromArray(data.origin))
   const vel = useRef(new THREE.Vector3().fromArray(data.dir).multiplyScalar(SPEED))
   const age = useRef(0)
@@ -71,8 +75,18 @@ function Projectile({ data, livePositions, asteroidStore, onHitPlanet, onHitAste
 
     pos.current.addScaledVector(vel.current, delta)
     mesh.current.position.copy(pos.current)
-    mesh.current.rotation.x += delta * 5
-    mesh.current.rotation.y += delta * 6
+
+    // Point the missile nose (+Y) along its current velocity.
+    const speed = vel.current.length()
+    if (speed > 1e-4) {
+      velDir.copy(vel.current).divideScalar(speed)
+      mesh.current.quaternion.setFromUnitVectors(MISSILE_UP, velDir)
+    }
+    // Flicker the exhaust flame.
+    if (flame.current) {
+      const f = 0.7 + Math.sin(age.current * 45) * 0.3
+      flame.current.scale.set(1, f, 1)
+    }
 
     // Planets first (bigger, fewer), then the asteroid belt.
     for (const planet of livePositions.current) {
@@ -101,10 +115,33 @@ function Projectile({ data, livePositions, asteroidStore, onHitPlanet, onHitAste
   })
 
   return (
-    <mesh ref={mesh}>
-      <dodecahedronGeometry args={[0.24, 0]} />
-      <meshStandardMaterial color="#cbb89c" emissive="#ff8a3c" emissiveIntensity={0.9} roughness={0.8} flatShading />
-    </mesh>
+    <group ref={mesh}>
+      {/* fuselage */}
+      <mesh>
+        <cylinderGeometry args={[0.085, 0.1, 0.46, 14]} />
+        <meshStandardMaterial color="#dfe3ee" metalness={0.65} roughness={0.32} />
+      </mesh>
+      {/* warhead nose */}
+      <mesh position={[0, 0.34, 0]}>
+        <coneGeometry args={[0.1, 0.26, 14]} />
+        <meshStandardMaterial color="#ff5a45" emissive="#ff5a45" emissiveIntensity={0.55} metalness={0.4} roughness={0.4} />
+      </mesh>
+      {/* three tail fins */}
+      {[0, 1, 2].map((i) => (
+        <group key={i} rotation={[0, (i * Math.PI * 2) / 3, 0]}>
+          <mesh position={[0.11, -0.18, 0]}>
+            <boxGeometry args={[0.13, 0.15, 0.02]} />
+            <meshStandardMaterial color="#9aa3b4" metalness={0.5} roughness={0.5} />
+          </mesh>
+        </group>
+      ))}
+      {/* additive exhaust flame pointing back (-Y) */}
+      <mesh ref={flame} position={[0, -0.36, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.085, 0.38, 12]} />
+        <meshBasicMaterial color="#ffd27a" transparent opacity={0.92} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <pointLight position={[0, -0.3, 0]} color="#ff9a3c" intensity={6} distance={4} decay={2} />
+    </group>
   )
 }
 
@@ -113,8 +150,11 @@ const BURST_DURATION = 1.4
 const shardDummy = new THREE.Object3D()
 
 function Explosion({ data, onDone }) {
+  const { camera } = useThree()
   const inst = useRef()
   const flash = useRef()
+  const ring = useRef()
+  const light = useRef()
   const life = useRef(0)
   const burst = data.scale ?? 1
 
@@ -164,6 +204,18 @@ function Explosion({ data, onDone }) {
     const flashScale = (1 + t * 5) * burst
     flash.current.scale.setScalar(flashScale)
     flash.current.material.opacity = Math.max(0, 0.9 - t * 1.6)
+
+    // Shockwave ring billboarded to face the camera, expanding outward.
+    if (ring.current) {
+      ring.current.scale.setScalar((0.5 + t * 7) * burst)
+      ring.current.material.opacity = Math.max(0, 0.7 - t * 1.3)
+      ring.current.lookAt(camera.position)
+    }
+
+    // A brief burst of light punches the surrounding scene.
+    if (light.current) {
+      light.current.intensity = Math.max(0, 1 - t * 2.4) * 26 * burst
+    }
   })
 
   return (
@@ -176,6 +228,11 @@ function Explosion({ data, onDone }) {
         <sphereGeometry args={[0.6, 24, 24]} />
         <meshBasicMaterial color="#fff2cc" transparent opacity={0.9} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
+      <mesh ref={ring} position={data.position}>
+        <ringGeometry args={[0.46, 0.6, 48]} />
+        <meshBasicMaterial color="#ffe6a6" transparent opacity={0.7} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <pointLight ref={light} position={data.position} color={data.color} intensity={20} distance={14 * burst} decay={2} />
     </group>
   )
 }
