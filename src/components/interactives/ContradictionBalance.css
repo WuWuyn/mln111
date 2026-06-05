@@ -298,6 +298,19 @@
   .tap-ripple::before {
     animation-duration: 1ms;
   }
+
+  /* Vụ nổ bay toả mạnh — bỏ mảnh vỡ/tia lửa, chỉ giữ một loé sáng tĩnh nhẹ. */
+  .leap-debris,
+  .leap-sparks,
+  .leap-shock {
+    display: none;
+  }
+
+  .leap-flash,
+  .leap-core-burst {
+    animation-duration: 1ms;
+    opacity: 0.5;
+  }
 }
 
 .core-readout {
@@ -612,6 +625,132 @@
 .is-leapt .core-readout span {
   color: #fff1a1;
   font-size: 1.05rem;
+}
+
+/* ── Vụ nổ bước nhảy: lượng đủ → chất mới ──────────────────────────────────── */
+.leap-explosion {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Loé sáng trắng trùm giữa lõi. */
+.leap-flash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(11rem, 30vw, 18rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  transform: translate(-50%, -50%) scale(0.1);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.98), rgba(255, 244, 190, 0.7) 32%, transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: leapFlash 700ms ease-out forwards;
+}
+
+/* Cầu lửa nở ra từ tâm. */
+.leap-core-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(7rem, 20vw, 11rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  transform: translate(-50%, -50%) scale(0.2);
+  background: radial-gradient(circle, #fff8bd 0 18%, #f4c84f 38%, #e46c3a 60%, transparent 75%);
+  filter: blur(0.3rem);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: leapCore 900ms ease-out forwards;
+}
+
+/* Hai vòng sóng xung kích bung mạnh ra rìa khung. */
+.leap-shock {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6rem;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 0.22rem solid rgba(255, 248, 189, 0.95);
+  box-shadow: 0 0 1.6rem rgba(244, 200, 79, 0.8), inset 0 0 1rem rgba(255, 248, 189, 0.55);
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  animation: leapShock 1s cubic-bezier(0.15, 0.8, 0.2, 1) forwards;
+}
+
+.leap-shock--2 {
+  border-color: rgba(118, 215, 247, 0.85);
+  box-shadow: 0 0 1.6rem rgba(118, 215, 247, 0.7);
+  animation-delay: 150ms;
+}
+
+/* Mảnh vỡ + tia lửa bay theo trục góc --a; --d/--s đổi tầm bay & thời lượng. */
+.leap-debris,
+.leap-sparks {
+  position: absolute;
+  inset: 0;
+}
+
+.leap-shard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.42rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff8bd, #e46c3a);
+  box-shadow: 0 0 0.6rem rgba(244, 200, 79, 0.85);
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(-0.5rem);
+  opacity: 0;
+  animation: leapShard calc(820ms * var(--d, 1)) cubic-bezier(0.12, 0.7, 0.25, 1) forwards;
+}
+
+.leap-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.34rem;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, #fff, #76d7f7 60%, transparent 72%);
+  box-shadow: 0 0 0.5rem rgba(118, 215, 247, 0.9);
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(-1rem);
+  opacity: 0;
+  animation: leapSpark calc(760ms * var(--s, 1)) ease-out forwards;
+}
+
+@keyframes leapFlash {
+  0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+  12% { opacity: 1; }
+  40% { transform: translate(-50%, -50%) scale(1.6); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(2.7); opacity: 0; }
+}
+
+@keyframes leapCore {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.25; }
+  26% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.3); opacity: 0; }
+}
+
+@keyframes leapShock {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(9); opacity: 0; border-width: 1px; }
+}
+
+@keyframes leapShard {
+  0% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(-0.5rem) scaleY(0.4); opacity: 0; }
+  16% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(-13rem * var(--d, 1))) scaleY(1.25); opacity: 0; }
+}
+
+@keyframes leapSpark {
+  0% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(-1rem); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(-16rem * var(--s, 1))); opacity: 0; }
 }
 
 @keyframes coreStarfield {

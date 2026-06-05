@@ -76,6 +76,8 @@ const EXPERIENCE_COPY = {
     kicker: 'Nghĩ đúng chưa đủ, phải kiểm chứng trong hiện thực.',
     prompt:
       'Trọng lực hành tinh bị ẩn nên không thể tính ra lực đẩy đúng bằng suy nghĩ suông — chỉ thực tiễn mới trả lời. Chỉnh "Lực đẩy" rồi "Đốt động cơ": quá mạnh tàu vọt lên, quá yếu tàu rơi vỡ, vừa đúng thì hạ cánh êm.',
+    meaning:
+      'Trọng lực ẩn chính là phần hiện thực mà tư duy chưa nắm được: dù số đông đồng tình, người uy tín khẳng định hay suy luận nghe rất hợp lý, không cách nghĩ nào tự nó cho ra con số đúng — chỉ lần "Đốt động cơ" thật mới phán xử. Mỗi lần thử và đọc phản hồi ↑/↓ là một vòng "thực tiễn → nhận thức → lại thực tiễn": ta hành động, hiện thực trả lời, ta điều chỉnh rồi thử tiếp cho tới khi hạ cánh êm. Đó là lý do triết học Mác – Lênin coi thực tiễn vừa là động lực, vừa là tiêu chuẩn của chân lý — và là điều game này muốn bạn tự tay trải nghiệm thay vì chỉ đọc định nghĩa.',
     steps: [
       'Chọn một mức Lực đẩy để thử.',
       'Đốt động cơ để kiểm nghiệm — tàu vọt lên (quá mạnh) hay rơi vỡ (quá yếu).',
@@ -225,6 +227,13 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
             <h3>Cách chơi</h3>
             <p className="detail-define">{copy.prompt}</p>
           </section>
+
+          {copy.meaning && (
+            <section className="detail-block detail-block--meaning">
+              <h3>Ý nghĩa của game</h3>
+              <p>{copy.meaning}</p>
+            </section>
+          )}
 
           <section className="detail-block">
             <h3>Khái niệm trong cụm</h3>

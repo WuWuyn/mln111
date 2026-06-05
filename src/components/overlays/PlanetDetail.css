@@ -385,6 +385,33 @@
     rgba(255, 255, 255, 0.035);
 }
 
+/* Meaning block — accent-tinted card explaining what the game is *for* */
+.content-page.overlay-panel--detail .detail-block--meaning {
+  padding: 0.95rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--accent, #7edcff) 24%, transparent);
+  border-left: 3px solid var(--accent, #7edcff);
+  border-radius: 0 14px 14px 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent, #7edcff) 9%, transparent) 0%,
+    rgba(255, 255, 255, 0.018) 100%
+  );
+}
+
+.content-page.overlay-panel--detail .detail-block--meaning h3 {
+  color: var(--accent, #7edcff);
+}
+
+.content-page.overlay-panel--detail .detail-block--meaning h3::before {
+  background: var(--accent, #7edcff);
+  box-shadow: 0 0 0.5rem color-mix(in srgb, var(--accent, #7edcff) 60%, transparent);
+}
+
+.content-page.overlay-panel--detail .detail-block--meaning p {
+  color: rgba(233, 240, 255, 0.88);
+  line-height: var(--lh-body);
+}
+
 .content-page.overlay-panel--detail .experience-planet-list {
   display: grid;
   gap: 0.65rem;

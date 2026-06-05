@@ -14,6 +14,11 @@ const RIPPLE_MS = 600 // vòng sáng sống bao lâu trước khi gỡ khỏi DO
 // Giá trị khởi tạo — dùng chung cho state ban đầu và nút "Tái tạo".
 const INITIAL = { oldForce: 58, newForce: 56, quantity: 24 }
 
+// Mảnh vỡ + tia lửa bắn toả tròn khi xảy ra BƯỚC NHẢY (lượng đủ → chất mới).
+// `a` = góc bắn, `d`/`s` = hệ số tầm bay/độ trễ để vụ nổ không đều tăm tắp.
+const LEAP_SHARDS = Array.from({ length: 16 }, (_, i) => ({ a: (360 / 16) * i, d: 0.62 + (i % 5) * 0.12 }))
+const LEAP_SPARKS = Array.from({ length: 22 }, (_, i) => ({ a: (360 / 22) * i + 8, s: 0.7 + (i % 4) * 0.18 }))
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
@@ -160,6 +165,28 @@ export default function ContradictionBalance({ handStore }) {
             aria-hidden="true"
           />
         ))}
+
+        {/* Vụ NỔ TUNG khi đạt bước nhảy — mount mới mỗi lần leapt (reset rồi dồn
+            lại) nên animation luôn chạy từ đầu. Bắn loé sáng + sóng xung kích +
+            cầu lửa + mảnh vỡ/tia lửa toả tròn, rồi hệ chất mới hiện ra. */}
+        {leapt && (
+          <div className="leap-explosion" aria-hidden="true">
+            <span className="leap-flash" />
+            <span className="leap-core-burst" />
+            <span className="leap-shock leap-shock--1" />
+            <span className="leap-shock leap-shock--2" />
+            <div className="leap-debris">
+              {LEAP_SHARDS.map((shard, i) => (
+                <span key={`shard-${i}`} className="leap-shard" style={{ '--a': `${shard.a}deg`, '--d': shard.d }} />
+              ))}
+            </div>
+            <div className="leap-sparks">
+              {LEAP_SPARKS.map((spark, i) => (
+                <span key={`spark-${i}`} className="leap-spark" style={{ '--a': `${spark.a}deg`, '--s': spark.s }} />
+              ))}
+            </div>
+          </div>
+        )}
 
         <button type="button" className="core-zoom" onClick={() => setInsideCore((current) => !current)}>
           {insideCore ? 'Ra ngoài sao' : 'Nhìn vào lõi sao'}

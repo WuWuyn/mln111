@@ -150,6 +150,36 @@ function resolveFingers(straight, runtime) {
 //   navigate (open palm, 3+ fingers 🖐️)  → move to orbit, twist wrist to zoom
 // The thumb is deliberately ignored, so it doesn't matter whether it's tucked or
 // out — that's what makes every pose easy to hold and easy to detect.
+// Khi khung có NHIỀU bàn tay (người đứng phía sau), chọn bàn tay ở GẦN camera
+// nhất = bàn tay CHIẾM KHUNG LỚN NHẤT (diện tích hộp bao landmark lớn nhất).
+// Người dùng đứng sát nên tay họ luôn to vượt trội so với tay nền ở xa → lấy
+// theo diện tích là cách phân biệt chắc nhất, không cần biết handedness.
+function pickForemostHand(landmarksList) {
+  if (!landmarksList || landmarksList.length === 0) return null
+  if (landmarksList.length === 1) return landmarksList[0]
+
+  let best = null
+  let bestArea = -1
+  for (const lm of landmarksList) {
+    let minX = 1
+    let minY = 1
+    let maxX = 0
+    let maxY = 0
+    for (const point of lm) {
+      if (point.x < minX) minX = point.x
+      if (point.x > maxX) maxX = point.x
+      if (point.y < minY) minY = point.y
+      if (point.y > maxY) maxY = point.y
+    }
+    const area = (maxX - minX) * (maxY - minY)
+    if (area > bestArea) {
+      bestArea = area
+      best = lm
+    }
+  }
+  return best
+}
+
 function readGesture(fingers) {
   const { index, middle, ring, pinky } = fingers
   const openCount = [index, middle, ring, pinky].filter(Boolean).length
@@ -646,7 +676,10 @@ export default function HandTrackingPanel({ store, hideUI = false, context = 'ma
             delegate: 'GPU',
           },
           runningMode: 'VIDEO',
-          numHands: 1,
+          // Dò NHIỀU tay để còn chọn được tay ở gần nhất khi có người đứng sau.
+          // Tốn thêm GPU (mỗi tay một lượt landmark) nhưng kiosk thường máy riêng;
+          // hạ xuống 2–3 nếu thấy tụt khung hình.
+          numHands: 4,
           minHandDetectionConfidence: 0.5,
           minHandPresenceConfidence: 0.5,
           minTrackingConfidence: 0.5,
@@ -707,7 +740,8 @@ export default function HandTrackingPanel({ store, hideUI = false, context = 'ma
           if (canvas && canvas.height !== video.videoHeight) canvas.height = video.videoHeight
 
           const result = landmarkerRef.current.detectForVideo(video, now)
-          const landmarks = result.landmarks?.[0]
+          // Trong nhiều tay, chỉ lấy tay gần nhất (to nhất) — bỏ tay nền phía sau.
+          const landmarks = pickForemostHand(result.landmarks)
 
           if (landmarks) {
             const metrics = readMetrics(landmarks)
