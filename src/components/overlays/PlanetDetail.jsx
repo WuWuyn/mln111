@@ -9,36 +9,82 @@ import MiniQuiz from './MiniQuiz'
 import OverlayShell from './OverlayShell'
 import './PlanetDetail.css'
 
+// Mỗi trạm thực nghiệm có:
+//  • prompt — tóm tắt "Cách chơi" (hiện ở thân trang + đầu hộp hướng dẫn)
+//  • steps  — các bước chơi (mục tiêu từng bước), đúng với game hiện tại
+//  • mouse  — cách thao tác bằng CHUỘT cho trạm này
+//  • hand   — cách thao tác bằng CAMERA TAY (trạm con trỏ dùng kính lúp/pinch;
+//    trạm cử chỉ dùng useHandTargets ✌/🖐/☝/✊)
 const EXPERIENCE_COPY = {
   matter: {
     title: 'The Silent Universe',
     kicker: 'Vũ trụ trước khi có ý thức.',
     prompt:
-      'Bật hoặc tắt lớp quan sát để thấy điểm cốt lõi: khi nhãn, scan và dữ liệu biến mất, hành tinh vẫn quay, quỹ đạo vẫn chạy và vật chất vẫn vận động.',
+      'Bật / tắt "lớp quan sát" để thấy điểm cốt lõi: khi nhãn, lưới scan và số liệu biến mất, hành tinh vẫn quay và quỹ đạo vẫn chạy — vật chất tồn tại khách quan, không phụ thuộc việc ta nhìn.',
+    steps: [
+      'Tắt lớp quan sát — chú ý hành tinh và quỹ đạo vẫn vận động dù không còn nhãn, số liệu.',
+      'Tăng dần mức nhận thức: Cảm giác → Hiện tượng → Cấu trúc → Quy luật.',
+      'Mở "Lớp hiện thực" để hiểu vì sao vận động, va chạm, lực hút là khách quan.',
+    ],
+    mouse: 'Bấm nút Bật / Tắt soi, kéo thanh "Mức độ nhận thức", bấm ô "Lớp hiện thực".',
+    hand: '✌ mục sau · 🖐 mục trước · ☝ kéo để chỉnh thanh / bấm nút · ✊ nghỉ.',
   },
   consciousness: {
     title: 'Cosmic Mirror',
     kicker: 'Tấm gương vũ trụ trong ý thức.',
     prompt:
-      'Rê kính lúp soi đủ ba vùng của vũ trụ thật để vũ trụ trong ý thức sáng lên. Sau đó điều khiển kế hoạch: bấm chọn Robot / Trạm đo rồi bấm vào vũ trụ ý thức để đặt, bật đường bay, và thực hiện trong thực tiễn.',
+      'Rê kính lúp soi đủ ba vùng của vũ trụ thật để vũ trụ trong ý thức sáng lên — ý thức là sự phản ánh hiện thực. Khi đã phản ánh đủ, lập kế hoạch trong ý thức rồi thực hiện để cải biến hiện thực.',
+    steps: [
+      'Soi đủ 3 vùng của vũ trụ thật (hành tinh, quỹ đạo, bão từ) cho vũ trụ trong ý thức sáng lên.',
+      'Đặt Robot và Trạm đo vào vũ trụ trong ý thức.',
+      'Vẽ đường bay cho kế hoạch.',
+      'Thực hiện trong thực tiễn để biến kế hoạch thành hiện thực.',
+    ],
+    mouse: 'Giữ và rê kính lúp trên vũ trụ thật; kéo–thả Robot / Trạm đo; kéo để vẽ đường bay; bấm "Thực hiện".',
+    hand: 'Kính lúp bám theo con trỏ tay · chụm ngón để bấm · giữ con trỏ yên để tự kích hoạt.',
   },
   relation: {
     title: 'Hệ Quỹ Đạo Biện Chứng',
     kicker: 'Không có gì cô lập, không có gì đứng yên.',
     prompt:
-      'Kéo một hành tinh để thấy toàn hệ sao phản ứng, rồi kéo thời gian để xem hệ phát triển từ bụi vũ trụ tới nhận thức.',
+      'Kéo một hành tinh để thấy cả hệ sao phản ứng theo — không gì cô lập. Đổi giữa "Siêu hình" và "Biện chứng" để so sánh hai cách nhìn, rồi kéo thời gian để xem hệ phát triển từ bụi vũ trụ tới khi nhận thức xuất hiện.',
+    steps: [
+      'Di chuyển một hành tinh — ở chế độ Biện chứng, đường lực và các thiên thể khác đổi theo.',
+      'So sánh hai cách nhìn: Siêu hình (cô lập, tĩnh tại) vs. Biện chứng (liên hệ, vận động).',
+      'Tua dòng Thời gian: Bụi vũ trụ → Kết tụ → Hệ ổn định → Điều kiện sống → Nhận thức.',
+      'Tái tạo sao để đưa hệ về trạng thái ban đầu.',
+    ],
+    mouse: 'Kéo hành tinh bất kỳ đâu trong sân khấu; bấm Siêu hình / Biện chứng; kéo thanh Thời gian; bấm ⟳.',
+    hand: '✌/🖐 đổi mục · ☝ kéo chỉnh / bấm nút · 🤏 chụm tay cầm và kéo quả cầu · ✊ nghỉ.',
   },
   contradiction: {
     title: 'Lõi Sao Biện Chứng',
     kicker: 'Mâu thuẫn tạo động lực. Lượng tích lũy tạo bước nhảy.',
     prompt:
-      'Nhìn vào lõi sao, cân hai lực đối lập rồi tích lũy lượng đến điểm nút. Trước điểm nút sao chỉ sáng dần; vượt điểm nút, chất mới ra đời.',
+      'Cân hai lực "Cái cũ" và "Cái mới" cho cân bằng để mở khoá tích lũy lượng. Sau đó gõ liên tục vào lõi sao để dồn lượng tới điểm nút — vượt điểm nút, chất mới ra đời (bước nhảy). Lệch quá về một phía sẽ đình trệ hoặc đổ vỡ.',
+    steps: [
+      'Cân hai lực Cái cũ / Cái mới đến trạng thái "Phát triển" để mở tích lũy lượng.',
+      'Gõ liên tục vào lõi sao để dồn "Lượng" lên thanh đo.',
+      'Đẩy Lượng vượt "Điểm nút" để tạo bước nhảy sang chất mới.',
+      'Tái tạo để chơi lại; phóng to để nhìn vào lõi sao.',
+    ],
+    mouse: 'Kéo hai thanh lực; bấm (click) liên tục vào lõi sao để dồn lượng; bấm "Tái tạo".',
+    hand: '☝ rê con trỏ · chụm ngón cái–trỏ để gõ lõi sao (hoặc giữ con trỏ yên để tự gõ) · kéo nhẹ để chỉnh lực.',
   },
   praxis: {
     title: 'Trạm Kiểm Nghiệm Thực Tiễn',
     kicker: 'Nghĩ đúng chưa đủ, phải kiểm chứng trong hiện thực.',
     prompt:
-      'Bấm dữ liệu (nước, nhiệt độ, bão từ) vào giả thuyết, chọn vùng đáp an toàn rồi phóng robot kiểm nghiệm. Sai thì điều chỉnh theo dữ liệu thật, đúng thì xây trạm để cải biến hiện thực.',
+      'Trọng lực hành tinh bị ẩn nên không thể tính ra lực đẩy đúng bằng suy nghĩ suông — chỉ thực tiễn mới trả lời. Chỉnh "Lực đẩy" rồi "Đốt động cơ": quá mạnh tàu vọt lên, quá yếu tàu rơi vỡ, vừa đúng thì hạ cánh êm.',
+    steps: [
+      'Chọn một mức Lực đẩy để thử.',
+      'Đốt động cơ để kiểm nghiệm — tàu vọt lên (quá mạnh) hay rơi vỡ (quá yếu).',
+      'Theo phản hồi ↑/↓ điều chỉnh lực rồi đốt lại tới khi hạ cánh êm.',
+      'Xây trạm để cải biến hiện thực, hoặc đổi lượt với trọng lực ẩn mới.',
+      'Gợi ý của Số đông / Uy tín / Suy luận đều lệch — chỉ thực tiễn mới là tiêu chuẩn của chân lý.',
+    ],
+    mouse: 'Kéo thanh "Lực đẩy"; bấm "Đốt động cơ"; rồi "Xây trạm" / "Lượt khác".',
+    hand: '✌ mục sau · 🖐 mục trước · ☝ kéo chỉnh lực / bấm nút · ✊ nghỉ.',
   },
 }
 
@@ -215,10 +261,13 @@ export default function PlanetDetail({ planet, onClose, onNavigate, onQuizPass, 
       {guideOpen && (
         <GuidanceModal
           title={copy.title}
-          items={[
-            copy.prompt,
-            'Bằng tay: ☝ rê con trỏ · chụm ngón để bấm · ✊ nghỉ.',
-            'Xòe bàn tay rồi lướt ngang để chuyển sang trạm trước / kế.',
+          steps={copy.steps ?? [copy.prompt]}
+          controls={[
+            { icon: '🖱️', label: 'Chuột', text: copy.mouse ?? 'Bấm và kéo trực tiếp các nút, thanh trượt trên trạm.' },
+            { icon: '✋', label: 'Camera tay', text: copy.hand ?? '☝ rê con trỏ · chụm ngón để bấm · ✊ nghỉ.' },
+          ]}
+          tips={[
+            'Camera tay: xòe bàn tay rồi lướt ngang để chuyển sang trạm trước / kế.',
             'Mở mini quiz ở góc trên để tự kiểm tra nhanh.',
           ]}
           onClose={() => setGuideOpen(false)}

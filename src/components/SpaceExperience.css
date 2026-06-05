@@ -374,6 +374,81 @@
   font-weight: 900;
 }
 
+/* Tiêu đề nhóm trong hộp hướng dẫn (Các bước / Điều khiển). */
+.guide-modal-section {
+  margin: 1.15rem 0 0.55rem;
+  color: #7edcff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+}
+
+.guide-modal-section:first-of-type {
+  margin-top: 0.2rem;
+}
+
+/* Hai mode điều khiển: 🖱️ Chuột · ✋ Camera tay. */
+.guide-controls {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-control {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) 1fr;
+  gap: 0.4rem 0.85rem;
+  align-items: start;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(126, 220, 255, 0.06);
+}
+
+.guide-control-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.86rem;
+}
+
+.guide-control-ico {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.guide-control-text {
+  color: #d7e0f6;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.guide-tips {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding-left: 1.2rem;
+  color: #aab8d4;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.guide-tips li::marker {
+  color: #7edcff;
+}
+
+@media (max-width: 460px) {
+  .guide-control {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
 /* ── Planet detail page ───────────────────────────────────────────────────── */
 .detail-head {
   display: flex;
