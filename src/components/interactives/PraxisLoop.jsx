@@ -15,6 +15,16 @@ import './PraxisLoop.css'
 const TOL = 4 // sai số cho phép quanh lực đúng để được tính "hạ cánh êm"
 const clampVal = (v) => Math.min(94, Math.max(6, v))
 
+// Giải thích các TRẠNG THÁI tên lửa (giống tấm "giải thích" ở Cosmic Mirror).
+// `mark` trùng dấu hiện trên bảng console để người chơi đối chiếu được; mỗi
+// trạng thái gắn với một ý của "thực tiễn là tiêu chuẩn của chân lý".
+const ROCKET_STATES = [
+  { id: 'over', mark: '↓', label: 'Quá mạnh', note: 'Lực vượt trọng lực → tàu vọt lên. Giảm lực: thực tiễn bác bỏ phán đoán sai.' },
+  { id: 'under', mark: '↑', label: 'Quá yếu', note: 'Lực chưa đủ → tàu rơi vỡ. Tăng lực: thất bại là động lực điều chỉnh.' },
+  { id: 'land', mark: '✓', label: 'Hạ cánh êm', note: 'Lực khớp trọng lực ẩn → thực tiễn xác nhận đây là chân lý.' },
+  { id: 'built', mark: '★', label: 'Đã cải biến', note: 'Xây trạm — tri thức đúng quay lại cải biến hiện thực.' },
+]
+
 // Ba "cố vấn" lệch chuẩn (số đông / uy tín / suy luận). Icon vẽ bằng SVG bo khối,
 // gradient kim loại theo tông riêng — thay cho emoji phẳng để hợp gu sci-fi.
 const ADVISOR_TONE = {
@@ -142,6 +152,9 @@ export default function PraxisLoop({ handStore }) {
   // Một dấu trạng thái duy nhất cho bảng console (gộp readout + kết quả + phản hồi).
   const mark = built ? '★' : landed ? '✓' : result === 'over' ? '↓' : result === 'under' ? '↑' : '?'
 
+  // Trạng thái đang diễn ra để tô sáng đúng ô trong bảng giải thích.
+  const activeState = built ? 'built' : landed ? 'land' : result
+
   // Điều khiển bằng tay: ☝ kéo nhẹ chỉnh lực · ✌/🖐 đổi mục · ☝ bấm nút.
   const handTargets = [
     { key: 'thrust', kind: 'slider', label: `Lực đẩy ${thrust}`, get: () => thrust, set: adjust, min: 0, max: 100, step: 1, disabled: landed },
@@ -249,6 +262,26 @@ export default function PraxisLoop({ handStore }) {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Giải thích các trạng thái tên lửa — đối chiếu với dấu ở bảng console;
+          ô của trạng thái đang diễn ra được tô sáng. */}
+      <div className="state-legend" aria-label="Các trạng thái tên lửa">
+        <span className="legend-title">Trạng thái tên lửa</span>
+        <ul className="legend-list">
+          {ROCKET_STATES.map((item) => (
+            <li
+              key={item.id}
+              className={`legend-item legend-item--${item.id} ${activeState === item.id ? 'is-active' : ''}`}
+            >
+              <span className="legend-mark" aria-hidden="true">{item.mark}</span>
+              <span className="legend-copy">
+                <strong>{item.label}</strong>
+                <small>{item.note}</small>
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )
