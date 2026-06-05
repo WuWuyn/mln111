@@ -127,8 +127,11 @@ function readStraightness(landmarks) {
 // EXIT mới quay lại "cụp". Khe hở giữa hai mốc dập rung boolean khi cos dao động
 // quanh ngưỡng — đây là nguồn chính còn lại của nhận-nhầm-cử-chỉ ở ranh giới.
 // Ngón áp út & út ngắn, nhiễu hơn nên đặt ngưỡng thấp hơn.
-const FINGER_ENTER = { index: 0.62, middle: 0.62, ring: 0.55, pinky: 0.5 }
-const FINGER_EXIT = { index: 0.42, middle: 0.42, ring: 0.38, pinky: 0.32 }
+// Ngón GIỮA đặt ENTER cao hơn: lúc đang trỏ (☝) rồi di tay chỉnh thanh trượt,
+// ngón giữa hay duỗi hờ — nếu dễ tính "duỗi" thì pose nhảy ☝→✌ (đổi mục). Cú ✌
+// cố ý vẫn duỗi thẳng vượt xa ngưỡng này nên không ảnh hưởng.
+const FINGER_ENTER = { index: 0.62, middle: 0.72, ring: 0.55, pinky: 0.5 }
+const FINGER_EXIT = { index: 0.42, middle: 0.46, ring: 0.38, pinky: 0.32 }
 
 function resolveFingers(straight, runtime) {
   const state = runtime.fingerState
@@ -160,9 +163,15 @@ function readGesture(fingers) {
 
 // Hand shape jitters frame-to-frame near a gesture boundary (a finger flickers
 // "extended" for a single frame), which would make the mode snap around. We only
-// *commit* a new gesture once it has held for a few consecutive frames; the
+// *commit* a new gesture once it has held for enough consecutive frames; the
 // current gesture wins ties.
-const GESTURE_HOLD_FRAMES = 2
+//
+// ASYMMETRIC theo từng cử chỉ: cử chỉ "lệnh" rời rạc — confirm ✌ (đổi mục kế) và
+// navigate 🖐 (mục trước / lướt đổi trạm) — đòi GIỮ LÂU hơn mới chốt, để một cái
+// nhấp nháy ngón giữa/áp út lúc đang TRỎ (☝) chỉnh thanh trượt không bị tính
+// nhầm thành "đổi mục". Cử chỉ liên tục (point, idle) vẫn chốt nhanh để không trễ.
+const GESTURE_HOLD_FRAMES = { idle: 2, point: 2, confirm: 6, navigate: 4 }
+const DEFAULT_HOLD_FRAMES = 3
 
 function stabilizeGesture(raw, runtime) {
   if (raw === runtime.stableGesture) {
@@ -178,7 +187,8 @@ function stabilizeGesture(raw, runtime) {
     runtime.pendingCount = 1
   }
 
-  if (runtime.pendingCount >= GESTURE_HOLD_FRAMES) {
+  const need = GESTURE_HOLD_FRAMES[raw] ?? DEFAULT_HOLD_FRAMES
+  if (runtime.pendingCount >= need) {
     runtime.stableGesture = raw
     runtime.pendingCount = 0
   }
